@@ -6,29 +6,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProperty } from "@/contexts/PropertyContext";
+import { AddPropertyDialog } from "./AddPropertyDialog";
 
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-}
-
-interface PropertySelectorProps {
-  properties: Property[];
-  selectedPropertyId: string;
-  onPropertyChange: (propertyId: string) => void;
-}
-
-export const PropertySelector = ({
-  properties,
-  selectedPropertyId,
-  onPropertyChange,
-}: PropertySelectorProps) => {
-  const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
+export const PropertySelector = () => {
+  const { properties, selectedPropertyId, setSelectedPropertyId, selectedProperty } = useProperty();
 
   return (
     <div className="px-4 py-3 border-b border-sidebar-border">
-      <Select value={selectedPropertyId} onValueChange={onPropertyChange}>
+      <div className="flex items-center gap-2">
+        <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
         <SelectTrigger className="w-full bg-sidebar-accent border-sidebar-border hover:bg-sidebar-border transition-colors">
           <div className="flex items-center gap-3 w-full">
             <Building2 className="h-5 w-5 text-sidebar-primary shrink-0" />
@@ -56,6 +43,8 @@ export const PropertySelector = ({
           ))}
         </SelectContent>
       </Select>
+      <AddPropertyDialog />
+      </div>
     </div>
   );
 };

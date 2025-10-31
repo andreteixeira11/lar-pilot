@@ -21,24 +21,6 @@ import {
 } from "@/components/ui/sidebar";
 import { PropertySelector } from "./PropertySelector";
 
-const mockProperties = [
-  {
-    id: "1",
-    name: "Casa da Praia",
-    address: "Rua da Praia, 123, Porto",
-  },
-  {
-    id: "2",
-    name: "Apartamento Centro",
-    address: "Av. Liberdade, 45, Lisboa",
-  },
-  {
-    id: "3",
-    name: "Villa do Douro",
-    address: "Quinta do Douro, Peso da Régua",
-  },
-];
-
 const menuItems = [
   { title: "Reservas", url: "/reservas", icon: Calendar },
   { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
@@ -63,13 +45,7 @@ export function AppSidebar() {
           </div>
         )}
 
-        {state !== "collapsed" && (
-          <PropertySelector
-            properties={mockProperties}
-            selectedPropertyId="1"
-            onPropertyChange={(id) => console.log("Selected property:", id)}
-          />
-        )}
+        {state !== "collapsed" && <PropertySelector />}
 
         <SidebarGroup>
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>

@@ -1,6 +1,7 @@
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, FileDown } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 
 const resumoData = {
   receitas: {
@@ -47,22 +51,107 @@ const ResumoMensal = () => {
   const irs = valorAntesImposto * 0.1;
   const valorLiquido = valorAntesImposto - irs;
 
+  const exportarPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Resumo Mensal - Novembro 2025", 14, 20);
+
+    doc.setFontSize(12);
+    doc.text("Casa da Praia", 14, 30);
+
+    // Receitas
+    doc.setFontSize(14);
+    doc.text("Receitas", 14, 45);
+    autoTable(doc, {
+      startY: 50,
+      head: [["Descrição", "Valor"]],
+      body: [
+        ["Booking", `€${resumoData.receitas.booking}`],
+        ["Airbnb", `€${resumoData.receitas.airbnb}`],
+        ["Taxa de Limpeza", `€${resumoData.receitas.taxaLimpeza}`],
+        ["Total Faturado", `€${totalReceitas}`],
+      ],
+      theme: "grid",
+    });
+
+    // Comissões
+    const finalY1 = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text("Valores a Pagar", 14, finalY1);
+    autoTable(doc, {
+      startY: finalY1 + 5,
+      head: [["Descrição", "Valor"]],
+      body: [
+        ["Comissão por Gestão (15%)", `-€${resumoData.comissoes.gestao}`],
+        ["Comissão da Plataforma", `-€${resumoData.comissoes.plataforma}`],
+        ["Total Comissões", `-€${totalComissoes}`],
+      ],
+      theme: "grid",
+    });
+
+    // Despesas
+    const finalY2 = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text("Despesas Gerais do Alojamento", 14, finalY2);
+    autoTable(doc, {
+      startY: finalY2 + 5,
+      head: [["Descrição", "Valor"]],
+      body: [
+        ["Limpeza", `€${resumoData.despesas.limpeza}`],
+        ["Água", `€${resumoData.despesas.agua}`],
+        ["Luz", `€${resumoData.despesas.luz}`],
+        ["Internet", `€${resumoData.despesas.internet}`],
+        ["Produtos de Limpeza", `€${resumoData.despesas.produtosLimpeza}`],
+        ["Brindes Hóspedes", `€${resumoData.despesas.brindes}`],
+        ["Autoliquidação de IVA", `€${resumoData.despesas.autoliquidacaoIVA}`],
+        ["Total Despesas Gerais", `-€${totalDespesas}`],
+      ],
+      theme: "grid",
+    });
+
+    // Resumo Final
+    const finalY3 = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text("Resumo Final", 14, finalY3);
+    autoTable(doc, {
+      startY: finalY3 + 5,
+      head: [["Descrição", "Valor"]],
+      body: [
+        ["Valor ANTES DE IMPOSTO", `€${valorAntesImposto.toFixed(2)}`],
+        ["IRS (10%)", `-€${irs.toFixed(2)}`],
+        ["Valor Líquido", `€${valorLiquido.toFixed(2)}`],
+      ],
+      theme: "grid",
+      styles: { fontStyle: "bold" },
+    });
+
+    doc.save("resumo-mensal-novembro-2025.pdf");
+    toast.success("PDF exportado com sucesso!");
+  };
+
   return (
     <div className="p-8">
       <PageHeader
         title="Resumo Mensal"
         description="Análise financeira detalhada do mês"
         actions={
-          <Select defaultValue="11-2025">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selecione o mês" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="11-2025">Novembro 2025</SelectItem>
-              <SelectItem value="10-2025">Outubro 2025</SelectItem>
-              <SelectItem value="09-2025">Setembro 2025</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select defaultValue="11-2025">
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Selecione o mês" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="11-2025">Novembro 2025</SelectItem>
+                <SelectItem value="10-2025">Outubro 2025</SelectItem>
+                <SelectItem value="09-2025">Setembro 2025</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={exportarPDF} variant="outline" className="gap-2">
+              <FileDown className="h-4 w-4" />
+              Exportar PDF
+            </Button>
+          </div>
         }
       />
 

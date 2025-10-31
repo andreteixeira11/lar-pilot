@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, User } from "lucide-react";
+import { Calendar, User } from "lucide-react";
+import { AddReservaDialog } from "@/components/AddReservaDialog";
 
 const mockReservas = [
   {
@@ -38,21 +39,22 @@ const mockReservas = [
 ];
 
 const Reservas = () => {
+  const [reservas, setReservas] = useState(mockReservas);
+
+  const handleAddReserva = (novaReserva: any) => {
+    setReservas([novaReserva, ...reservas]);
+  };
+
   return (
     <div className="p-8">
       <PageHeader
         title="Controlo de Reservas"
         description="Gerir todas as reservas da propriedade"
-        actions={
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Nova Reserva
-          </Button>
-        }
+        actions={<AddReservaDialog onAdd={handleAddReserva} />}
       />
 
       <div className="grid gap-4">
-        {mockReservas.map((reserva) => (
+        {reservas.map((reserva) => (
           <Card key={reserva.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">

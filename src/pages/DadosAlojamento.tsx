@@ -44,28 +44,28 @@ const DadosAlojamento = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Dados do Alojamento"
         description={selectedProperty.name}
         actions={
           isEditing ? (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
+            <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
+              <Button variant="outline" onClick={() => setIsEditing(false)} className="w-full sm:w-auto">
                 Cancelar
               </Button>
-              <Button onClick={handleSave} className="gap-2">
+              <Button onClick={handleSave} className="gap-2 w-full sm:w-auto">
                 <Save className="h-4 w-4" />
                 Guardar
               </Button>
             </div>
           ) : (
-            <Button onClick={() => setIsEditing(true)}>Editar</Button>
+            <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto">Editar</Button>
           )
         }
       />
 
-      <div className="grid gap-6 max-w-4xl">
+      <div className="grid gap-6 max-w-4xl mt-6">
         <Card>
           <CardHeader>
             <CardTitle>Informações Gerais</CardTitle>
@@ -110,7 +110,7 @@ const DadosAlojamento = () => {
           <CardHeader>
             <CardTitle>Capacidade</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-3 gap-4">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="capacity">Capacidade</Label>
               <Input
@@ -154,7 +154,7 @@ const DadosAlojamento = () => {
           <CardHeader>
             <CardTitle>Check-in / Check-out</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="checkInTime">Hora de Check-in</Label>
               <Input

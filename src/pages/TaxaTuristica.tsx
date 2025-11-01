@@ -39,28 +39,29 @@ const taxaData = [
 
 const TaxaTuristica = () => {
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Taxa Turística"
         description="Controlo mensal da taxa turística"
       />
 
-      <Card>
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle>Resumo por Mês</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mês</TableHead>
-                <TableHead className="text-right">Total Hóspedes</TableHead>
-                <TableHead className="text-right">Total Noites</TableHead>
-                <TableHead className="text-right">Taxa/Noite</TableHead>
-                <TableHead className="text-right">Total Taxa</TableHead>
-                <TableHead className="text-right">Estado</TableHead>
-              </TableRow>
-            </TableHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Mês</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Total Hóspedes</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Total Noites</TableHead>
+                  <TableHead className="text-right min-w-[90px]">Taxa/Noite</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Total Taxa</TableHead>
+                  <TableHead className="text-right min-w-[90px]">Estado</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {taxaData.map((row) => (
                 <TableRow key={row.mes}>
@@ -80,6 +81,7 @@ const TaxaTuristica = () => {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

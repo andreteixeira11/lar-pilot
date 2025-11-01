@@ -43,7 +43,9 @@ export const PropertySelector = () => {
           ))}
         </SelectContent>
       </Select>
-      <AddPropertyDialog />
+      <div className="shrink-0">
+        <AddPropertyDialog />
+      </div>
       </div>
     </div>
   );

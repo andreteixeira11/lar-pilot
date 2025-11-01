@@ -46,25 +46,25 @@ const Reservas = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Controlo de Reservas"
         description="Gerir todas as reservas da propriedade"
         actions={<AddReservaDialog onAdd={handleAddReserva} />}
       />
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 mt-6">
         {reservas.map((reserva) => (
           <Card key={reserva.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <User className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">{reserva.hospede}</CardTitle>
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base md:text-lg truncate">{reserva.hospede}</CardTitle>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <Badge variant="outline">{reserva.plataforma}</Badge>
                       <Badge
                         variant={
@@ -76,8 +76,8 @@ const Reservas = () => {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-foreground">
+                <div className="text-left sm:text-right w-full sm:w-auto">
+                  <p className="text-xl md:text-2xl font-bold text-foreground">
                     €{reserva.valor}
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -87,16 +87,16 @@ const Reservas = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-6 text-sm">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">Check-in:</span>
                   <span className="font-medium">
                     {new Date(reserva.checkIn).toLocaleDateString("pt-PT")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                   <span className="text-muted-foreground">Check-out:</span>
                   <span className="font-medium">
                     {new Date(reserva.checkOut).toLocaleDateString("pt-PT")}

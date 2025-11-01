@@ -56,7 +56,7 @@ export const AddPropertyDialog = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="h-8 w-8">
+        <Button size="icon" className="shrink-0 bg-accent hover:bg-accent/90 text-accent-foreground h-8 w-8">
           <Plus className="h-4 w-4" />
         </Button>
       </DialogTrigger>

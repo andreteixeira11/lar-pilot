@@ -54,33 +54,34 @@ const INE = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="INE - Instituto Nacional de Estatística"
         description="Registo de hóspedes por país de origem"
         actions={
-          <Button className="gap-2">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
-            Adicionar Registo
+            <span className="sm:inline">Adicionar Registo</span>
           </Button>
         }
       />
 
-      <Card>
+      <Card className="mt-6">
         <CardHeader>
           <CardTitle>Estatísticas por País</CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>País</TableHead>
-                <TableHead className="text-right">Nº Hóspedes</TableHead>
-                <TableHead className="text-right">Nº Noites</TableHead>
-                <TableHead className="text-right">Dormidas</TableHead>
-                <TableHead className="text-right">Noites Transitadas</TableHead>
-              </TableRow>
-            </TableHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">País</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Nº Hóspedes</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Nº Noites</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Dormidas</TableHead>
+                  <TableHead className="text-right min-w-[120px]">Noites Transitadas</TableHead>
+                </TableRow>
+              </TableHeader>
             <TableBody>
               {ineData.map((row) => (
                 <TableRow key={row.pais}>
@@ -102,6 +103,7 @@ const INE = () => {
               </TableRow>
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -131,14 +131,14 @@ const ResumoMensal = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Resumo Mensal"
         description="Análise financeira detalhada do mês"
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Select defaultValue="11-2025">
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Selecione o mês" />
               </SelectTrigger>
               <SelectContent>
@@ -147,9 +147,9 @@ const ResumoMensal = () => {
                 <SelectItem value="09-2025">Setembro 2025</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={exportarPDF} variant="outline" className="gap-2">
+            <Button onClick={exportarPDF} variant="outline" className="gap-2 w-full sm:w-auto">
               <FileDown className="h-4 w-4" />
-              Exportar PDF
+              <span className="sm:inline">Exportar PDF</span>
             </Button>
           </div>
         }

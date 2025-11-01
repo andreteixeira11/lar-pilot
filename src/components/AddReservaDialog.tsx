@@ -30,7 +30,9 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     checkIn: "",
     checkOut: "",
     plataforma: "Airbnb",
-    valor: 0,
+    valorEstadia: 0,
+    valorLimpeza: 0,
+    taxaTuristica: 0,
     status: "pendente",
   });
 
@@ -42,6 +44,21 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       return diff > 0 ? diff : 0;
     }
     return 0;
+  };
+
+  const calculateComissoes = () => {
+    const { plataforma, valorEstadia, valorLimpeza, taxaTuristica } = formData;
+    
+    if (plataforma === "Booking") {
+      // Booking: 15% sobre estadia + 1.4% sobre (limpeza + taxa turística)
+      const comissaoEstadia = valorEstadia * 0.15;
+      const comissaoLimpezaTaxa = (valorLimpeza + taxaTuristica) * 0.014;
+      return comissaoEstadia + comissaoLimpezaTaxa;
+    } else if (plataforma === "Airbnb") {
+      // Airbnb: 15% sobre (estadia + limpeza)
+      return (valorEstadia + valorLimpeza) * 0.15;
+    }
+    return 0; // Direto não tem comissão
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,10 +74,15 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       return;
     }
 
+    const comissaoPlataforma = calculateComissoes();
+    const valorTotal = formData.valorEstadia + formData.valorLimpeza + formData.taxaTuristica;
+
     const novaReserva = {
       id: Date.now().toString(),
       ...formData,
       noites,
+      valor: valorTotal,
+      comissaoPlataforma,
     };
 
     onAdd(novaReserva);
@@ -71,7 +93,9 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       checkIn: "",
       checkOut: "",
       plataforma: "Airbnb",
-      valor: 0,
+      valorEstadia: 0,
+      valorLimpeza: 0,
+      taxaTuristica: 0,
       status: "pendente",
     });
   };
@@ -149,19 +173,56 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label htmlFor="valor">Valor Total (€)</Label>
-            <Input
-              id="valor"
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.valor}
-              onChange={(e) =>
-                setFormData({ ...formData, valor: parseFloat(e.target.value) })
-              }
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="valorEstadia">Valor Estadia (€)</Label>
+              <Input
+                id="valorEstadia"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.valorEstadia}
+                onChange={(e) =>
+                  setFormData({ ...formData, valorEstadia: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="valorLimpeza">Taxa Limpeza (€)</Label>
+              <Input
+                id="valorLimpeza"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.valorLimpeza}
+                onChange={(e) =>
+                  setFormData({ ...formData, valorLimpeza: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="taxaTuristica">Taxa Turística (€)</Label>
+              <Input
+                id="taxaTuristica"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.taxaTuristica}
+                onChange={(e) =>
+                  setFormData({ ...formData, taxaTuristica: parseFloat(e.target.value) || 0 })
+                }
+              />
+            </div>
           </div>
+          {formData.plataforma !== "Direto" && (formData.valorEstadia > 0 || formData.valorLimpeza > 0 || formData.taxaTuristica > 0) && (
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm font-medium">Comissão {formData.plataforma}: €{calculateComissoes().toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {formData.plataforma === "Booking" && "15% sobre estadia + 1.4% sobre (limpeza + taxa turística)"}
+                {formData.plataforma === "Airbnb" && "15% sobre (estadia + limpeza)"}
+              </p>
+            </div>
+          )}
           <div>
             <Label htmlFor="status">Estado</Label>
             <Select

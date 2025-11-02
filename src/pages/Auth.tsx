@@ -290,11 +290,11 @@ export default function Auth() {
         <CardContent>
           <form onSubmit={handleSignup} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="name">Nome Completo</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Seu nome"
+                placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -309,6 +309,25 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telemóvel</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+351 900 000 000"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="nif">NIF</Label>
+              <Input
+                id="nif"
+                type="text"
+                placeholder="000000000"
+                required
+                maxLength={9}
               />
             </div>
             <div className="space-y-2">

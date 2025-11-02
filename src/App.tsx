@@ -29,6 +29,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<Auth />} />
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/*"
@@ -43,7 +44,6 @@ const App = () => (
                             <UserMenu />
                           </header>
                           <Routes>
-                            <Route path="/" element={<Navigate to="/reservas" replace />} />
                             <Route path="/reservas" element={<Reservas />} />
                             <Route path="/alojamento" element={<DadosAlojamento />} />
                             <Route path="/resumo-mensal" element={<ResumoMensal />} />

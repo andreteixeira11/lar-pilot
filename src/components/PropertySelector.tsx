@@ -13,9 +13,8 @@ export const PropertySelector = () => {
   const { properties, selectedPropertyId, setSelectedPropertyId, selectedProperty } = useProperty();
 
   return (
-    <div className="px-4 py-3 border-b border-sidebar-border">
-      <div className="flex items-center gap-2">
-        <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+    <div className="px-4 py-3 border-b border-sidebar-border space-y-3">
+      <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
         <SelectTrigger className="w-full bg-sidebar-accent border-sidebar-border hover:bg-sidebar-border transition-colors">
           <div className="flex items-center gap-3 w-full">
             <Building2 className="h-5 w-5 text-sidebar-primary shrink-0" />
@@ -43,10 +42,7 @@ export const PropertySelector = () => {
           ))}
         </SelectContent>
       </Select>
-      <div className="shrink-0">
-        <AddPropertyDialog />
-      </div>
-      </div>
+      <AddPropertyDialog />
     </div>
   );
 };

@@ -11,7 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, plan?: "free" | "basic" | "premium") => Promise<void>;
   logout: () => void;
   updateSubscription: (plan: "basic" | "premium") => void;
   isLoading: boolean;
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(mockUser));
   };
 
-  const signup = async (email: string, password: string, name: string) => {
+  const signup = async (email: string, password: string, name: string, plan: "free" | "basic" | "premium" = "free") => {
     // TODO: Connect to MySQL backend
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -58,8 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: "1",
       email,
       name,
-      subscriptionPlan: "free",
-      subscriptionStatus: null,
+      subscriptionPlan: plan,
+      subscriptionStatus: plan !== "free" ? "active" : null,
     };
     
     setUser(mockUser);

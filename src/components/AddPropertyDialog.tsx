@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Link as LinkIcon } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +17,8 @@ import { toast } from "sonner";
 export const AddPropertyDialog = () => {
   const { addProperty } = useProperty();
   const [open, setOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -29,6 +31,41 @@ export const AddPropertyDialog = () => {
     wifiPassword: "",
     parkingInfo: "",
   });
+
+  const handleImport = async () => {
+    if (!importUrl) {
+      toast.error("Insira um link válido");
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      // Simulate API call to scrape property data
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Mock extracted data
+      const extractedData = {
+        name: "Luxury Leilamar Apartment Modern Retreat",
+        address: "Rua Example, Lisboa, Portugal",
+        description: "Apartamento moderno e luxuoso no centro da cidade",
+        capacity: 4,
+        bedrooms: 2,
+        bathrooms: 1,
+        checkInTime: "15:00",
+        checkOutTime: "11:00",
+        wifiPassword: "",
+        parkingInfo: "",
+      };
+      
+      setFormData(extractedData);
+      setImportUrl("");
+      toast.success("Dados importados com sucesso!");
+    } catch (error) {
+      toast.error("Erro ao importar propriedade");
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +88,7 @@ export const AddPropertyDialog = () => {
       wifiPassword: "",
       parkingInfo: "",
     });
+    setImportUrl("");
   };
 
   return (
@@ -65,6 +103,32 @@ export const AddPropertyDialog = () => {
         <DialogHeader>
           <DialogTitle>Adicionar Nova Propriedade</DialogTitle>
         </DialogHeader>
+        
+        <div className="space-y-4 pb-4 border-b">
+          <Label htmlFor="importUrl">Importar de Link (Booking, Airbnb)</Label>
+          <div className="flex gap-2">
+            <Input
+              id="importUrl"
+              type="url"
+              placeholder="https://www.booking.com/hotel/..."
+              value={importUrl}
+              onChange={(e) => setImportUrl(e.target.value)}
+            />
+            <Button 
+              type="button" 
+              onClick={handleImport}
+              disabled={isImporting || !importUrl}
+              variant="secondary"
+            >
+              <LinkIcon className="h-4 w-4 mr-2" />
+              {isImporting ? "A importar..." : "Importar"}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Cole o link da propriedade do Booking ou Airbnb para importar automaticamente
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">

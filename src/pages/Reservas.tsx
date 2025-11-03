@@ -146,14 +146,22 @@ const Reservas = () => {
             <Card key={reserva.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-base md:text-lg truncate">{reserva.hospede}</CardTitle>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline">{reserva.plataforma}</Badge>
+                        {reserva.plataforma === "Airbnb" && (
+                          <img src="/logos/airbnb.svg" alt="Airbnb" className="h-5 w-auto" />
+                        )}
+                        {reserva.plataforma === "Booking" && (
+                          <img src="/logos/booking.svg" alt="Booking.com" className="h-5 w-auto" />
+                        )}
+                        {reserva.plataforma === "Direto" && (
+                          <Badge variant="outline">Direto</Badge>
+                        )}
                         <Badge
                           variant={
                             reserva.status === "confirmada" ? "default" : "secondary"

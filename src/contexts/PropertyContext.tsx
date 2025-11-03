@@ -12,6 +12,7 @@ export interface Property {
   checkOutTime: string;
   wifiPassword: string;
   parkingInfo: string;
+  alNumber?: string;
 }
 
 interface PropertyContextType {

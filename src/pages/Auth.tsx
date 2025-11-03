@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard } from "lucide-react";
+import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard, Smartphone, Building2, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type SubscriptionPlan = "free" | "basic" | "premium";
+type PaymentMethod = "card" | "mbway" | "multibanco" | "paypal";
 
 const plans = [
   {
@@ -64,9 +66,12 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [nif, setNif] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
+  const [mbwayPhone, setMbwayPhone] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
@@ -389,6 +394,13 @@ export default function Auth() {
   // Payment step
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
   
+  const paymentMethods = [
+    { id: "card" as PaymentMethod, name: "Cartão de Crédito", icon: CreditCard },
+    { id: "mbway" as PaymentMethod, name: "MB WAY", icon: Smartphone },
+    { id: "multibanco" as PaymentMethod, name: "Multibanco", icon: Building2 },
+    { id: "paypal" as PaymentMethod, name: "PayPal", icon: DollarSign },
+  ];
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
       <Card className="w-full max-w-md">
@@ -413,45 +425,124 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); handleFinalSignup(); }} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Número do Cartão *</Label>
-              <Input
-                id="cardNumber"
-                type="text"
-                placeholder="0000 0000 0000 0000"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
-                required
-                maxLength={19}
-              />
+          <form onSubmit={(e) => { e.preventDefault(); handleFinalSignup(); }} className="space-y-6">
+            <div className="space-y-3">
+              <Label>Selecione o método de pagamento</Label>
+              <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
+                <div className="grid grid-cols-2 gap-3">
+                  {paymentMethods.map((method) => {
+                    const Icon = method.icon;
+                    return (
+                      <Label
+                        key={method.id}
+                        htmlFor={method.id}
+                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          paymentMethod === method.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
+                        <Icon className="h-6 w-6 mb-2" />
+                        <span className="text-sm font-medium text-center">{method.name}</span>
+                      </Label>
+                    );
+                  })}
+                </div>
+              </RadioGroup>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="cardExpiry">Validade *</Label>
-                <Input
-                  id="cardExpiry"
-                  type="text"
-                  placeholder="MM/AA"
-                  value={cardExpiry}
-                  onChange={(e) => setCardExpiry(e.target.value)}
-                  required
-                  maxLength={5}
-                />
+
+            {paymentMethod === "card" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Número do Cartão *</Label>
+                  <Input
+                    id="cardNumber"
+                    type="text"
+                    placeholder="0000 0000 0000 0000"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    required
+                    maxLength={19}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="cardExpiry">Validade *</Label>
+                    <Input
+                      id="cardExpiry"
+                      type="text"
+                      placeholder="MM/AA"
+                      value={cardExpiry}
+                      onChange={(e) => setCardExpiry(e.target.value)}
+                      required
+                      maxLength={5}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cardCvv">CVV *</Label>
+                    <Input
+                      id="cardCvv"
+                      type="text"
+                      placeholder="123"
+                      value={cardCvv}
+                      onChange={(e) => setCardCvv(e.target.value)}
+                      required
+                      maxLength={3}
+                    />
+                  </div>
+                </div>
               </div>
+            )}
+
+            {paymentMethod === "mbway" && (
               <div className="space-y-2">
-                <Label htmlFor="cardCvv">CVV *</Label>
+                <Label htmlFor="mbwayPhone">Número de Telemóvel *</Label>
                 <Input
-                  id="cardCvv"
-                  type="text"
-                  placeholder="123"
-                  value={cardCvv}
-                  onChange={(e) => setCardCvv(e.target.value)}
+                  id="mbwayPhone"
+                  type="tel"
+                  placeholder="+351 900 000 000"
+                  value={mbwayPhone}
+                  onChange={(e) => setMbwayPhone(e.target.value)}
                   required
-                  maxLength={3}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Irá receber uma notificação no seu telemóvel para confirmar o pagamento.
+                </p>
               </div>
-            </div>
+            )}
+
+            {paymentMethod === "multibanco" && (
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <p className="text-sm font-medium">Após confirmar, irá receber:</p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Entidade</li>
+                  <li>• Referência</li>
+                  <li>• Montante a pagar</li>
+                </ul>
+                <p className="text-xs text-muted-foreground mt-3">
+                  As referências serão enviadas por email e têm validade de 48 horas.
+                </p>
+              </div>
+            )}
+
+            {paymentMethod === "paypal" && (
+              <div className="space-y-2">
+                <Label htmlFor="paypalEmail">Email PayPal *</Label>
+                <Input
+                  id="paypalEmail"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={paypalEmail}
+                  onChange={(e) => setPaypalEmail(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Será redirecionado para o PayPal para concluir o pagamento.
+                </p>
+              </div>
+            )}
+
             <div className="bg-muted p-4 rounded-lg">
               <div className="flex justify-between text-sm mb-2">
                 <span>Plano {selectedPlanData?.name}</span>
@@ -462,6 +553,7 @@ export default function Auth() {
                 <span>€{selectedPlanData?.price}/mês</span>
               </div>
             </div>
+            
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "A processar..." : "Confirmar e Criar Conta"}
             </Button>

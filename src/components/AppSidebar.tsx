@@ -3,7 +3,7 @@ import {
   Calendar,
   Home,
   Key,
-  CheckSquare,
+  Settings,
   DollarSign,
   BarChart3,
   FileText,
@@ -25,10 +25,10 @@ const menuItems = [
   { title: "Reservas", url: "/reservas", icon: Calendar },
   { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
   { title: "Acessos", url: "/acessos", icon: Key },
-  { title: "Tarefas", url: "/tarefas", icon: CheckSquare },
   { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
   { title: "INE", url: "/ine", icon: BarChart3 },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },
+  { title: "Definições", url: "/definicoes", icon: Settings },
 ];
 
 export function AppSidebar() {

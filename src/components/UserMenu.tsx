@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, CreditCard, LogOut } from "lucide-react";
+import { User, CreditCard, LogOut, UserCircle } from "lucide-react";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -49,12 +49,16 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate("/perfil")}>
+          <UserCircle className="mr-2 h-4 w-4" />
+          <span>Perfil</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate("/subscriptions")}>
           <CreditCard className="mr-2 h-4 w-4" />
           <span>Subscrições</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

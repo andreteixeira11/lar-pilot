@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard, Smartphone, Building2, DollarSign } from "lucide-react";
@@ -59,7 +60,7 @@ const plans = [
 ];
 
 export default function Auth() {
-  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment">("auth");
+  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property">("auth");
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,6 +74,19 @@ export default function Auth() {
   const [mbwayPhone, setMbwayPhone] = useState("");
   const [paypalEmail, setPaypalEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Property form fields
+  const [propertyName, setPropertyName] = useState("");
+  const [propertyAddress, setPropertyAddress] = useState("");
+  const [propertyDescription, setPropertyDescription] = useState("");
+  const [propertyCapacity, setPropertyCapacity] = useState(4);
+  const [propertyBedrooms, setPropertyBedrooms] = useState(2);
+  const [propertyBathrooms, setPropertyBathrooms] = useState(1);
+  const [propertyCheckIn, setPropertyCheckIn] = useState("15:00");
+  const [propertyCheckOut, setPropertyCheckOut] = useState("11:00");
+  const [propertyWifi, setPropertyWifi] = useState("");
+  const [propertyParking, setPropertyParking] = useState("");
+  
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -105,6 +119,11 @@ export default function Auth() {
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStep("property");
+  };
+
+  const handlePropertySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedPlan === "free") {
       handleFinalSignup();
@@ -379,13 +398,159 @@ export default function Auth() {
                 />
               </div>
               <Button type="submit" className="w-full">
-                {selectedPlan === "free" ? "Criar Conta" : "Continuar para Pagamento"}
+                Continuar
               </Button>
             </form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
             <p>Ao continuar, concorda com os nossos termos e condições</p>
           </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  // Property step
+  if (step === "property") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit -ml-2 mb-2"
+              onClick={() => setStep("profile")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                <Home className="w-6 h-6 text-primary-foreground" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Adicione a Sua Propriedade</CardTitle>
+            <CardDescription className="text-center">
+              Configure os dados da sua primeira propriedade
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePropertySubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyName">Nome da Propriedade *</Label>
+                  <Input
+                    id="propertyName"
+                    value={propertyName}
+                    onChange={(e) => setPropertyName(e.target.value)}
+                    placeholder="Ex: Casa da Praia"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="propertyCapacity">Capacidade</Label>
+                  <Input
+                    id="propertyCapacity"
+                    type="number"
+                    value={propertyCapacity}
+                    onChange={(e) => setPropertyCapacity(Number(e.target.value))}
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyAddress">Morada *</Label>
+                <Input
+                  id="propertyAddress"
+                  value={propertyAddress}
+                  onChange={(e) => setPropertyAddress(e.target.value)}
+                  placeholder="Rua, número, cidade"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyDescription">Descrição</Label>
+                <Textarea
+                  id="propertyDescription"
+                  value={propertyDescription}
+                  onChange={(e) => setPropertyDescription(e.target.value)}
+                  placeholder="Breve descrição da propriedade"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyBedrooms">Quartos</Label>
+                  <Input
+                    id="propertyBedrooms"
+                    type="number"
+                    value={propertyBedrooms}
+                    onChange={(e) => setPropertyBedrooms(Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="propertyBathrooms">Casas de Banho</Label>
+                  <Input
+                    id="propertyBathrooms"
+                    type="number"
+                    value={propertyBathrooms}
+                    onChange={(e) => setPropertyBathrooms(Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyCheckIn">Check-in</Label>
+                  <Input
+                    id="propertyCheckIn"
+                    type="time"
+                    value={propertyCheckIn}
+                    onChange={(e) => setPropertyCheckIn(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="propertyCheckOut">Check-out</Label>
+                  <Input
+                    id="propertyCheckOut"
+                    type="time"
+                    value={propertyCheckOut}
+                    onChange={(e) => setPropertyCheckOut(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyWifi">Password WiFi</Label>
+                <Input
+                  id="propertyWifi"
+                  value={propertyWifi}
+                  onChange={(e) => setPropertyWifi(e.target.value)}
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="propertyParking">Informações de Estacionamento</Label>
+                <Input
+                  id="propertyParking"
+                  value={propertyParking}
+                  onChange={(e) => setPropertyParking(e.target.value)}
+                  placeholder="Opcional"
+                />
+              </div>
+
+              <Button type="submit" className="w-full">
+                {selectedPlan === "free" ? "Criar Conta" : "Continuar para Pagamento"}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
       </div>
     );

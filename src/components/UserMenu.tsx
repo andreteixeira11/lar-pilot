@@ -58,7 +58,10 @@ export function UserMenu() {
           <span>Subscrições</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem 
+          onClick={handleLogout} 
+          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
         </DropdownMenuItem>

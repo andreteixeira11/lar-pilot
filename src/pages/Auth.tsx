@@ -159,11 +159,12 @@ export default function Auth() {
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-20 w-auto"
+              />
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Gestão de Alojamento</CardTitle>
             <CardDescription className="text-center">
               Aceda ou crie a sua conta
             </CardDescription>
@@ -241,9 +242,11 @@ export default function Auth() {
               Voltar
             </Button>
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
-                <Home className="w-8 h-8 text-primary-foreground" />
-              </div>
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-20 w-auto"
+              />
             </div>
             <h1 className="text-4xl font-bold">Escolha o Seu Plano</h1>
             <p className="text-muted-foreground text-lg">
@@ -329,9 +332,11 @@ export default function Auth() {
               Voltar
             </Button>
             <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
             </div>
             <CardTitle className="text-2xl font-bold text-center">Complete o Seu Perfil</CardTitle>
             <CardDescription className="text-center">
@@ -426,9 +431,11 @@ export default function Auth() {
               Voltar
             </Button>
             <div className="flex justify-center mb-4">
-              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-                <Home className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
             </div>
             <CardTitle className="text-2xl font-bold text-center">Adicione a Sua Propriedade</CardTitle>
             <CardDescription className="text-center">
@@ -579,11 +586,13 @@ export default function Auth() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-primary-foreground" />
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
             </div>
-          </div>
           <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
           <CardDescription className="text-center">
             Plano {selectedPlanData?.name} - €{selectedPlanData?.price}/mês

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,25 +20,59 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
-
-const taxaDataByProperty = {
-  "1": [
-    { mes: "Janeiro 2025", totalHospedes: 12, totalNoites: 45, taxaPorNoite: 2, totalTaxa: 90, pago: true },
-    { mes: "Fevereiro 2025", totalHospedes: 8, totalNoites: 32, taxaPorNoite: 2, totalTaxa: 64, pago: true },
-    { mes: "Março 2025", totalHospedes: 15, totalNoites: 58, taxaPorNoite: 2, totalTaxa: 116, pago: false },
-  ],
-  "2": [
-    { mes: "Janeiro 2025", totalHospedes: 10, totalNoites: 38, taxaPorNoite: 2, totalTaxa: 76, pago: true },
-    { mes: "Fevereiro 2025", totalHospedes: 14, totalNoites: 52, taxaPorNoite: 2, totalTaxa: 104, pago: false },
-  ],
-};
+import { useReserva } from "@/contexts/ReservaContext";
 
 const TaxaTuristica = () => {
   const { selectedPropertyId, selectedProperty } = useProperty();
+  const { reservas } = useReserva();
   const [selectedMonth, setSelectedMonth] = useState("all");
-  
-  const taxaData = taxaDataByProperty[selectedPropertyId as keyof typeof taxaDataByProperty] || [];
-  
+  const [refresh, setRefresh] = useState(0);
+
+  // Listen for property changes
+  useEffect(() => {
+    const handlePropertyChange = () => setRefresh(prev => prev + 1);
+    window.addEventListener('propertyChanged', handlePropertyChange);
+    return () => window.removeEventListener('propertyChanged', handlePropertyChange);
+  }, []);
+
+  // Calcular dados da taxa turística automaticamente das reservas
+  const taxaData = useMemo(() => {
+    const propertyReservas = reservas.filter(
+      (r) => r.propertyId === selectedPropertyId && r.status === "confirmada"
+    );
+
+    const dataByMonth: { [key: string]: { totalHospedes: number; totalNoites: number; taxaPorNoite: number; totalTaxa: number; pago: boolean } } = {};
+
+    propertyReservas.forEach((reserva) => {
+      const date = new Date(reserva.checkIn);
+      const mesAno = `${date.toLocaleString("pt-PT", { month: "long" })} ${date.getFullYear()}`;
+      const mesKey = mesAno.charAt(0).toUpperCase() + mesAno.slice(1);
+
+      if (!dataByMonth[mesKey]) {
+        dataByMonth[mesKey] = {
+          totalHospedes: 0,
+          totalNoites: 0,
+          taxaPorNoite: 2,
+          totalTaxa: 0,
+          pago: false,
+        };
+      }
+
+      dataByMonth[mesKey].totalHospedes += reserva.nrHospedes;
+      dataByMonth[mesKey].totalNoites += reserva.noites;
+    });
+
+    // Calcular total taxa
+    Object.keys(dataByMonth).forEach((mes) => {
+      dataByMonth[mes].totalTaxa = dataByMonth[mes].totalNoites * dataByMonth[mes].taxaPorNoite;
+    });
+
+    return Object.entries(dataByMonth).map(([mes, data]) => ({
+      mes,
+      ...data,
+    }));
+  }, [reservas, selectedPropertyId]);
+
   const filteredData = selectedMonth === "all" 
     ? taxaData 
     : taxaData.filter(row => row.mes === selectedMonth);
@@ -64,9 +98,11 @@ const TaxaTuristica = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os meses</SelectItem>
-            <SelectItem value="Janeiro 2025">Janeiro 2025</SelectItem>
-            <SelectItem value="Fevereiro 2025">Fevereiro 2025</SelectItem>
-            <SelectItem value="Março 2025">Março 2025</SelectItem>
+            {taxaData.map((row) => (
+              <SelectItem key={row.mes} value={row.mes}>
+                {row.mes}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

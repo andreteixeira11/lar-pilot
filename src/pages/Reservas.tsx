@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,56 +12,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
-
-const mockReservas = [
-  {
-    id: "1",
-    hospede: "João Silva",
-    checkIn: "2025-11-05",
-    checkOut: "2025-11-10",
-    noites: 5,
-    plataforma: "Airbnb",
-    valor: 650,
-    status: "confirmada",
-    propertyId: "1",
-  },
-  {
-    id: "2",
-    hospede: "Maria Santos",
-    checkIn: "2025-11-12",
-    checkOut: "2025-11-15",
-    noites: 3,
-    plataforma: "Booking",
-    valor: 420,
-    status: "confirmada",
-    propertyId: "1",
-  },
-  {
-    id: "3",
-    hospede: "Pedro Costa",
-    checkIn: "2025-02-18",
-    checkOut: "2025-02-25",
-    noites: 7,
-    plataforma: "Airbnb",
-    valor: 890,
-    status: "pendente",
-    propertyId: "2",
-  },
-];
+import { useReserva } from "@/contexts/ReservaContext";
 
 const Reservas = () => {
-  const [reservas, setReservas] = useState(mockReservas);
   const { selectedPropertyId } = useProperty();
+  const { reservas, addReserva } = useReserva();
   const [filterPlatform, setFilterPlatform] = useState("all");
   const [filterYear, setFilterYear] = useState("2025");
   const [filterMonth, setFilterMonth] = useState("all");
+  const [refresh, setRefresh] = useState(0);
+
+  // Listen for property changes
+  useEffect(() => {
+    const handlePropertyChange = () => setRefresh(prev => prev + 1);
+    window.addEventListener('propertyChanged', handlePropertyChange);
+    return () => window.removeEventListener('propertyChanged', handlePropertyChange);
+  }, []);
 
   const handleAddReserva = (novaReserva: any) => {
-    setReservas([novaReserva, ...reservas]);
+    addReserva({ ...novaReserva, propertyId: selectedPropertyId });
   };
 
   const filteredReservas = reservas.filter((reserva) => {
-    const matchesProperty = selectedPropertyId === "all" || reserva.propertyId === selectedPropertyId;
+    const matchesProperty = reserva.propertyId === selectedPropertyId;
     const matchesPlatform = filterPlatform === "all" || reserva.plataforma === filterPlatform;
     
     const reservaDate = new Date(reserva.checkIn);

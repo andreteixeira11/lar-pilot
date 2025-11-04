@@ -38,10 +38,12 @@ export function AppSidebar() {
     <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
       <SidebarContent>
         {state !== "collapsed" && (
-          <div className="px-6 py-4 border-b border-sidebar-border">
-            <h2 className="text-xl font-bold text-sidebar-primary">
-              Gestão de Alojamento
-            </h2>
+          <div className="px-6 py-4 border-b border-sidebar-border flex items-center justify-center">
+            <img 
+              src="/logos/monumenta-logo.svg" 
+              alt="Monumenta Atlantic" 
+              className="h-16 w-auto"
+            />
           </div>
         )}
 
@@ -56,6 +58,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
+                      end
                       className={({ isActive }) =>
                         isActive
                           ? "bg-sidebar-accent text-sidebar-primary font-medium"

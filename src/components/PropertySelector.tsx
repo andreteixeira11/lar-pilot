@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import {
   Select,
@@ -11,6 +12,15 @@ import { AddPropertyDialog } from "./AddPropertyDialog";
 
 export const PropertySelector = () => {
   const { properties, selectedPropertyId, setSelectedPropertyId, selectedProperty } = useProperty();
+
+  // Force re-render when property changes
+  useEffect(() => {
+    // Trigger a small state update to force refresh of dependent components
+    const timer = setTimeout(() => {
+      window.dispatchEvent(new Event('propertyChanged'));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [selectedPropertyId]);
 
   return (
     <div className="px-4 py-3 border-b border-sidebar-border space-y-3">

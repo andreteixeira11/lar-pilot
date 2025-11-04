@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,25 +18,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const ineDataByMonth = {
-  "2025-01": [
-    { pais: "Portugal", nrHospedes: 25, nrNoites: 95, dormidas: 95, noitesTransitadas: 0 },
-    { pais: "Espanha", nrHospedes: 8, nrNoites: 32, dormidas: 30, noitesTransitadas: 2 },
-  ],
-  "2025-02": [
-    { pais: "Portugal", nrHospedes: 18, nrNoites: 72, dormidas: 72, noitesTransitadas: 0 },
-    { pais: "França", nrHospedes: 12, nrNoites: 48, dormidas: 48, noitesTransitadas: 0 },
-  ],
-  "2025-03": [
-    { pais: "Portugal", nrHospedes: 30, nrNoites: 120, dormidas: 118, noitesTransitadas: 2 },
-    { pais: "Alemanha", nrHospedes: 6, nrNoites: 28, dormidas: 26, noitesTransitadas: 2 },
-  ],
-};
+import { useProperty } from "@/contexts/PropertyContext";
+import { useReserva } from "@/contexts/ReservaContext";
 
 const INE = () => {
+  const { selectedPropertyId } = useProperty();
+  const { reservas } = useReserva();
   const [selectedMonth, setSelectedMonth] = useState("2025-03");
-  const ineData = ineDataByMonth[selectedMonth as keyof typeof ineDataByMonth] || [];
+  const [refresh, setRefresh] = useState(0);
+
+  // Listen for property changes
+  useEffect(() => {
+    const handlePropertyChange = () => setRefresh(prev => prev + 1);
+    window.addEventListener('propertyChanged', handlePropertyChange);
+    return () => window.removeEventListener('propertyChanged', handlePropertyChange);
+  }, []);
+
+  // Calcular dados INE automaticamente das reservas
+  const ineData = useMemo(() => {
+    const [year, month] = selectedMonth.split("-");
+    const propertyReservas = reservas.filter((r) => {
+      if (r.propertyId !== selectedPropertyId || r.status !== "confirmada") return false;
+      
+      const checkInDate = new Date(r.checkIn);
+      return (
+        checkInDate.getFullYear() === parseInt(year) &&
+        checkInDate.getMonth() + 1 === parseInt(month)
+      );
+    });
+
+    const dataByCountry: { [key: string]: { nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number } } = {};
+
+    propertyReservas.forEach((reserva) => {
+      const pais = reserva.paisOrigem;
+      
+      if (!dataByCountry[pais]) {
+        dataByCountry[pais] = {
+          nrHospedes: 0,
+          nrNoites: 0,
+          dormidas: 0,
+          noitesTransitadas: 0,
+        };
+      }
+
+      dataByCountry[pais].nrHospedes += reserva.nrHospedes;
+      dataByCountry[pais].nrNoites += reserva.noites;
+      // Dormidas = nr de hospedes × nr de noites
+      dataByCountry[pais].dormidas += reserva.nrHospedes * reserva.noites;
+    });
+
+    return Object.entries(dataByCountry).map(([pais, data]) => ({
+      pais,
+      ...data,
+    }));
+  }, [reservas, selectedPropertyId, selectedMonth]);
 
   const totais = ineData.reduce(
     (acc, row) => ({

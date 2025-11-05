@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Crown, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
+import { PaymentDialog } from "@/components/PaymentDialog";
+import { EmailService } from "@/lib/emailService";
 
 const plans = [
   {
@@ -43,22 +45,31 @@ const plans = [
 export default function Subscriptions() {
   const { user, updateSubscription } = useAuth();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<typeof plans[0] | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
-  const handleSubscribe = async (planId: "basic" | "premium") => {
-    setIsLoading(planId);
+  const handleSubscribe = (plan: typeof plans[0]) => {
+    setSelectedPlan(plan);
+    setPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = async () => {
+    if (!selectedPlan) return;
     
-    // TODO: Integrate with MySQL and payment gateway
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    updateSubscription(selectedPlan.id as "basic" | "premium");
     
-    updateSubscription(planId);
+    // Send welcome/confirmation email
+    if (user?.email) {
+      await EmailService.sendPaymentConfirmation(user.email, {
+        plan: selectedPlan.name,
+        amount: parseFloat(selectedPlan.price),
+      });
+    }
     
     toast({
       title: "Subscrição ativada!",
-      description: `Plano ${planId === "basic" ? "Básico" : "Premium"} ativado com sucesso.`,
+      description: `Plano ${selectedPlan.name} ativado com sucesso.`,
     });
-    
-    setIsLoading(null);
   };
 
   return (
@@ -129,14 +140,10 @@ export default function Subscriptions() {
                 <Button
                   className="w-full"
                   variant={plan.popular ? "default" : "outline"}
-                  disabled={isCurrentPlan || isLoading === plan.id}
-                  onClick={() => handleSubscribe(plan.id as "basic" | "premium")}
+                  disabled={isCurrentPlan}
+                  onClick={() => handleSubscribe(plan)}
                 >
-                  {isCurrentPlan
-                    ? "Plano Atual"
-                    : isLoading === plan.id
-                    ? "A processar..."
-                    : "Escolher Plano"}
+                  {isCurrentPlan ? "Plano Atual" : "Escolher Plano"}
                 </Button>
               </CardFooter>
             </Card>
@@ -151,10 +158,21 @@ export default function Subscriptions() {
         <CardContent className="text-sm text-muted-foreground space-y-2">
           <p>• Todos os preços são apresentados sem IVA</p>
           <p>• Pode cancelar a sua subscrição a qualquer momento</p>
-          <p>• Pagamentos processados de forma segura</p>
+          <p>• Pagamentos processados de forma segura via Ifthenpay</p>
           <p>• Suporte disponível para todos os planos</p>
+          <p>• Aceitamos Multibanco e MB Way</p>
         </CardContent>
       </Card>
+
+      {selectedPlan && user && (
+        <PaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          plan={selectedPlan}
+          userEmail={user.email}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

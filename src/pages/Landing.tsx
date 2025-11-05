@@ -2,6 +2,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Calendar, TrendingUp, FileText, Users, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import heroImage from "@/assets/hero-image.jpg";
+import analyticsImage from "@/assets/analytics-feature.jpg";
+import bookingImage from "@/assets/booking-feature.jpg";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -94,23 +97,33 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Gestão de Alojamento Local
-          <br />
-          Simplificada
-        </h1>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Plataforma completa para gerir as suas propriedades de alojamento local.
-          Reservas, finanças, relatórios INE e taxa turística - tudo num só lugar.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button size="lg" onClick={() => navigate("/auth?mode=register")}>
-            Comece Gratuitamente
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate("/auth?mode=login")}>
-            Ver Demo
-          </Button>
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={heroImage} 
+            alt="Property Management" 
+            className="w-full h-full object-cover opacity-20"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
+        </div>
+        <div className="container relative z-10 mx-auto px-4 py-32 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Gestão de Alojamento Local
+            <br />
+            Simplificada
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Plataforma completa para gerir as suas propriedades de alojamento local.
+            Reservas, finanças, relatórios INE e taxa turística - tudo num só lugar.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button size="lg" onClick={() => navigate("/auth?mode=register")}>
+              Comece Gratuitamente
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth?mode=login")}>
+              Ver Demo
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -119,8 +132,32 @@ const Landing = () => {
         <h2 className="text-3xl font-bold text-center mb-12">
           Tudo o que precisa para gerir o seu alojamento
         </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
+        <div className="grid md:grid-cols-2 gap-12 mb-12">
+          <div className="flex flex-col justify-center">
+            <Calendar className="h-16 w-16 text-primary mb-4" />
+            <h3 className="text-2xl font-semibold mb-4">Gestão de Reservas</h3>
+            <p className="text-lg text-muted-foreground">
+              Controle todas as suas reservas num só lugar, com sincronização automática das principais plataformas.
+            </p>
+          </div>
+          <div className="rounded-lg overflow-hidden shadow-lg">
+            <img src={bookingImage} alt="Booking Management" className="w-full h-full object-cover" />
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-12">
+          <div className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1">
+            <img src={analyticsImage} alt="Analytics Dashboard" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col justify-center order-1 md:order-2">
+            <TrendingUp className="h-16 w-16 text-primary mb-4" />
+            <h3 className="text-2xl font-semibold mb-4">Análise Financeira</h3>
+            <p className="text-lg text-muted-foreground">
+              Acompanhe receitas, despesas e rentabilidade em tempo real com relatórios detalhados.
+            </p>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+          {features.slice(2).map((feature, index) => (
             <Card key={index} className="border-2 hover:border-primary transition-colors">
               <CardContent className="pt-6">
                 <feature.icon className="h-12 w-12 text-primary mb-4" />

@@ -70,30 +70,47 @@ const initialProperties: Property[] = [
 ];
 
 export const PropertyProvider = ({ children }: { children: ReactNode }) => {
-  const [properties, setProperties] = useState<Property[]>(initialProperties);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>("1");
+  const [properties, setProperties] = useState<Property[]>(() => {
+    const stored = localStorage.getItem("properties");
+    return stored ? JSON.parse(stored) : initialProperties;
+  });
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>(() => {
+    return localStorage.getItem("selectedPropertyId") || "1";
+  });
 
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId);
+
+  const handleSetSelectedPropertyId = (id: string) => {
+    setSelectedPropertyId(id);
+    localStorage.setItem("selectedPropertyId", id);
+  };
 
   const addProperty = (property: Omit<Property, "id">) => {
     const newProperty: Property = {
       ...property,
       id: Date.now().toString(),
     };
-    setProperties([...properties, newProperty]);
+    const updated = [...properties, newProperty];
+    setProperties(updated);
+    localStorage.setItem("properties", JSON.stringify(updated));
     setSelectedPropertyId(newProperty.id);
+    localStorage.setItem("selectedPropertyId", newProperty.id);
   };
 
   const updateProperty = (id: string, updates: Partial<Property>) => {
-    setProperties(
-      properties.map((p) => (p.id === id ? { ...p, ...updates } : p))
-    );
+    const updated = properties.map((p) => (p.id === id ? { ...p, ...updates } : p));
+    setProperties(updated);
+    localStorage.setItem("properties", JSON.stringify(updated));
   };
 
   const deleteProperty = (id: string) => {
-    setProperties(properties.filter((p) => p.id !== id));
+    const updated = properties.filter((p) => p.id !== id);
+    setProperties(updated);
+    localStorage.setItem("properties", JSON.stringify(updated));
     if (selectedPropertyId === id && properties.length > 1) {
-      setSelectedPropertyId(properties[0].id);
+      const newId = properties[0].id;
+      setSelectedPropertyId(newId);
+      localStorage.setItem("selectedPropertyId", newId);
     }
   };
 
@@ -103,7 +120,7 @@ export const PropertyProvider = ({ children }: { children: ReactNode }) => {
         properties,
         selectedPropertyId,
         selectedProperty,
-        setSelectedPropertyId,
+        setSelectedPropertyId: handleSetSelectedPropertyId,
         addProperty,
         updateProperty,
         deleteProperty,

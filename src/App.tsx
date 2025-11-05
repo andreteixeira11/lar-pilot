@@ -10,12 +10,13 @@ import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserMenu } from "@/components/UserMenu";
+import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
 import Reservas from "./pages/Reservas";
 import ResumoMensal from "./pages/ResumoMensal";
 import TaxaTuristica from "./pages/TaxaTuristica";
 import INE from "./pages/INE";
 import DadosAlojamento from "./pages/DadosAlojamento";
-import Auth from "./pages/Auth";
 import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import PropertySettings from "./pages/PropertySettings";
@@ -33,7 +34,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Auth />} />
+              <Route path="/" element={<Landing />} />
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/*"

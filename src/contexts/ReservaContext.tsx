@@ -78,10 +78,15 @@ const mockReservas: Reserva[] = [
 ];
 
 export const ReservaProvider = ({ children }: { children: ReactNode }) => {
-  const [reservas, setReservas] = useState<Reserva[]>(mockReservas);
+  const [reservas, setReservas] = useState<Reserva[]>(() => {
+    const stored = localStorage.getItem("reservas");
+    return stored ? JSON.parse(stored) : mockReservas;
+  });
 
   const addReserva = (reserva: Reserva) => {
-    setReservas([reserva, ...reservas]);
+    const updated = [reserva, ...reservas];
+    setReservas(updated);
+    localStorage.setItem("reservas", JSON.stringify(updated));
   };
 
   const getReservasByProperty = (propertyId: string) => {

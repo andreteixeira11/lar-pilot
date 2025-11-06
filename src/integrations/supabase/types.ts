@@ -14,7 +14,294 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ine_statistics: {
+        Row: {
+          country: string
+          created_at: string
+          id: string
+          month: string
+          num_guests: number
+          num_nights: number
+          overnight_stays: number
+          property_id: string
+          transit_nights: number | null
+          updated_at: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          id?: string
+          month: string
+          num_guests?: number
+          num_nights?: number
+          overnight_stays?: number
+          property_id: string
+          transit_nights?: number | null
+          updated_at?: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          id?: string
+          month?: string
+          num_guests?: number
+          num_nights?: number
+          overnight_stays?: number
+          property_id?: string
+          transit_nights?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ine_statistics_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          mbway_phone: string | null
+          multibanco_entity: string | null
+          multibanco_reference: string | null
+          payment_method: string
+          payment_status: string
+          subscription_plan: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          mbway_phone?: string | null
+          multibanco_entity?: string | null
+          multibanco_reference?: string | null
+          payment_method: string
+          payment_status?: string
+          subscription_plan: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          mbway_phone?: string | null
+          multibanco_entity?: string | null
+          multibanco_reference?: string | null
+          payment_method?: string
+          payment_status?: string
+          subscription_plan?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          nif: string | null
+          phone: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          name: string
+          nif?: string | null
+          phone?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          nif?: string | null
+          phone?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string
+          bathrooms: number | null
+          bedrooms: number | null
+          capacity: number | null
+          check_in_time: string | null
+          check_out_time: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          parking_info: string | null
+          updated_at: string
+          user_id: string
+          wifi_password: string | null
+        }
+        Insert: {
+          address: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          capacity?: number | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          parking_info?: string | null
+          updated_at?: string
+          user_id: string
+          wifi_password?: string | null
+        }
+        Update: {
+          address?: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          capacity?: number | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          parking_info?: string | null
+          updated_at?: string
+          user_id?: string
+          wifi_password?: string | null
+        }
+        Relationships: []
+      }
+      reservations: {
+        Row: {
+          booking_source: string | null
+          check_in: string
+          check_out: string
+          country_origin: string
+          created_at: string
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          notes: string | null
+          num_guests: number
+          num_nights: number
+          property_id: string
+          status: string
+          total_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          booking_source?: string | null
+          check_in: string
+          check_out: string
+          country_origin: string
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          num_guests: number
+          num_nights: number
+          property_id: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          booking_source?: string | null
+          check_in?: string
+          check_out?: string
+          country_origin?: string
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          num_guests?: number
+          num_nights?: number
+          property_id?: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tourist_tax: {
+        Row: {
+          created_at: string
+          id: string
+          month: string
+          paid: boolean | null
+          property_id: string
+          tax_per_night: number
+          total_guests: number
+          total_nights: number
+          total_tax: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month: string
+          paid?: boolean | null
+          property_id: string
+          tax_per_night?: number
+          total_guests?: number
+          total_nights?: number
+          total_tax: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month?: string
+          paid?: boolean | null
+          property_id?: string
+          tax_per_night?: number
+          total_guests?: number
+          total_nights?: number
+          total_tax?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tourist_tax_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

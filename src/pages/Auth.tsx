@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard, Smartphone, Building2, DollarSign } from "lucide-react";
+import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard, Smartphone, Building2, DollarSign, Eye, EyeOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 
 type SubscriptionPlan = "free" | "basic" | "premium";
 type PaymentMethod = "card" | "mbway" | "multibanco" | "paypal";
@@ -69,6 +70,8 @@ export default function Auth() {
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(initialPlan);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [nif, setNif] = useState("");
@@ -125,16 +128,21 @@ export default function Auth() {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedPlan === "free") {
+      setStep("property");
+    } else {
+      setStep("payment");
+    }
+  };
+
+  const handlePaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     setStep("property");
   };
 
   const handlePropertySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPlan === "free") {
-      handleFinalSignup();
-    } else {
-      setStep("payment");
-    }
+    handleFinalSignup();
   };
 
   const handleFinalSignup = async () => {
@@ -194,14 +202,32 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Palavra-passe</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="login-password">Palavra-passe</Label>
+                      <button
+                        type="button"
+                        onClick={() => setForgotPasswordOpen(true)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Esqueceu a palavra-passe?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="login-password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "A entrar..." : "Entrar"}
@@ -227,6 +253,7 @@ export default function Auth() {
             <p>Ao continuar, concorda com os nossos termos e condições</p>
           </CardFooter>
         </Card>
+        <ForgotPasswordDialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen} />
       </div>
     );
   }
@@ -397,15 +424,24 @@ export default function Auth() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Palavra-passe *</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mínimo 6 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <Button type="submit" className="w-full">
                 Continuar
@@ -420,8 +456,10 @@ export default function Auth() {
     );
   }
 
-  // Property step
-  if (step === "property") {
+  // Payment step (now comes BEFORE property)
+  if (step === "payment") {
+    const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <Card className="w-full max-w-2xl">
@@ -431,6 +469,133 @@ export default function Auth() {
               size="sm"
               className="w-fit -ml-2 mb-2"
               onClick={() => setStep("profile")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
+            <CardDescription className="text-center">
+              Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{selectedPlanData?.price}/mês
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePaymentSubmit} className="space-y-6">
+              <div className="space-y-3">
+                <Label>Selecione o Método de Pagamento</Label>
+                <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as PaymentMethod)}>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="multibanco" id="multibanco" />
+                    <Label htmlFor="multibanco" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <Building2 className="h-5 w-5" />
+                      <div>
+                        <div className="font-medium">Multibanco</div>
+                        <div className="text-xs text-muted-foreground">Referência MB</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="mbway" id="mbway" />
+                    <Label htmlFor="mbway" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <Smartphone className="h-5 w-5" />
+                      <div>
+                        <div className="font-medium">MB Way</div>
+                        <div className="text-xs text-muted-foreground">Pagamento via telemóvel</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="card" id="card" />
+                    <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <CreditCard className="h-5 w-5" />
+                      <div>
+                        <div className="font-medium">Cartão de Crédito</div>
+                        <div className="text-xs text-muted-foreground">Visa, Mastercard</div>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {paymentMethod === "mbway" && (
+                <div className="space-y-2">
+                  <Label htmlFor="mbway-phone">Número de Telemóvel</Label>
+                  <Input
+                    id="mbway-phone"
+                    type="tel"
+                    placeholder="+351 900 000 000"
+                    value={mbwayPhone}
+                    onChange={(e) => setMbwayPhone(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              {paymentMethod === "card" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="card-number">Número do Cartão</Label>
+                    <Input
+                      id="card-number"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      onChange={(e) => setCardNumber(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="card-expiry">Validade</Label>
+                      <Input
+                        id="card-expiry"
+                        placeholder="MM/AA"
+                        value={cardExpiry}
+                        onChange={(e) => setCardExpiry(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="card-cvv">CVV</Label>
+                      <Input
+                        id="card-cvv"
+                        placeholder="123"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value)}
+                        required
+                        maxLength={3}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <Button type="submit" className="w-full">
+                {paymentMethod === "multibanco" ? "Gerar Referência" : "Continuar"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Property step (now comes AFTER payment)
+  if (step === "property") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit -ml-2 mb-2"
+              onClick={() => selectedPlan === "free" ? setStep("profile") : setStep("payment")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar

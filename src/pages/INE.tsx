@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AddINEDialog } from "@/components/AddINEDialog";
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ const INE = () => {
   const { reservas } = useReserva();
   const [selectedMonth, setSelectedMonth] = useState("2025-03");
   const [refresh, setRefresh] = useState(0);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   // Listen for property changes
   useEffect(() => {
@@ -89,11 +91,18 @@ const INE = () => {
         title="INE - Instituto Nacional de Estatística"
         description="Registo de hóspedes por país de origem"
         actions={
-          <Button className="gap-2 w-full sm:w-auto">
+          <Button className="gap-2 w-full sm:w-auto" onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="sm:inline">Adicionar Registo</span>
           </Button>
         }
+      />
+
+      <AddINEDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        propertyId={selectedPropertyId}
+        selectedMonth={selectedMonth}
       />
 
       <div className="mt-6 flex items-center gap-4">

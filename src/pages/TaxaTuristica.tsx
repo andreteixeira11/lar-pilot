@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AddTaxaTuristicaDialog } from "@/components/AddTaxaTuristicaDialog";
 import {
   Table,
   TableBody,
@@ -27,6 +28,7 @@ const TaxaTuristica = () => {
   const { reservas } = useReserva();
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [refresh, setRefresh] = useState(0);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   // Listen for property changes
   useEffect(() => {
@@ -83,11 +85,17 @@ const TaxaTuristica = () => {
         title="Taxa Turística"
         description={`Controlo mensal da taxa turística - ${selectedProperty?.name || 'Todas as propriedades'}`}
         actions={
-          <Button className="gap-2 w-full sm:w-auto">
+          <Button className="gap-2 w-full sm:w-auto" onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="sm:inline">Adicionar Formulário</span>
           </Button>
         }
+      />
+
+      <AddTaxaTuristicaDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+        propertyId={selectedPropertyId}
       />
 
       <div className="mt-6 flex items-center gap-4">

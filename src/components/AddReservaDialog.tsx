@@ -3,8 +3,6 @@ import { Plus, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -164,9 +162,6 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Adicionar Nova Reserva</DialogTitle>
-        </DialogHeader>
         <ScrollArea className="max-h-[calc(90vh-8rem)] pr-4">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">

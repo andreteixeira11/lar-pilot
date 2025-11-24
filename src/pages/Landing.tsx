@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Calendar, TrendingUp, FileText, Users, Shield } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Check, Calendar, TrendingUp, FileText, Users, Shield, Star, Quote } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
@@ -29,6 +30,30 @@ const Landing = () => {
       icon: Users,
       title: "Taxa Turística",
       description: "Calcule e submeta a taxa turística de forma automática"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Maria Silva",
+      role: "Proprietária de 3 apartamentos",
+      content: "Desde que comecei a usar a plataforma, poupo horas todos os meses. A gestão de reservas e relatórios automáticos são fantásticos!",
+      rating: 5,
+      initials: "MS"
+    },
+    {
+      name: "João Costa",
+      role: "Gestor de Alojamento Local",
+      content: "A integração com o Airbnb e Booking facilita muito o trabalho. Recomendo a todos os proprietários de AL.",
+      rating: 5,
+      initials: "JC"
+    },
+    {
+      name: "Ana Rodrigues",
+      role: "Proprietária de 5 propriedades",
+      content: "Plataforma intuitiva e completa. O suporte é excelente e os relatórios do INE são gerados automaticamente. Perfeito!",
+      rating: 5,
+      initials: "AR"
     }
   ];
 
@@ -139,6 +164,46 @@ const Landing = () => {
                 <feature.icon className="h-12 w-12 text-primary mb-4" />
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                 <p className="text-muted-foreground">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="container mx-auto px-4 py-20 bg-muted/50">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">
+            O que dizem os nossos clientes
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            Centenas de proprietários já confiam na nossa plataforma
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {testimonials.map((testimonial, index) => (
+            <Card key={index} className="relative border-2 hover:border-primary transition-colors">
+              <CardContent className="pt-6">
+                <Quote className="h-10 w-10 text-primary/20 mb-4" />
+                <div className="flex gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-6 italic">
+                  "{testimonial.content}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {testimonial.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{testimonial.name}</p>
+                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}

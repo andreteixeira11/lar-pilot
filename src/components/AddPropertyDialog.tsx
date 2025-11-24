@@ -111,12 +111,14 @@ export const AddPropertyDialog = ({ open: externalOpen, onOpenChange }: AddPrope
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="w-full gap-2">
-          <Plus className="h-4 w-4" />
-          Adicionar nova propriedade
-        </Button>
-      </DialogTrigger>
+      {externalOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full gap-2">
+            <Plus className="h-4 w-4" />
+            Adicionar nova propriedade
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Adicionar Nova Propriedade</DialogTitle>

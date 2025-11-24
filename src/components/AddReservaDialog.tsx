@@ -39,7 +39,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     checkIn: "",
     checkOut: "",
     plataforma: "Airbnb",
-    valorEstadia: 0,
+    valorBaseEstadia: 0,
+    ivaEstadia: 0,
     valorLimpeza: 0,
     taxaTuristica: 0,
     status: "pendente",
@@ -65,15 +66,20 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     return 0;
   };
 
+  const calculateValorTotalEstadia = () => {
+    return formData.valorBaseEstadia + formData.ivaEstadia;
+  };
+
   const calculateComissoes = () => {
-    const { plataforma, valorEstadia, valorLimpeza, taxaTuristica } = formData;
+    const { plataforma, valorLimpeza, taxaTuristica } = formData;
+    const valorTotalEstadia = calculateValorTotalEstadia();
     
     if (plataforma === "Booking") {
-      const comissaoEstadia = valorEstadia * 0.15;
+      const comissaoEstadia = valorTotalEstadia * 0.15;
       const comissaoLimpezaTaxa = (valorLimpeza + taxaTuristica) * 0.014;
       return comissaoEstadia + comissaoLimpezaTaxa;
     } else if (plataforma === "Airbnb") {
-      return (valorEstadia + valorLimpeza) * 0.15;
+      return (valorTotalEstadia + valorLimpeza) * 0.15;
     }
     return 0;
   };
@@ -116,7 +122,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     }
 
     const comissaoPlataforma = calculateComissoes();
-    const valorTotal = formData.valorEstadia + formData.valorLimpeza + formData.taxaTuristica;
+    const valorTotalEstadia = calculateValorTotalEstadia();
+    const valorTotal = valorTotalEstadia + formData.valorLimpeza + formData.taxaTuristica;
 
     const novaReserva = {
       id: Date.now().toString(),
@@ -136,7 +143,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       checkIn: "",
       checkOut: "",
       plataforma: "Airbnb",
-      valorEstadia: 0,
+      valorBaseEstadia: 0,
+      ivaEstadia: 0,
       valorLimpeza: 0,
       taxaTuristica: 0,
       status: "pendente",
@@ -226,48 +234,75 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="valorEstadia">Valor Estadia (€)</Label>
-                  <Input
-                    id="valorEstadia"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.valorEstadia}
-                    onChange={(e) =>
-                      setFormData({ ...formData, valorEstadia: parseFloat(e.target.value) || 0 })
-                    }
-                  />
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="valorBaseEstadia">Valor Base Estadia (€)</Label>
+                    <Input
+                      id="valorBaseEstadia"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.valorBaseEstadia}
+                      onChange={(e) =>
+                        setFormData({ ...formData, valorBaseEstadia: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ivaEstadia">IVA Estadia (€)</Label>
+                    <Input
+                      id="ivaEstadia"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.ivaEstadia}
+                      onChange={(e) =>
+                        setFormData({ ...formData, ivaEstadia: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="valorTotalEstadia">Valor Total Estadia (€)</Label>
+                    <Input
+                      id="valorTotalEstadia"
+                      type="number"
+                      value={calculateValorTotalEstadia()}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="valorLimpeza">Taxa Limpeza (€)</Label>
-                  <Input
-                    id="valorLimpeza"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.valorLimpeza}
-                    onChange={(e) =>
-                      setFormData({ ...formData, valorLimpeza: parseFloat(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="taxaTuristica">Taxa Turística (€)</Label>
-                  <Input
-                    id="taxaTuristica"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={formData.taxaTuristica}
-                    onChange={(e) =>
-                      setFormData({ ...formData, taxaTuristica: parseFloat(e.target.value) || 0 })
-                    }
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="valorLimpeza">Taxa Limpeza (€)</Label>
+                    <Input
+                      id="valorLimpeza"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.valorLimpeza}
+                      onChange={(e) =>
+                        setFormData({ ...formData, valorLimpeza: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="taxaTuristica">Taxa Turística (€)</Label>
+                    <Input
+                      id="taxaTuristica"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.taxaTuristica}
+                      onChange={(e) =>
+                        setFormData({ ...formData, taxaTuristica: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
                 </div>
               </div>
-              {formData.plataforma !== "Direto" && (formData.valorEstadia > 0 || formData.valorLimpeza > 0 || formData.taxaTuristica > 0) && (
+              {formData.plataforma !== "Direto" && (formData.valorBaseEstadia > 0 || formData.ivaEstadia > 0 || formData.valorLimpeza > 0 || formData.taxaTuristica > 0) && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium">Comissão {formData.plataforma}: €{calculateComissoes().toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground mt-1">

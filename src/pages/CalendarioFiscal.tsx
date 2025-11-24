@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Calendar, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProperty } from "@/contexts/PropertyContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface TarefaFiscal {
   id: string;
@@ -98,14 +101,95 @@ const tarefasFiscaisMensais: TarefaFiscal[] = [
 ];
 
 const CalendarioFiscal = () => {
-  const [selectedMonth, setSelectedMonth] = useState("2025-03");
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedCategoria, setSelectedCategoria] = useState("todas");
-  const [tarefas, setTarefas] = useState<TarefaFiscal[]>(tarefasFiscaisMensais);
+  const [tarefas, setTarefas] = useState<TarefaFiscal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { selectedProperty } = useProperty();
+  const { toast } = useToast();
 
-  const toggleTarefa = (id: string) => {
-    setTarefas(tarefas.map(t => 
-      t.id === id ? { ...t, concluida: !t.concluida } : t
-    ));
+  useEffect(() => {
+    if (selectedProperty?.id) {
+      loadTarefas();
+    }
+  }, [selectedProperty?.id, selectedMonth]);
+
+  const loadTarefas = async () => {
+    if (!selectedProperty?.id) return;
+
+    setLoading(true);
+    
+    const { data, error } = await supabase
+      .from("fiscal_tasks")
+      .select("*")
+      .eq("property_id", selectedProperty.id)
+      .eq("month", selectedMonth)
+      .order("prazo", { ascending: true });
+
+    if (error) {
+      console.error("Error loading fiscal tasks:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar as tarefas fiscais",
+        variant: "destructive",
+      });
+    } else if (data && data.length > 0) {
+      setTarefas(data as TarefaFiscal[]);
+    } else {
+      // Initialize with default tasks for the month
+      await initializeDefaultTasks();
+    }
+    
+    setLoading(false);
+  };
+
+  const initializeDefaultTasks = async () => {
+    if (!selectedProperty?.id) return;
+
+    const defaultTasks = tarefasFiscaisMensais.map(task => ({
+      ...task,
+      property_id: selectedProperty.id,
+      month: selectedMonth,
+    }));
+
+    const { data, error } = await supabase
+      .from("fiscal_tasks")
+      .insert(defaultTasks)
+      .select();
+
+    if (error) {
+      console.error("Error initializing tasks:", error);
+    } else {
+      setTarefas(data as TarefaFiscal[]);
+    }
+  };
+
+  const toggleTarefa = async (id: string) => {
+    const tarefa = tarefas.find(t => t.id === id);
+    if (!tarefa) return;
+
+    const { error } = await supabase
+      .from("fiscal_tasks")
+      .update({ concluida: !tarefa.concluida })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating task:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a tarefa",
+        variant: "destructive",
+      });
+    } else {
+      setTarefas(tarefas.map(t => 
+        t.id === id ? { ...t, concluida: !t.concluida } : t
+      ));
+      toast({
+        title: "Tarefa atualizada",
+        description: tarefa.concluida ? "Tarefa marcada como pendente" : "Tarefa marcada como concluída",
+      });
+    }
   };
 
   const filteredTarefas = tarefas.filter(t => 
@@ -150,7 +234,16 @@ const CalendarioFiscal = () => {
         description="Acompanhamento das obrigações fiscais mensais"
       />
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">A carregar tarefas...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -296,7 +389,9 @@ const CalendarioFiscal = () => {
           <p>• O não cumprimento dos prazos pode resultar em coimas e juros de mora</p>
           <p>• Mantenha toda a documentação organizada e arquivada por 10 anos</p>
         </CardContent>
-      </Card>
+          </Card>
+        </>
+      )}
     </div>
   );
 };

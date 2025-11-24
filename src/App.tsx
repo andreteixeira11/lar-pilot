@@ -10,6 +10,7 @@ import { ReservaProvider } from "@/contexts/ReservaContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserMenu } from "@/components/UserMenu";
 import { PropertySelector } from "@/components/PropertySelector";
+import { NotificationMenu } from "@/components/NotificationMenu";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Reservas from "./pages/Reservas";
@@ -49,7 +50,10 @@ const App = () => (
                         <div className="flex-1 max-w-md">
                           <PropertySelector />
                         </div>
-                        <UserMenu />
+                        <div className="flex items-center gap-2">
+                          <NotificationMenu />
+                          <UserMenu />
+                        </div>
                       </header>
                       <Routes>
                         <Route path="/reservas" element={<Reservas />} />

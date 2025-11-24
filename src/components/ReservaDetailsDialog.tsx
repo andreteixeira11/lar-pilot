@@ -17,9 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, CreditCard, Users, Pencil, Trash2 } from "lucide-react";
+import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface Guest {
   id: string;
@@ -82,6 +84,94 @@ export const ReservaDetailsDialog = ({
     }
   };
 
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    
+    // Título
+    doc.setFontSize(18);
+    doc.text("Detalhes da Reserva", 14, 20);
+    
+    // Informações do Hóspede
+    doc.setFontSize(12);
+    doc.text(`Hóspede: ${reserva.hospede}`, 14, 35);
+    doc.text(`Plataforma: ${reserva.plataforma}`, 14, 42);
+    doc.text(`Status: ${reserva.status}`, 14, 49);
+    
+    // Datas
+    doc.text("Check-in:", 14, 60);
+    doc.text(new Date(reserva.checkIn).toLocaleDateString("pt-PT", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }), 40, 60);
+    
+    doc.text("Check-out:", 14, 67);
+    doc.text(new Date(reserva.checkOut).toLocaleDateString("pt-PT", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }), 40, 67);
+    
+    doc.text(`Noites: ${reserva.noites}`, 14, 74);
+    
+    // Informação Financeira
+    const financialData = [
+      ["Descrição", "Valor"],
+      ["Valor Base Estadia", `€${(reserva.valorBaseEstadia || 0).toFixed(2)}`],
+      ["IVA Estadia", `€${(reserva.ivaEstadia || 0).toFixed(2)}`],
+      ["Total Estadia", `€${((reserva.valorBaseEstadia || 0) + (reserva.ivaEstadia || 0)).toFixed(2)}`],
+      ["", ""],
+      ["Valor Base Limpeza", `€${(reserva.valorBaseLimpeza || 0).toFixed(2)}`],
+      ["IVA Limpeza", `€${(reserva.ivaLimpeza || 0).toFixed(2)}`],
+      ["Total Limpeza", `€${((reserva.valorBaseLimpeza || 0) + (reserva.ivaLimpeza || 0)).toFixed(2)}`],
+      ["", ""],
+      ["Taxa Turística", `€${(reserva.taxaTuristica || 0).toFixed(2)}`],
+      ["Valor Total", `€${reserva.valor.toFixed(2)}`],
+    ];
+    
+    if (reserva.comissaoPlataforma && reserva.comissaoPlataforma > 0) {
+      financialData.push(
+        ["", ""],
+        [`Comissão ${reserva.plataforma}`, `-€${reserva.comissaoPlataforma.toFixed(2)}`],
+        ["Valor Líquido", `€${(reserva.valor - reserva.comissaoPlataforma).toFixed(2)}`]
+      );
+    }
+    
+    autoTable(doc, {
+      startY: 85,
+      head: [financialData[0]],
+      body: financialData.slice(1),
+      theme: "grid",
+    });
+    
+    // Hóspedes
+    if (reserva.hospedes && reserva.hospedes.length > 0) {
+      const lastY = (doc as any).lastAutoTable.finalY || 85;
+      doc.text("Hóspedes:", 14, lastY + 15);
+      
+      const guestsData = reserva.hospedes.map((guest) => [
+        guest.nome || "Não informado",
+        guest.tipoDocumento === "cc" ? "CC" : "Passaporte",
+        guest.documento || "Não informado",
+        guest.dataNascimento 
+          ? new Date(guest.dataNascimento).toLocaleDateString("pt-PT")
+          : "Não informado",
+        guest.nacionalidade || "Não informado",
+      ]);
+      
+      autoTable(doc, {
+        startY: lastY + 20,
+        head: [["Nome", "Tipo Doc.", "Documento", "Data Nasc.", "Nacionalidade"]],
+        body: guestsData,
+        theme: "grid",
+      });
+    }
+    
+    doc.save(`reserva-${reserva.hospede}-${reserva.checkIn}.pdf`);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -89,6 +179,15 @@ export const ReservaDetailsDialog = ({
           <div className="flex items-center justify-between">
             <DialogTitle>Detalhes da Reserva</DialogTitle>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadPDF}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                PDF
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

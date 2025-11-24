@@ -14,6 +14,10 @@ export interface Property {
   parkingInfo: string;
   alNumber?: string;
   region: 'madeira' | 'continental';
+  rnal?: string;
+  insuranceValidity?: string;
+  insuranceFileUrl?: string;
+  platformStatus?: 'nao_submetido' | 'submetido' | 'aprovado';
 }
 
 interface PropertyContextType {

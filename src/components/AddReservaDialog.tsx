@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useProperty } from "@/contexts/PropertyContext";
 
 interface Guest {
   id: string;
@@ -33,14 +34,17 @@ interface AddReservaDialogProps {
 }
 
 export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
+  const { selectedProperty } = useProperty();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     hospede: "",
     checkIn: "",
     checkOut: "",
     plataforma: "Airbnb",
+    valorTotalEstadia: 0,
     valorBaseEstadia: 0,
     ivaEstadia: 0,
+    valorTotalLimpeza: 0,
     valorBaseLimpeza: 0,
     ivaLimpeza: 0,
     taxaTuristica: 0,
@@ -68,22 +72,30 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     return 0;
   };
 
-  const calculateValorTotalEstadia = () => {
-    return formData.valorBaseEstadia + formData.ivaEstadia;
-  };
-
-  const calculateValorTotalLimpeza = () => {
-    return formData.valorBaseLimpeza + formData.ivaLimpeza;
+  const calculateIVABreakdown = (total: number, type: 'estadia' | 'limpeza') => {
+    if (!selectedProperty || total === 0) return { base: 0, iva: 0 };
+    
+    const region = selectedProperty.region;
+    let divisor: number;
+    
+    if (type === 'estadia') {
+      divisor = region === 'madeira' ? 1.04 : 1.06;
+    } else {
+      divisor = region === 'madeira' ? 1.22 : 1.23;
+    }
+    
+    const base = total / divisor;
+    const iva = total - base;
+    
+    return { base: parseFloat(base.toFixed(2)), iva: parseFloat(iva.toFixed(2)) };
   };
 
   const calculateValorTotalReserva = () => {
-    return calculateValorTotalEstadia() + calculateValorTotalLimpeza() + formData.taxaTuristica;
+    return formData.valorTotalEstadia + formData.valorTotalLimpeza + formData.taxaTuristica;
   };
 
   const calculateComissoes = () => {
-    const { plataforma, taxaTuristica } = formData;
-    const valorTotalEstadia = calculateValorTotalEstadia();
-    const valorTotalLimpeza = calculateValorTotalLimpeza();
+    const { plataforma, taxaTuristica, valorTotalEstadia, valorTotalLimpeza } = formData;
     
     if (plataforma === "Booking") {
       const comissaoEstadia = valorTotalEstadia * 0.15;
@@ -133,9 +145,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     }
 
     const comissaoPlataforma = calculateComissoes();
-    const valorTotalEstadia = calculateValorTotalEstadia();
-    const valorTotalLimpeza = calculateValorTotalLimpeza();
-    const valorTotal = valorTotalEstadia + valorTotalLimpeza + formData.taxaTuristica;
+    const valorTotal = calculateValorTotalReserva();
 
     const novaReserva = {
       id: Date.now().toString(),
@@ -155,8 +165,10 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       checkIn: "",
       checkOut: "",
       plataforma: "Airbnb",
+      valorTotalEstadia: 0,
       valorBaseEstadia: 0,
       ivaEstadia: 0,
+      valorTotalLimpeza: 0,
       valorBaseLimpeza: 0,
       ivaLimpeza: 0,
       taxaTuristica: 0,
@@ -251,50 +263,42 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
+                    <Label htmlFor="valorTotalEstadia">Valor Total Estadia (€) *</Label>
+                    <Input
+                      id="valorTotalEstadia"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.valorTotalEstadia || ""}
+                      onChange={(e) => {
+                        const total = parseFloat(e.target.value) || 0;
+                        const { base, iva } = calculateIVABreakdown(total, 'estadia');
+                        setFormData({
+                          ...formData,
+                          valorTotalEstadia: total,
+                          valorBaseEstadia: base,
+                          ivaEstadia: iva
+                        });
+                      }}
+                      required
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="valorBaseEstadia">Valor Base Estadia (€)</Label>
                     <Input
                       id="valorBaseEstadia"
                       type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.valorBaseEstadia}
-                      onChange={(e) =>
-                        setFormData({ ...formData, valorBaseEstadia: parseFloat(e.target.value) || 0 })
-                      }
+                      value={formData.valorBaseEstadia.toFixed(2)}
+                      disabled
+                      className="bg-muted"
                     />
-              </div>
-              <div>
-                <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
-                <Input
-                  id="numHospedes"
-                  type="number"
-                  min="1"
-                  value={formData.numHospedes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
-                  }
-                  required
-                />
-              </div>
-              <div>
+                  </div>
+                  <div>
                     <Label htmlFor="ivaEstadia">IVA Estadia (€)</Label>
                     <Input
                       id="ivaEstadia"
                       type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.ivaEstadia}
-                      onChange={(e) =>
-                        setFormData({ ...formData, ivaEstadia: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="valorTotalEstadia">Valor Total Estadia (€)</Label>
-                    <Input
-                      id="valorTotalEstadia"
-                      type="number"
-                      value={calculateValorTotalEstadia()}
+                      value={formData.ivaEstadia.toFixed(2)}
                       disabled
                       className="bg-muted"
                     />
@@ -302,16 +306,33 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
+                    <Label htmlFor="valorTotalLimpeza">Valor Total Limpeza (€)</Label>
+                    <Input
+                      id="valorTotalLimpeza"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.valorTotalLimpeza || ""}
+                      onChange={(e) => {
+                        const total = parseFloat(e.target.value) || 0;
+                        const { base, iva } = calculateIVABreakdown(total, 'limpeza');
+                        setFormData({
+                          ...formData,
+                          valorTotalLimpeza: total,
+                          valorBaseLimpeza: base,
+                          ivaLimpeza: iva
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="valorBaseLimpeza">Valor Base Limpeza (€)</Label>
                     <Input
                       id="valorBaseLimpeza"
                       type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.valorBaseLimpeza}
-                      onChange={(e) =>
-                        setFormData({ ...formData, valorBaseLimpeza: parseFloat(e.target.value) || 0 })
-                      }
+                      value={formData.valorBaseLimpeza.toFixed(2)}
+                      disabled
+                      className="bg-muted"
                     />
                   </div>
                   <div>
@@ -319,20 +340,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     <Input
                       id="ivaLimpeza"
                       type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.ivaLimpeza}
-                      onChange={(e) =>
-                        setFormData({ ...formData, ivaLimpeza: parseFloat(e.target.value) || 0 })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="valorTotalLimpeza">Valor Total Limpeza (€)</Label>
-                    <Input
-                      id="valorTotalLimpeza"
-                      type="number"
-                      value={calculateValorTotalLimpeza()}
+                      value={formData.ivaLimpeza.toFixed(2)}
                       disabled
                       className="bg-muted"
                     />
@@ -352,7 +360,20 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   />
                 </div>
               </div>
-              {formData.plataforma !== "Direto" && (formData.valorBaseEstadia > 0 || formData.ivaEstadia > 0 || formData.valorBaseLimpeza > 0 || formData.ivaLimpeza > 0 || formData.taxaTuristica > 0) && (
+              <div>
+                <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
+                <Input
+                  id="numHospedes"
+                  type="number"
+                  min="1"
+                  value={formData.numHospedes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
+                  }
+                  required
+                />
+              </div>
+              {formData.plataforma !== "Direto" && (formData.valorTotalEstadia > 0 || formData.valorTotalLimpeza > 0) && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium">Comissão {formData.plataforma}: €{calculateComissoes().toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground mt-1">

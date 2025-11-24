@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Check, Calendar, TrendingUp, FileText, Users, Shield, Star, Quote } from "lucide-react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { Check, Calendar, TrendingUp, FileText, Users, Shield, Star, Quote, Home, Building2, BarChart3, FileBarChart, Coins, Settings, HelpCircle, BookOpen, Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
@@ -9,6 +17,75 @@ import bookingImage from "@/assets/booking-feature.jpg";
 
 const Landing = () => {
   const navigate = useNavigate();
+
+  const functionalityItems = [
+    {
+      title: "Gestão de Reservas",
+      description: "Centralize todas as suas reservas num único painel",
+      icon: Calendar,
+      href: "#features"
+    },
+    {
+      title: "Relatórios INE",
+      description: "Gere automaticamente os relatórios mensais",
+      icon: FileText,
+      href: "#features"
+    },
+    {
+      title: "Taxa Turística",
+      description: "Calcule e submeta automaticamente",
+      icon: Coins,
+      href: "#features"
+    },
+    {
+      title: "Análise Financeira",
+      description: "Acompanhe a rentabilidade em tempo real",
+      icon: TrendingUp,
+      href: "#features"
+    }
+  ];
+
+  const solutionItems = [
+    {
+      title: "Proprietários Individuais",
+      description: "Solução ideal para quem tem 1-3 propriedades",
+      icon: Home,
+      href: "#pricing"
+    },
+    {
+      title: "Gestores Profissionais",
+      description: "Para quem gere múltiplas propriedades",
+      icon: Building2,
+      href: "#pricing"
+    },
+    {
+      title: "Agências",
+      description: "Soluções enterprise para grandes volumes",
+      icon: Users,
+      href: "#pricing"
+    }
+  ];
+
+  const resourceItems = [
+    {
+      title: "Centro de Ajuda",
+      description: "Tutoriais e guias completos",
+      icon: HelpCircle,
+      href: "#"
+    },
+    {
+      title: "Blog",
+      description: "Artigos e dicas sobre gestão de AL",
+      icon: BookOpen,
+      href: "#"
+    },
+    {
+      title: "Contacto",
+      description: "Fale connosco",
+      icon: Phone,
+      href: "#"
+    }
+  ];
 
   const features = [
     {
@@ -100,23 +177,126 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/logos/monumenta-logo.svg" 
-              alt="Monumental Atanti" 
-              className="h-10 w-auto"
-            />
-            <span className="text-xl font-semibold">Monumental Atanti</span>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={() => navigate("/auth?mode=login")}>
-              Entrar
-            </Button>
-            <Button onClick={() => navigate("/auth?showPlans=true")}>
-              Começar Agora
-            </Button>
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumental Atanti" 
+                className="h-10 w-auto"
+              />
+              <span className="text-xl font-semibold hidden sm:inline">Monumental Atanti</span>
+            </div>
+
+            {/* Navigation Menu */}
+            <NavigationMenu className="hidden lg:flex">
+              <NavigationMenuList>
+                {/* Funcionalidades */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Funcionalidades</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
+                      {functionalityItems.map((item) => (
+                        <li key={item.title}>
+                          <NavigationMenuLink asChild>
+                            <a
+                              href={item.href}
+                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <item.icon className="h-4 w-4 text-primary" />
+                                <div className="text-sm font-medium leading-none">{item.title}</div>
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {item.description}
+                              </p>
+                            </a>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Soluções */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Soluções</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[400px] gap-3 p-4">
+                      {solutionItems.map((item) => (
+                        <li key={item.title}>
+                          <NavigationMenuLink asChild>
+                            <a
+                              href={item.href}
+                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <item.icon className="h-4 w-4 text-primary" />
+                                <div className="text-sm font-medium leading-none">{item.title}</div>
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {item.description}
+                              </p>
+                            </a>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Recursos */}
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger>Recursos</NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[300px] gap-3 p-4">
+                      {resourceItems.map((item) => (
+                        <li key={item.title}>
+                          <NavigationMenuLink asChild>
+                            <a
+                              href={item.href}
+                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <item.icon className="h-4 w-4 text-primary" />
+                                <div className="text-sm font-medium leading-none">{item.title}</div>
+                              </div>
+                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                                {item.description}
+                              </p>
+                            </a>
+                          </NavigationMenuLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+
+                {/* Preços */}
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
+                    <a
+                      href="#pricing"
+                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      Preços
+                    </a>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" onClick={() => navigate("/auth?mode=login")}>
+                Entrar
+              </Button>
+              <Button onClick={() => navigate("/auth?showPlans=true")}>
+                Começar Agora
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -153,7 +333,7 @@ const Landing = () => {
       </section>
 
       {/* Features */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">
           Tudo o que precisa para gerir o seu alojamento
         </h2>
@@ -211,7 +391,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="pricing" className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-4">
           Planos para todos os tamanhos
         </h2>

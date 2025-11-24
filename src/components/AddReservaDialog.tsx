@@ -22,11 +22,15 @@ import { useProperty } from "@/contexts/PropertyContext";
 
 interface Guest {
   id: string;
-  nome: string;
-  documento: string;
-  tipoDocumento: "passaporte" | "cc";
+  nomeCompleto: string;
   dataNascimento: string;
+  localNascimento: string;
   nacionalidade: string;
+  localResidencia: string;
+  paisResidencia: string;
+  tipoDocumento: "cc" | "passaporte";
+  numeroDocumento: string;
+  paisEmissor: string;
 }
 
 interface AddReservaDialogProps {
@@ -54,11 +58,15 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const [guests, setGuests] = useState<Guest[]>([
     {
       id: "1",
-      nome: "",
-      documento: "",
-      tipoDocumento: "cc",
+      nomeCompleto: "",
       dataNascimento: "",
+      localNascimento: "",
       nacionalidade: "",
+      localResidencia: "",
+      paisResidencia: "",
+      tipoDocumento: "cc",
+      numeroDocumento: "",
+      paisEmissor: "",
     },
   ]);
 
@@ -112,11 +120,15 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       ...guests,
       {
         id: Date.now().toString(),
-        nome: "",
-        documento: "",
-        tipoDocumento: "cc",
+        nomeCompleto: "",
         dataNascimento: "",
+        localNascimento: "",
         nacionalidade: "",
+        localResidencia: "",
+        paisResidencia: "",
+        tipoDocumento: "cc",
+        numeroDocumento: "",
+        paisEmissor: "",
       },
     ]);
   };
@@ -178,11 +190,15 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     setGuests([
       {
         id: "1",
-        nome: "",
-        documento: "",
-        tipoDocumento: "cc",
+        nomeCompleto: "",
         dataNascimento: "",
+        localNascimento: "",
         nacionalidade: "",
+        localResidencia: "",
+        paisResidencia: "",
+        tipoDocumento: "cc",
+        numeroDocumento: "",
+        paisEmissor: "",
       },
     ]);
   };
@@ -242,23 +258,38 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   {calculateNoites()} noites
                 </p>
               )}
-              <div>
-                <Label htmlFor="plataforma">Plataforma</Label>
-                <Select
-                  value={formData.plataforma}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, plataforma: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Airbnb">Airbnb</SelectItem>
-                    <SelectItem value="Booking">Booking</SelectItem>
-                    <SelectItem value="Direto">Direto</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="plataforma">Plataforma</Label>
+                  <Select
+                    value={formData.plataforma}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, plataforma: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Airbnb">Airbnb</SelectItem>
+                      <SelectItem value="Booking">Booking</SelectItem>
+                      <SelectItem value="Direto">Direto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
+                  <Input
+                    id="numHospedes"
+                    type="number"
+                    min="1"
+                    value={formData.numHospedes}
+                    onChange={(e) =>
+                      setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
+                    }
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -360,19 +391,6 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
-                <Input
-                  id="numHospedes"
-                  type="number"
-                  min="1"
-                  value={formData.numHospedes}
-                  onChange={(e) =>
-                    setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
-                  }
-                  required
-                />
-              </div>
               {formData.plataforma !== "Direto" && (formData.valorTotalEstadia > 0 || formData.valorTotalLimpeza > 0) && (
                 <div className="p-3 bg-muted rounded-lg">
                   <p className="text-sm font-medium">Comissão {formData.plataforma}: €{calculateComissoes().toFixed(2)}</p>
@@ -420,12 +438,66 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     <div>
                       <Label>Nome Completo</Label>
                       <Input
-                        value={guest.nome}
-                        onChange={(e) => updateGuest(guest.id, "nome", e.target.value)}
+                        value={guest.nomeCompleto}
+                        onChange={(e) => updateGuest(guest.id, "nomeCompleto", e.target.value)}
                         placeholder="Nome completo do hóspede"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Data de Nascimento</Label>
+                        <Input
+                          type="date"
+                          value={guest.dataNascimento}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "dataNascimento", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>Local de Nascimento</Label>
+                        <Input
+                          value={guest.localNascimento}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "localNascimento", e.target.value)
+                          }
+                          placeholder="Cidade/Local"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Nacionalidade</Label>
+                        <Input
+                          value={guest.nacionalidade}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "nacionalidade", e.target.value)
+                          }
+                          placeholder="Ex: Portuguesa"
+                        />
+                      </div>
+                      <div>
+                        <Label>Local de Residência</Label>
+                        <Input
+                          value={guest.localResidencia}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "localResidencia", e.target.value)
+                          }
+                          placeholder="Cidade"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>País de Residência</Label>
+                      <Input
+                        value={guest.paisResidencia}
+                        onChange={(e) =>
+                          updateGuest(guest.id, "paisResidencia", e.target.value)
+                        }
+                        placeholder="País"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <Label>Tipo de Documento</Label>
                         <Select
@@ -446,31 +518,19 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                       <div>
                         <Label>Número do Documento</Label>
                         <Input
-                          value={guest.documento}
-                          onChange={(e) => updateGuest(guest.id, "documento", e.target.value)}
+                          value={guest.numeroDocumento}
+                          onChange={(e) => updateGuest(guest.id, "numeroDocumento", e.target.value)}
                           placeholder="Número"
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Data de Nascimento</Label>
+                        <Label>País Emissor</Label>
                         <Input
-                          type="date"
-                          value={guest.dataNascimento}
+                          value={guest.paisEmissor}
                           onChange={(e) =>
-                            updateGuest(guest.id, "dataNascimento", e.target.value)
+                            updateGuest(guest.id, "paisEmissor", e.target.value)
                           }
-                        />
-                      </div>
-                      <div>
-                        <Label>Nacionalidade</Label>
-                        <Input
-                          value={guest.nacionalidade}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "nacionalidade", e.target.value)
-                          }
-                          placeholder="Ex: Portuguesa"
+                          placeholder="País"
                         />
                       </div>
                     </div>

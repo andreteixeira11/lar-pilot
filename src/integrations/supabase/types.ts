@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      fiscal_tasks: {
+        Row: {
+          categoria: string
+          concluida: boolean
+          created_at: string
+          descricao: string
+          id: string
+          month: string
+          prazo: string
+          prioridade: string
+          property_id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          categoria: string
+          concluida?: boolean
+          created_at?: string
+          descricao: string
+          id?: string
+          month: string
+          prazo: string
+          prioridade?: string
+          property_id: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          categoria?: string
+          concluida?: boolean
+          created_at?: string
+          descricao?: string
+          id?: string
+          month?: string
+          prazo?: string
+          prioridade?: string
+          property_id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiscal_tasks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ine_statistics: {
         Row: {
           country: string

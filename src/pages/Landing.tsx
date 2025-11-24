@@ -284,7 +284,7 @@ const Landing = () => {
         <h2 className="text-3xl font-bold text-center mb-12">Tudo o que precisa para gerir o seu alojamento</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <Card key={index} className="border-2 hover:border-primary transition-colors">
+            <Card key={index} className="border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 hover:bg-primary/5">
               <CardContent className="pt-6">
                 <feature.icon className="h-12 w-12 text-primary mb-4" />
                 <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
@@ -303,7 +303,7 @@ const Landing = () => {
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="relative border-2 hover:border-primary transition-colors">
+            <Card key={index} className="relative border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 hover:bg-primary/5">
               <CardContent className="pt-6">
                 <Quote className="h-10 w-10 text-primary/20 mb-4" />
                 <div className="flex gap-1 mb-4">

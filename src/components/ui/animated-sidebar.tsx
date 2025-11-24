@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Calendar as CalendarIcon,
   Home,
@@ -11,7 +12,13 @@ import {
   BarChart3,
   FileText,
   CalendarDays,
+  UserCircle,
+  CreditCard,
+  LogOut,
+  User,
 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 
 const AnimatedMenuToggle = ({
   toggle,
@@ -83,6 +90,9 @@ const menuItems = [
 
 export const AnimatedSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const mobileSidebarVariants = {
     hidden: { x: "-100%" },
@@ -90,6 +100,20 @@ export const AnimatedSidebar = () => {
   };
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
+  };
+
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
 
   return (
     <>
@@ -150,6 +174,53 @@ export const AnimatedSidebar = () => {
                     ))}
                   </ul>
                 </nav>
+
+                {/* User Profile Section */}
+                <div className="p-4 border-t border-border">
+                  <div className="flex items-center gap-3 mb-3 px-2">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                    </div>
+                  </div>
+                  
+                  <Separator className="mb-3" />
+                  
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        navigate("/perfil");
+                        toggleSidebar();
+                      }}
+                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Perfil</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate("/subscriptions");
+                        toggleSidebar();
+                      }}
+                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
+                    >
+                      <CreditCard className="h-4 w-4" />
+                      <span>Subscrições</span>
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-destructive/10 text-destructive text-sm"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Sair</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </>
@@ -190,6 +261,47 @@ export const AnimatedSidebar = () => {
             ))}
           </ul>
         </nav>
+
+        {/* User Profile Section */}
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 mb-3 px-2">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user?.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+            </div>
+          </div>
+          
+          <Separator className="mb-3" />
+          
+          <div className="space-y-1">
+            <button
+              onClick={() => navigate("/perfil")}
+              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
+            >
+              <UserCircle className="h-4 w-4" />
+              <span>Perfil</span>
+            </button>
+            <button
+              onClick={() => navigate("/subscriptions")}
+              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
+            >
+              <CreditCard className="h-4 w-4" />
+              <span>Subscrições</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-destructive/10 text-destructive text-sm"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sair</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Toggle Button */}

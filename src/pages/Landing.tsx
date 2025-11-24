@@ -202,8 +202,8 @@ const Landing = () => {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-              <img src="/logos/monumenta-logo.svg" alt="Gestão de AL" className="h-10 w-auto" />
-              <span className="text-xl font-semibold hidden sm:inline">Gestão de AL</span>
+              <img src="/logos/monumenta-logo.svg" alt="Monumental Atantic" className="h-10 w-auto" />
+              <span className="text-xl font-semibold hidden sm:inline">Monumental Atantic</span>
             </div>
 
 
@@ -397,7 +397,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t mt-20">
         <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>© 2024 Gestão de AL. Todos os direitos reservados.</p>
+          <p>© 2024 Monumental Atantic. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

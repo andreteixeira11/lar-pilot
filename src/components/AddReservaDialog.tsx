@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProperty } from "@/contexts/PropertyContext";
+import { countries } from "@/lib/countries";
 
 interface Guest {
   id: string;
@@ -156,7 +157,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       return;
     }
 
-    // Obter país de origem do primeiro hóspede
+    // Obter país de origem do primeiro hóspede (usado para compatibilidade)
     const paisOrigem = guests[0]?.paisResidencia || guests[0]?.nacionalidade || "Portugal";
 
     const comissaoPlataforma = calculateComissoes();
@@ -168,10 +169,10 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       noites,
       valor: valorTotal,
       comissaoPlataforma,
-      hospedes: guests,
+      hospedes: guests, // Salvar todos os dados dos hóspedes
       propertyId: "1",
       paisOrigem,
-      status: "confirmada", // Define como confirmada por padrão
+      status: "confirmada",
       nrHospedes: formData.numHospedes,
     };
 
@@ -473,13 +474,28 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label>Nacionalidade</Label>
-                        <Input
+                        <Select
                           value={guest.nacionalidade}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "nacionalidade", e.target.value)
+                          onValueChange={(value) =>
+                            updateGuest(guest.id, "nacionalidade", value)
                           }
-                          placeholder="Ex: Portuguesa"
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o país" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <ScrollArea className="h-[200px]">
+                              {countries.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  <span className="flex items-center gap-2">
+                                    <span>{country.flag}</span>
+                                    <span>{country.name}</span>
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </ScrollArea>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div>
                         <Label>Local de Residência</Label>
@@ -494,13 +510,28 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     </div>
                     <div>
                       <Label>País de Residência</Label>
-                      <Input
+                      <Select
                         value={guest.paisResidencia}
-                        onChange={(e) =>
-                          updateGuest(guest.id, "paisResidencia", e.target.value)
+                        onValueChange={(value) =>
+                          updateGuest(guest.id, "paisResidencia", value)
                         }
-                        placeholder="País"
-                      />
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o país" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <ScrollArea className="h-[200px]">
+                            {countries.map((country) => (
+                              <SelectItem key={country.code} value={country.name}>
+                                <span className="flex items-center gap-2">
+                                  <span>{country.flag}</span>
+                                  <span>{country.name}</span>
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </ScrollArea>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
@@ -530,13 +561,28 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                       </div>
                       <div>
                         <Label>País Emissor</Label>
-                        <Input
+                        <Select
                           value={guest.paisEmissor}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "paisEmissor", e.target.value)
+                          onValueChange={(value) =>
+                            updateGuest(guest.id, "paisEmissor", value)
                           }
-                          placeholder="País"
-                        />
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o país" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <ScrollArea className="h-[200px]">
+                              {countries.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  <span className="flex items-center gap-2">
+                                    <span>{country.flag}</span>
+                                    <span>{country.name}</span>
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </ScrollArea>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </CardContent>

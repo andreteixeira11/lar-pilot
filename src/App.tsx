@@ -13,6 +13,7 @@ import { NotificationMenu } from "@/components/NotificationMenu";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import CheckIn from "./pages/CheckIn";
+import CheckIns from "./pages/CheckIns";
 import Reservas from "./pages/Reservas";
 import ResumoMensal from "./pages/ResumoMensal";
 import TaxaTuristica from "./pages/TaxaTuristica";
@@ -55,6 +56,7 @@ const App = () => (
                       </header>
                       <Routes>
                         <Route path="/reservas" element={<Reservas />} />
+                        <Route path="/checkins" element={<CheckIns />} />
                         <Route path="/alojamento" element={<DadosAlojamento />} />
                         <Route path="/acessos" element={<Acessos />} />
                         <Route path="/calendario-fiscal" element={<CalendarioFiscal />} />

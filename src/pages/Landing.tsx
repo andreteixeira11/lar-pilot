@@ -132,32 +132,8 @@ const Landing = () => {
         <h2 className="text-3xl font-bold text-center mb-12">
           Tudo o que precisa para gerir o seu alojamento
         </h2>
-        <div className="grid md:grid-cols-2 gap-12 mb-12">
-          <div className="flex flex-col justify-center">
-            <Calendar className="h-16 w-16 text-primary mb-4" />
-            <h3 className="text-2xl font-semibold mb-4">Gestão de Reservas</h3>
-            <p className="text-lg text-muted-foreground">
-              Controle todas as suas reservas num só lugar, com sincronização automática das principais plataformas.
-            </p>
-          </div>
-          <div className="rounded-lg overflow-hidden shadow-lg">
-            <img src={bookingImage} alt="Booking Management" className="w-full h-full object-cover" />
-          </div>
-        </div>
-        <div className="grid md:grid-cols-2 gap-12">
-          <div className="rounded-lg overflow-hidden shadow-lg order-2 md:order-1">
-            <img src={analyticsImage} alt="Analytics Dashboard" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex flex-col justify-center order-1 md:order-2">
-            <TrendingUp className="h-16 w-16 text-primary mb-4" />
-            <h3 className="text-2xl font-semibold mb-4">Análise Financeira</h3>
-            <p className="text-lg text-muted-foreground">
-              Acompanhe receitas, despesas e rentabilidade em tempo real com relatórios detalhados.
-            </p>
-          </div>
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-          {features.slice(2).map((feature, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {features.map((feature, index) => (
             <Card key={index} className="border-2 hover:border-primary transition-colors">
               <CardContent className="pt-6">
                 <feature.icon className="h-12 w-12 text-primary mb-4" />

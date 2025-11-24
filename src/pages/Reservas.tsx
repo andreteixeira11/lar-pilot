@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User } from "lucide-react";
 import { AddReservaDialog } from "@/components/AddReservaDialog";
+import { EditReservaDialog } from "@/components/EditReservaDialog";
 import { ReservaDetailsDialog } from "@/components/ReservaDetailsDialog";
 import { toast } from "sonner";
 import {
@@ -18,13 +19,14 @@ import { useReserva } from "@/contexts/ReservaContext";
 
 const Reservas = () => {
   const { selectedPropertyId } = useProperty();
-  const { reservas, addReserva, deleteReserva } = useReserva();
+  const { reservas, addReserva, updateReserva, deleteReserva } = useReserva();
   const [filterPlatform, setFilterPlatform] = useState("all");
   const [filterYear, setFilterYear] = useState("2025");
   const [filterMonth, setFilterMonth] = useState("all");
   const [refresh, setRefresh] = useState(0);
   const [selectedReserva, setSelectedReserva] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   // Listen for property changes
   useEffect(() => {
@@ -43,8 +45,12 @@ const Reservas = () => {
   };
 
   const handleEditReserva = (reserva: any) => {
-    // TODO: Implementar dialog de edição
-    console.log("Edit reserva:", reserva);
+    setSelectedReserva(reserva);
+    setEditOpen(true);
+  };
+
+  const handleUpdateReserva = (id: string, updatedData: any) => {
+    updateReserva(id, updatedData);
   };
 
   const handleDeleteReserva = (reservaId: string) => {
@@ -207,6 +213,13 @@ const Reservas = () => {
         onOpenChange={setDetailsOpen}
         onEdit={handleEditReserva}
         onDelete={handleDeleteReserva}
+      />
+
+      <EditReservaDialog
+        reserva={selectedReserva}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onUpdate={handleUpdateReserva}
       />
     </div>
   );

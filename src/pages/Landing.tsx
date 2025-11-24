@@ -206,103 +206,6 @@ const Landing = () => {
               <span className="text-xl font-semibold hidden sm:inline">Monumental Atantic</span>
             </div>
 
-            {/* Navigation Menu */}
-            <NavigationMenu className="hidden lg:flex">
-              <NavigationMenuList>
-                {/* Funcionalidades */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Funcionalidades</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                      {functionalityItems.map((item) => (
-                        <li key={item.title}>
-                          <NavigationMenuLink asChild>
-                            <a
-                              href={item.href}
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <item.icon className="h-4 w-4 text-primary" />
-                                <div className="text-sm font-medium leading-none">{item.title}</div>
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                {item.description}
-                              </p>
-                            </a>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                {/* Soluções */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Soluções</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-3 p-4">
-                      {solutionItems.map((item) => (
-                        <li key={item.title}>
-                          <NavigationMenuLink asChild>
-                            <a
-                              href={item.href}
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <item.icon className="h-4 w-4 text-primary" />
-                                <div className="text-sm font-medium leading-none">{item.title}</div>
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                {item.description}
-                              </p>
-                            </a>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                {/* Recursos */}
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger>Recursos</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[300px] gap-3 p-4">
-                      {resourceItems.map((item) => (
-                        <li key={item.title}>
-                          <NavigationMenuLink asChild>
-                            <a
-                              href={item.href}
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <item.icon className="h-4 w-4 text-primary" />
-                                <div className="text-sm font-medium leading-none">{item.title}</div>
-                              </div>
-                              <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                                {item.description}
-                              </p>
-                            </a>
-                          </NavigationMenuLink>
-                        </li>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-
-                {/* Preços */}
-                <NavigationMenuItem>
-                  <NavigationMenuLink asChild>
-                    <a
-                      href="#pricing"
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      Preços
-                    </a>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
@@ -318,98 +221,23 @@ const Landing = () => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-4 mt-8">
-                    {/* Funcionalidades */}
-                    <div>
-                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Funcionalidades</h3>
-                      <div className="flex flex-col gap-2">
-                        {functionalityItems.map((item) => (
-                          <a
-                            key={item.title}
-                            href={item.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="font-medium text-sm">{item.title}</div>
-                              <p className="text-xs text-muted-foreground">{item.description}</p>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Soluções */}
-                    <div>
-                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Soluções</h3>
-                      <div className="flex flex-col gap-2">
-                        {solutionItems.map((item) => (
-                          <a
-                            key={item.title}
-                            href={item.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="font-medium text-sm">{item.title}</div>
-                              <p className="text-xs text-muted-foreground">{item.description}</p>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Recursos */}
-                    <div>
-                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Recursos</h3>
-                      <div className="flex flex-col gap-2">
-                        {resourceItems.map((item) => (
-                          <a
-                            key={item.title}
-                            href={item.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
-                          >
-                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="font-medium text-sm">{item.title}</div>
-                              <p className="text-xs text-muted-foreground">{item.description}</p>
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Preços */}
-                    <a
-                      href="#pricing"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="font-medium text-sm p-3 rounded-lg hover:bg-accent transition-colors"
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        navigate("/auth?mode=login");
+                        setMobileMenuOpen(false);
+                      }}
                     >
-                      Preços
-                    </a>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          navigate("/auth?mode=login");
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        Entrar
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          navigate("/auth?showPlans=true");
-                          setMobileMenuOpen(false);
-                        }}
-                      >
-                        Começar Agora
-                      </Button>
-                    </div>
+                      Entrar
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        navigate("/auth?showPlans=true");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Começar Agora
+                    </Button>
                   </nav>
                 </SheetContent>
               </Sheet>

@@ -89,7 +89,7 @@ const Landing = () => {
             <Button variant="ghost" onClick={() => navigate("/auth?mode=login")}>
               Entrar
             </Button>
-            <Button onClick={() => navigate("/auth?mode=register")}>
+            <Button onClick={() => navigate("/auth?showPlans=true")}>
               Começar Agora
             </Button>
           </div>
@@ -117,7 +117,7 @@ const Landing = () => {
             Reservas, finanças, relatórios INE e taxa turística - tudo num só lugar.
           </p>
           <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/auth?mode=register")}>
+            <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
               Comece Gratuitamente
             </Button>
             <Button size="lg" variant="outline" onClick={() => navigate("/auth?mode=login")}>
@@ -181,7 +181,7 @@ const Landing = () => {
                 <Button 
                   className="w-full" 
                   variant={plan.popular ? "default" : "outline"}
-                  onClick={() => navigate("/auth?mode=register&plan=" + plan.name.toLowerCase())}
+                  onClick={() => navigate("/auth?showPlans=true&plan=" + plan.name.toLowerCase())}
                 >
                   Começar
                 </Button>
@@ -213,7 +213,7 @@ const Landing = () => {
             <p className="text-xl text-muted-foreground mb-8">
               Junte-se a centenas de proprietários que já confiam na nossa plataforma
             </p>
-            <Button size="lg" onClick={() => navigate("/auth?mode=register")}>
+            <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
               Comece Gratuitamente
             </Button>
           </CardContent>

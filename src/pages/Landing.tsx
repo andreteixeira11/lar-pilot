@@ -9,14 +9,23 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { Check, Calendar, TrendingUp, FileText, Users, Shield, Star, Quote, Home, Building2, BarChart3, FileBarChart, Coins, Settings, HelpCircle, BookOpen, Phone } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Check, Calendar, TrendingUp, FileText, Users, Shield, Star, Quote, Home, Building2, BarChart3, FileBarChart, Coins, Settings, HelpCircle, BookOpen, Phone, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
 import bookingImage from "@/assets/booking-feature.jpg";
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const functionalityItems = [
     {
@@ -290,10 +299,107 @@ const Landing = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" onClick={() => navigate("/auth?mode=login")}>
+              {/* Mobile Menu */}
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="lg:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                  <SheetHeader>
+                    <SheetTitle>Menu</SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-4 mt-8">
+                    {/* Funcionalidades */}
+                    <div>
+                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Funcionalidades</h3>
+                      <div className="flex flex-col gap-2">
+                        {functionalityItems.map((item) => (
+                          <a
+                            key={item.title}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <div className="font-medium text-sm">{item.title}</div>
+                              <p className="text-xs text-muted-foreground">{item.description}</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Soluções */}
+                    <div>
+                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Soluções</h3>
+                      <div className="flex flex-col gap-2">
+                        {solutionItems.map((item) => (
+                          <a
+                            key={item.title}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <div className="font-medium text-sm">{item.title}</div>
+                              <p className="text-xs text-muted-foreground">{item.description}</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recursos */}
+                    <div>
+                      <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Recursos</h3>
+                      <div className="flex flex-col gap-2">
+                        {resourceItems.map((item) => (
+                          <a
+                            key={item.title}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-start gap-3 rounded-lg p-3 hover:bg-accent transition-colors"
+                          >
+                            <item.icon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <div className="font-medium text-sm">{item.title}</div>
+                              <p className="text-xs text-muted-foreground">{item.description}</p>
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Preços */}
+                    <a
+                      href="#pricing"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="font-medium text-sm p-3 rounded-lg hover:bg-accent transition-colors"
+                    >
+                      Preços
+                    </a>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
+                      <Button variant="ghost" onClick={() => { navigate("/auth?mode=login"); setMobileMenuOpen(false); }}>
+                        Entrar
+                      </Button>
+                      <Button onClick={() => { navigate("/auth?showPlans=true"); setMobileMenuOpen(false); }}>
+                        Começar Agora
+                      </Button>
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+
+              <Button variant="ghost" onClick={() => navigate("/auth?mode=login")} className="hidden sm:flex">
                 Entrar
               </Button>
-              <Button onClick={() => navigate("/auth?showPlans=true")}>
+              <Button onClick={() => navigate("/auth?showPlans=true")} className="hidden sm:flex">
                 Começar Agora
               </Button>
             </div>

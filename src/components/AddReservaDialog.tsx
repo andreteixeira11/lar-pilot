@@ -352,24 +352,6 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   <span className="text-xl font-bold text-primary">€{calculateValorTotalReserva().toFixed(2)}</span>
                 </div>
               </div>
-              <div>
-                <Label htmlFor="status">Estado</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, status: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="confirmada">Confirmada</SelectItem>
-                    <SelectItem value="cancelada">Cancelada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             <div className="space-y-4">

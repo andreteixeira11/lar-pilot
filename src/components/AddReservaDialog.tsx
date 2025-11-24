@@ -20,6 +20,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProperty } from "@/contexts/PropertyContext";
 import { countries } from "@/lib/countries";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 interface Guest {
   id: string;
@@ -41,6 +43,8 @@ interface AddReservaDialogProps {
 export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const { selectedProperty } = useProperty();
   const [open, setOpen] = useState(false);
+  const [checkInDate, setCheckInDate] = useState<Date>();
+  const [checkOutDate, setCheckOutDate] = useState<Date>();
   const [formData, setFormData] = useState({
     hospede: "",
     checkIn: "",
@@ -72,10 +76,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   ]);
 
   const calculateNoites = () => {
-    if (formData.checkIn && formData.checkOut) {
-      const start = new Date(formData.checkIn);
-      const end = new Date(formData.checkOut);
-      const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    if (checkInDate && checkOutDate) {
+      const diff = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
       return diff > 0 ? diff : 0;
     }
     return 0;
@@ -146,7 +148,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.hospede || !formData.checkIn || !formData.checkOut) {
+    if (!formData.hospede || !checkInDate || !checkOutDate) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
@@ -166,6 +168,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     const novaReserva = {
       id: Date.now().toString(),
       ...formData,
+      checkIn: format(checkInDate, "yyyy-MM-dd"),
+      checkOut: format(checkOutDate, "yyyy-MM-dd"),
       noites,
       valor: valorTotal,
       comissaoPlataforma,
@@ -178,6 +182,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
 
     onAdd(novaReserva);
     setOpen(false);
+    setCheckInDate(undefined);
+    setCheckOutDate(undefined);
     setFormData({
       hospede: "",
       checkIn: "",
@@ -236,30 +242,22 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="checkIn">Check-in *</Label>
-                  <Input
-                    id="checkIn"
-                    type="date"
-                    value={formData.checkIn}
-                    onChange={(e) =>
-                      setFormData({ ...formData, checkIn: e.target.value })
-                    }
-                    required
+                  <DatePicker
+                    date={checkInDate}
+                    onDateChange={setCheckInDate}
+                    placeholder="Selecione a data"
                   />
                 </div>
                 <div>
                   <Label htmlFor="checkOut">Check-out *</Label>
-                  <Input
-                    id="checkOut"
-                    type="date"
-                    value={formData.checkOut}
-                    onChange={(e) =>
-                      setFormData({ ...formData, checkOut: e.target.value })
-                    }
-                    required
+                  <DatePicker
+                    date={checkOutDate}
+                    onDateChange={setCheckOutDate}
+                    placeholder="Selecione a data"
                   />
                 </div>
               </div>
-              {formData.checkIn && formData.checkOut && (
+              {checkInDate && checkOutDate && (
                 <p className="text-sm text-muted-foreground">
                   {calculateNoites()} noites
                 </p>
@@ -452,12 +450,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label>Data de Nascimento</Label>
-                        <Input
-                          type="date"
-                          value={guest.dataNascimento}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "dataNascimento", e.target.value)
+                        <DatePicker
+                          date={guest.dataNascimento ? new Date(guest.dataNascimento) : undefined}
+                          onDateChange={(date) =>
+                            updateGuest(guest.id, "dataNascimento", date ? format(date, "yyyy-MM-dd") : "")
                           }
+                          placeholder="Selecione a data"
                         />
                       </div>
                       <div>

@@ -16,6 +16,8 @@ import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
 import { Save, Upload, FileText, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 const DadosAlojamento = () => {
   const { selectedProperty, updateProperty } = useProperty();
@@ -200,13 +202,12 @@ const DadosAlojamento = () => {
             )}
             <div>
               <Label htmlFor="insuranceValidity">Validade do Seguro</Label>
-              <Input
-                id="insuranceValidity"
-                type="date"
-                value={formData.insuranceValidity}
-                onChange={(e) =>
-                  setFormData({ ...formData, insuranceValidity: e.target.value })
+              <DatePicker
+                date={formData.insuranceValidity ? new Date(formData.insuranceValidity) : undefined}
+                onDateChange={(date) =>
+                  setFormData({ ...formData, insuranceValidity: date ? format(date, "yyyy-MM-dd") : "" })
                 }
+                placeholder="Selecione a data"
                 disabled={!isEditing}
               />
             </div>

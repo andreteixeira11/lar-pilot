@@ -203,7 +203,6 @@ const Landing = () => {
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
               <img src="/logos/monumenta-logo.svg" alt="Monumental Atantic" className="h-10 w-auto" />
-              <span className="text-xl font-semibold hidden sm:inline">Monumental Atantic</span>
             </div>
 
 

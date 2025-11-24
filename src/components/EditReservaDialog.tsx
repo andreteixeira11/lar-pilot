@@ -39,6 +39,7 @@ interface Reserva {
   valorBaseLimpeza: number;
   ivaLimpeza: number;
   taxaTuristica: number;
+  numHospedes?: number;
   hospedes?: Guest[];
 }
 
@@ -60,6 +61,7 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
     valorBaseLimpeza: 0,
     ivaLimpeza: 0,
     taxaTuristica: 0,
+    numHospedes: 1,
   });
   const [guests, setGuests] = useState<Guest[]>([
     {
@@ -84,6 +86,7 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
         valorBaseLimpeza: reserva.valorBaseLimpeza || 0,
         ivaLimpeza: reserva.ivaLimpeza || 0,
         taxaTuristica: reserva.taxaTuristica || 0,
+        numHospedes: reserva.numHospedes || 1,
       });
       if (reserva.hospedes && reserva.hospedes.length > 0) {
         setGuests(reserva.hospedes);
@@ -251,6 +254,19 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                     <SelectItem value="Direto">Direto</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
+                <Input
+                  id="numHospedes"
+                  type="number"
+                  min="1"
+                  value={formData.numHospedes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
+                  }
+                  required
+                />
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

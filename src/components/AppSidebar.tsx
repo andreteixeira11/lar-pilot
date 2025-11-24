@@ -23,12 +23,12 @@ import {
 
 
 const menuItems = [
-  { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
+  { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Acessos", url: "/acessos", icon: Key },
-  { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
   { title: "INE", url: "/ine", icon: BarChart3 },
+  { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },
   { title: "Definições", url: "/definicoes", icon: Settings },
 ];

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const INE = () => {
   const { selectedPropertyId } = useProperty();
@@ -28,6 +29,7 @@ const INE = () => {
   const [selectedMonth, setSelectedMonth] = useState("2025-03");
   const [refresh, setRefresh] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [ineData, setIneData] = useState<Array<{ pais: string; nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number }>>([]);
 
   // Listen for property changes
   useEffect(() => {
@@ -36,43 +38,63 @@ const INE = () => {
     return () => window.removeEventListener('propertyChanged', handlePropertyChange);
   }, []);
 
-  // Calcular dados INE automaticamente das reservas
-  const ineData = useMemo(() => {
-    const [year, month] = selectedMonth.split("-");
-    const propertyReservas = reservas.filter((r) => {
-      if (r.propertyId !== selectedPropertyId || r.status !== "confirmada") return false;
-      
-      const checkInDate = new Date(r.checkIn);
-      return (
-        checkInDate.getFullYear() === parseInt(year) &&
-        checkInDate.getMonth() + 1 === parseInt(month)
-      );
-    });
+  // Carregar dados INE dos hóspedes
+  useEffect(() => {
+    const loadINEData = async () => {
+      const [year, month] = selectedMonth.split("-");
+      const propertyReservas = reservas.filter((r) => {
+        if (r.propertyId !== selectedPropertyId || r.status !== "confirmada") return false;
+        
+        const checkInDate = new Date(r.checkIn);
+        return (
+          checkInDate.getFullYear() === parseInt(year) &&
+          checkInDate.getMonth() + 1 === parseInt(month)
+        );
+      });
 
-    const dataByCountry: { [key: string]: { nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number } } = {};
-
-    propertyReservas.forEach((reserva) => {
-      const pais = reserva.paisOrigem;
-      
-      if (!dataByCountry[pais]) {
-        dataByCountry[pais] = {
-          nrHospedes: 0,
-          nrNoites: 0,
-          dormidas: 0,
-          noitesTransitadas: 0,
-        };
+      const reservationIds = propertyReservas.map(r => r.id);
+      if (reservationIds.length === 0) {
+        setIneData([]);
+        return;
       }
 
-      dataByCountry[pais].nrHospedes += reserva.nrHospedes;
-      dataByCountry[pais].nrNoites += reserva.noites;
-      // Dormidas = nr de hospedes × nr de noites
-      dataByCountry[pais].dormidas += reserva.nrHospedes * reserva.noites;
-    });
+      const { data: guests } = await supabase
+        .from('reservation_guests')
+        .select('*, reservations!inner(check_in, num_nights)')
+        .in('reservation_id', reservationIds);
 
-    return Object.entries(dataByCountry).map(([pais, data]) => ({
-      pais,
-      ...data,
-    }));
+      if (guests) {
+        const countryData: { [key: string]: { nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number } } = {};
+        
+        guests.forEach((guest: any) => {
+          const pais = guest.pais_residencia;
+          const noites = guest.reservations.num_nights;
+          
+          if (!countryData[pais]) {
+            countryData[pais] = {
+              nrHospedes: 0,
+              nrNoites: 0,
+              dormidas: 0,
+              noitesTransitadas: 0,
+            };
+          }
+
+          countryData[pais].nrHospedes += 1;
+          countryData[pais].nrNoites += noites;
+          countryData[pais].dormidas += noites; // 1 hóspede × noites
+        });
+
+        const data = Object.entries(countryData).map(([pais, data]) => ({
+          pais,
+          ...data,
+        }));
+        setIneData(data);
+      } else {
+        setIneData([]);
+      }
+    };
+
+    loadINEData();
   }, [reservas, selectedPropertyId, selectedMonth]);
 
   const totais = ineData.reduce(

@@ -19,7 +19,7 @@ export interface Reserva {
 
 interface ReservaContextType {
   reservas: Reserva[];
-  addReserva: (reserva: Reserva) => void;
+  addReserva: (reserva: Reserva & { hospedes?: any[] }) => void;
   updateReserva: (id: string, reserva: Partial<Reserva>) => void;
   deleteReserva: (id: string) => void;
   getReservasByProperty: (propertyId: string) => Reserva[];
@@ -82,14 +82,14 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addReserva = async (reserva: Reserva) => {
+  const addReserva = async (reserva: Reserva & { hospedes?: any[] }) => {
     try {
       const { data, error } = await supabase
         .from('reservations')
         .insert({
           property_id: reserva.propertyId,
           guest_name: reserva.hospede,
-          guest_email: 'email@example.com', // Você pode adicionar este campo no formulário
+          guest_email: 'email@example.com',
           check_in: reserva.checkIn,
           check_out: reserva.checkOut,
           num_nights: reserva.noites,
@@ -103,6 +103,30 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) throw error;
+
+      // Salvar dados dos hóspedes se existirem
+      if (data && reserva.hospedes && reserva.hospedes.length > 0) {
+        const guestsData = reserva.hospedes.map(guest => ({
+          reservation_id: data.id,
+          nome_completo: guest.nomeCompleto || '',
+          data_nascimento: guest.dataNascimento || null,
+          local_nascimento: guest.localNascimento || null,
+          nacionalidade: guest.nacionalidade || null,
+          local_residencia: guest.localResidencia || null,
+          pais_residencia: guest.paisResidencia || 'Portugal',
+          tipo_documento: guest.tipoDocumento || null,
+          numero_documento: guest.numeroDocumento || null,
+          pais_emissor: guest.paisEmissor || null,
+        }));
+
+        const { error: guestsError } = await supabase
+          .from('reservation_guests')
+          .insert(guestsData);
+
+        if (guestsError) {
+          console.error('Erro ao salvar hóspedes:', guestsError);
+        }
+      }
 
       if (data) {
         const newReserva: Reserva = {

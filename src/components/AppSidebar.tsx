@@ -7,6 +7,7 @@ import {
   BarChart3,
   FileText,
   CalendarDays,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,6 +25,7 @@ import {
 const menuItems = [
   { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
   { title: "Reservas", url: "/reservas", icon: CalendarIcon },
+  { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
   { title: "Acessos", url: "/acessos", icon: Key },
   { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
   { title: "INE", url: "/ine", icon: BarChart3 },

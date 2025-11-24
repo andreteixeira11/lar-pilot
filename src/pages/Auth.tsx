@@ -64,9 +64,12 @@ export default function Auth() {
   const searchParams = new URLSearchParams(window.location.search);
   const initialMode = searchParams.get("mode") === "login";
   const initialPlan = searchParams.get("plan") as SubscriptionPlan | null;
+  const showPlans = searchParams.get("showPlans") === "true";
   
   const [isLogin, setIsLogin] = useState(initialMode);
-  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property">("auth");
+  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property">(
+    showPlans ? "plan" : "auth"
+  );
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(initialPlan);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

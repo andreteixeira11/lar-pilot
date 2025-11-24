@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/PageHeader";
 import { useProperty } from "@/contexts/PropertyContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -9,12 +9,27 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Send, CheckCircle, Clock, Calendar, User, Mail } from "lucide-react";
+import { Send, CheckCircle, Clock, Calendar, User, Mail, FileText, Plus, Pencil, Trash2 } from "lucide-react";
+import { AddCheckinTemplateDialog } from "@/components/AddCheckinTemplateDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function CheckIns() {
   const { selectedProperty } = useProperty();
   const { toast } = useToast();
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
+  const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
 
   const { data: reservations, refetch } = useQuery({
     queryKey: ["reservations-checkins", selectedProperty?.id],
@@ -33,6 +48,23 @@ export default function CheckIns() {
         .eq("property_id", selectedProperty.id)
         .gte("check_in", new Date().toISOString().split("T")[0])
         .order("check_in", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!selectedProperty?.id,
+  });
+
+  const { data: templates, refetch: refetchTemplates } = useQuery({
+    queryKey: ["checkin-templates", selectedProperty?.id],
+    queryFn: async () => {
+      if (!selectedProperty?.id) return [];
+
+      const { data, error } = await supabase
+        .from("checkin_form_templates")
+        .select("*")
+        .eq("property_id", selectedProperty.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -64,6 +96,32 @@ export default function CheckIns() {
       });
     } finally {
       setSendingId(null);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    try {
+      const { error } = await supabase
+        .from("checkin_form_templates")
+        .delete()
+        .eq("id", templateId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Template eliminado!",
+        description: "O template foi eliminado com sucesso.",
+      });
+      refetchTemplates();
+    } catch (error: any) {
+      console.error("Error deleting template:", error);
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível eliminar o template",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingTemplateId(null);
     }
   };
 
@@ -99,11 +157,17 @@ export default function CheckIns() {
     <div className="p-4 sm:p-8">
       <PageHeader
         title="Check-ins Online"
-        description="Acompanhe e gerencie os check-ins dos seus hóspedes"
+        description="Gerir formulários e acompanhar os check-ins dos hóspedes"
       />
 
-      <div className="mt-8 space-y-4">
-        {reservations?.length === 0 ? (
+      <Tabs defaultValue="reservations" className="mt-8">
+        <TabsList>
+          <TabsTrigger value="reservations">Reservas</TabsTrigger>
+          <TabsTrigger value="templates">Templates de Formulários</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="reservations" className="mt-6 space-y-4">
+          {reservations?.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -178,7 +242,115 @@ export default function CheckIns() {
             );
           })
         )}
-      </div>
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Templates de Check-in</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Crie templates personalizados para os seus formulários de check-in
+                  </p>
+                </div>
+                <Button onClick={() => setTemplateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Template
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {templates?.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-muted-foreground mb-4">
+                    Ainda não tem templates criados
+                  </p>
+                  <Button onClick={() => setTemplateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Criar Primeiro Template
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {templates?.map((template) => (
+                    <Card key={template.id} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">{template.name}</h3>
+                            {template.is_default && (
+                              <Badge variant="secondary">Padrão</Badge>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                            {template.include_estimated_arrival && (
+                              <Badge variant="outline">Hora de chegada</Badge>
+                            )}
+                            {template.include_special_requests && (
+                              <Badge variant="outline">Pedidos especiais</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingTemplate(template);
+                              setTemplateDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDeletingTemplateId(template.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <AddCheckinTemplateDialog
+        open={templateDialogOpen}
+        onOpenChange={(open) => {
+          setTemplateDialogOpen(open);
+          if (!open) setEditingTemplate(null);
+        }}
+        onSuccess={refetchTemplates}
+        template={editingTemplate}
+      />
+
+      <AlertDialog open={!!deletingTemplateId} onOpenChange={() => setDeletingTemplateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Template</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem a certeza que pretende eliminar este template? Esta ação não pode ser revertida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingTemplateId && handleDeleteTemplate(deletingTemplateId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

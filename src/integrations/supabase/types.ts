@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkin_form_templates: {
+        Row: {
+          created_at: string
+          id: string
+          include_estimated_arrival: boolean
+          include_special_requests: boolean
+          is_default: boolean
+          name: string
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          include_estimated_arrival?: boolean
+          include_special_requests?: boolean
+          is_default?: boolean
+          name: string
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          include_estimated_arrival?: boolean
+          include_special_requests?: boolean
+          is_default?: boolean
+          name?: string
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkin_form_templates_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fiscal_tasks: {
         Row: {
           categoria: string
@@ -363,6 +404,7 @@ export type Database = {
           num_nights: number
           property_id: string
           status: string
+          template_id: string | null
           total_price: number | null
           updated_at: string
         }
@@ -382,6 +424,7 @@ export type Database = {
           num_nights: number
           property_id: string
           status?: string
+          template_id?: string | null
           total_price?: number | null
           updated_at?: string
         }
@@ -401,6 +444,7 @@ export type Database = {
           num_nights?: number
           property_id?: string
           status?: string
+          template_id?: string | null
           total_price?: number | null
           updated_at?: string
         }
@@ -410,6 +454,13 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "checkin_form_templates"
             referencedColumns: ["id"]
           },
         ]

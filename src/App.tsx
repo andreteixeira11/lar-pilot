@@ -19,6 +19,7 @@ import TaxaTuristica from "./pages/TaxaTuristica";
 import INE from "./pages/INE";
 import DadosAlojamento from "./pages/DadosAlojamento";
 import Acessos from "./pages/Acessos";
+import CalendarioFiscal from "./pages/CalendarioFiscal";
 import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import PropertySettings from "./pages/PropertySettings";
@@ -57,6 +58,7 @@ const App = () => (
                             <Route path="/reservas" element={<Reservas />} />
                             <Route path="/alojamento" element={<DadosAlojamento />} />
                             <Route path="/acessos" element={<Acessos />} />
+                            <Route path="/calendario-fiscal" element={<CalendarioFiscal />} />
                             <Route path="/resumo-mensal" element={<ResumoMensal />} />
                             <Route path="/taxa-turistica" element={<TaxaTuristica />} />
                             <Route path="/ine" element={<INE />} />

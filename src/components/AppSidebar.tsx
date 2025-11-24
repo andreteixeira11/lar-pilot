@@ -3,7 +3,6 @@ import {
   Calendar as CalendarIcon,
   Home,
   Key,
-  Settings,
   DollarSign,
   BarChart3,
   FileText,
@@ -30,7 +29,6 @@ const menuItems = [
   { title: "INE", url: "/ine", icon: BarChart3 },
   { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },
-  { title: "Definições", url: "/definicoes", icon: Settings },
 ];
 
 export function AppSidebar() {

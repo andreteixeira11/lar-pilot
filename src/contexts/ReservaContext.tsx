@@ -17,6 +17,8 @@ export interface Reserva {
 interface ReservaContextType {
   reservas: Reserva[];
   addReserva: (reserva: Reserva) => void;
+  updateReserva: (id: string, reserva: Partial<Reserva>) => void;
+  deleteReserva: (id: string) => void;
   getReservasByProperty: (propertyId: string) => Reserva[];
 }
 
@@ -89,6 +91,20 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("reservas", JSON.stringify(updated));
   };
 
+  const updateReserva = (id: string, updatedReserva: Partial<Reserva>) => {
+    const updated = reservas.map((r) =>
+      r.id === id ? { ...r, ...updatedReserva } : r
+    );
+    setReservas(updated);
+    localStorage.setItem("reservas", JSON.stringify(updated));
+  };
+
+  const deleteReserva = (id: string) => {
+    const updated = reservas.filter((r) => r.id !== id);
+    setReservas(updated);
+    localStorage.setItem("reservas", JSON.stringify(updated));
+  };
+
   const getReservasByProperty = (propertyId: string) => {
     return reservas.filter((r) => r.propertyId === propertyId);
   };
@@ -98,6 +114,8 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
       value={{
         reservas,
         addReserva,
+        updateReserva,
+        deleteReserva,
         getReservasByProperty,
       }}
     >

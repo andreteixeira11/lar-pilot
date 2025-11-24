@@ -4,10 +4,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, CreditCard, Users } from "lucide-react";
+import { Calendar, User, CreditCard, Users, Pencil, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { useState } from "react";
 
 interface Guest {
   id: string;
@@ -35,16 +47,63 @@ interface ReservaDetailsDialogProps {
   reserva: Reserva | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEdit?: (reserva: Reserva) => void;
+  onDelete?: (reservaId: string) => void;
 }
 
-export const ReservaDetailsDialog = ({ reserva, open, onOpenChange }: ReservaDetailsDialogProps) => {
+export const ReservaDetailsDialog = ({ 
+  reserva, 
+  open, 
+  onOpenChange,
+  onEdit,
+  onDelete
+}: ReservaDetailsDialogProps) => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   if (!reserva) return null;
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(reserva);
+      onOpenChange(false);
+    }
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(reserva.id);
+      setDeleteDialogOpen(false);
+      onOpenChange(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Detalhes da Reserva</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Detalhes da Reserva</DialogTitle>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEdit}
+                className="gap-2"
+              >
+                <Pencil className="h-4 w-4" />
+                Editar
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteDialogOpen(true)}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Excluir
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -197,6 +256,27 @@ export const ReservaDetailsDialog = ({ reserva, open, onOpenChange }: ReservaDet
           )}
         </div>
       </DialogContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A reserva de <strong>{reserva.hospede}</strong> será
+              permanentemente excluída do sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };

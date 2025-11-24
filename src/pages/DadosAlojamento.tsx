@@ -4,28 +4,67 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Upload, FileText } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const DadosAlojamento = () => {
   const { selectedProperty, updateProperty } = useProperty();
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState(
     selectedProperty || {
       name: "",
       address: "",
-      description: "",
       capacity: 0,
       bedrooms: 0,
       bathrooms: 0,
-      checkInTime: "",
-      checkOutTime: "",
       wifiPassword: "",
       parkingInfo: "",
+      region: "continental" as "continental" | "madeira",
+      rnal: "",
+      insuranceValidity: "",
+      insuranceFileUrl: "",
+      platformStatus: "nao_submetido" as "nao_submetido" | "submetido" | "aprovado",
     }
   );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProperty) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${selectedProperty.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError, data } = await supabase.storage
+        .from('insurance-documents')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('insurance-documents')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, insuranceFileUrl: publicUrl });
+      toast.success("Ficheiro carregado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao carregar ficheiro");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = () => {
     if (!selectedProperty) return;
@@ -92,16 +131,109 @@ const DadosAlojamento = () => {
               />
             </div>
             <div>
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+              <Label htmlFor="region">Região</Label>
+              <Select
+                value={formData.region}
+                onValueChange={(value: "continental" | "madeira") =>
+                  setFormData({ ...formData, region: value })
                 }
                 disabled={!isEditing}
-                rows={4}
+              >
+                <SelectTrigger id="region">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="continental">Portugal Continental</SelectItem>
+                  <SelectItem value="madeira">Madeira</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="rnal">RNAL</Label>
+              <Input
+                id="rnal"
+                value={formData.rnal}
+                onChange={(e) =>
+                  setFormData({ ...formData, rnal: e.target.value })
+                }
+                disabled={!isEditing}
+                placeholder="Número de registo"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Seguro de Responsabilidade Civil</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="insuranceValidity">Validade do Seguro</Label>
+              <Input
+                id="insuranceValidity"
+                type="date"
+                value={formData.insuranceValidity}
+                onChange={(e) =>
+                  setFormData({ ...formData, insuranceValidity: e.target.value })
+                }
+                disabled={!isEditing}
+              />
+            </div>
+            <div>
+              <Label htmlFor="insuranceFile">Ficheiro do Seguro</Label>
+              {formData.insuranceFileUrl && (
+                <div className="flex items-center gap-2 mb-2 p-2 bg-muted rounded">
+                  <FileText className="h-4 w-4" />
+                  <a 
+                    href={formData.insuranceFileUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex-1 truncate"
+                  >
+                    Ver ficheiro atual
+                  </a>
+                </div>
+              )}
+              {isEditing && (
+                <div className="flex gap-2">
+                  <Input
+                    id="insuranceFile"
+                    type="file"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                  />
+                  {uploading && <span className="text-sm text-muted-foreground">A carregar...</span>}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Estado da Plataforma</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <Label htmlFor="platformStatus">Estado</Label>
+              <Select
+                value={formData.platformStatus}
+                onValueChange={(value: "nao_submetido" | "submetido" | "aprovado") =>
+                  setFormData({ ...formData, platformStatus: value })
+                }
+                disabled={!isEditing}
+              >
+                <SelectTrigger id="platformStatus">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nao_submetido">Não Submetido</SelectItem>
+                  <SelectItem value="submetido">Submetido na Plataforma</SelectItem>
+                  <SelectItem value="aprovado">Aprovado</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -143,38 +275,6 @@ const DadosAlojamento = () => {
                 value={formData.bathrooms}
                 onChange={(e) =>
                   setFormData({ ...formData, bathrooms: parseInt(e.target.value) })
-                }
-                disabled={!isEditing}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Check-in / Check-out</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="checkInTime">Hora de Check-in</Label>
-              <Input
-                id="checkInTime"
-                type="time"
-                value={formData.checkInTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, checkInTime: e.target.value })
-                }
-                disabled={!isEditing}
-              />
-            </div>
-            <div>
-              <Label htmlFor="checkOutTime">Hora de Check-out</Label>
-              <Input
-                id="checkOutTime"
-                type="time"
-                value={formData.checkOutTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, checkOutTime: e.target.value })
                 }
                 disabled={!isEditing}
               />

@@ -150,9 +150,13 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          insurance_file_url: string | null
+          insurance_validity: string | null
           name: string
           parking_info: string | null
+          platform_status: string | null
           region: string | null
+          rnal: string | null
           updated_at: string
           user_id: string
           wifi_password: string | null
@@ -167,9 +171,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          insurance_file_url?: string | null
+          insurance_validity?: string | null
           name: string
           parking_info?: string | null
+          platform_status?: string | null
           region?: string | null
+          rnal?: string | null
           updated_at?: string
           user_id: string
           wifi_password?: string | null
@@ -184,9 +192,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          insurance_file_url?: string | null
+          insurance_validity?: string | null
           name?: string
           parking_info?: string | null
+          platform_status?: string | null
           region?: string | null
+          rnal?: string | null
           updated_at?: string
           user_id?: string
           wifi_password?: string | null

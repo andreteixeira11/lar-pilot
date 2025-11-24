@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
-import { Save, Plus, X } from "lucide-react";
+import { Save, Plus, X, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CustomAccess {
@@ -165,6 +165,14 @@ const Acessos = () => {
     );
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success(`${label} copiado!`);
+    }).catch(() => {
+      toast.error("Erro ao copiar");
+    });
+  };
+
   if (!selectedProperty) {
     return (
       <div className="p-8">
@@ -208,23 +216,49 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="airbnbUser">User</Label>
-              <Input
-                id="airbnbUser"
-                type="email"
-                value={formData.airbnbUser}
-                onChange={(e) => setFormData({ ...formData, airbnbUser: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="airbnbUser"
+                  type="email"
+                  value={formData.airbnbUser}
+                  onChange={(e) => setFormData({ ...formData, airbnbUser: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.airbnbUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.airbnbUser, "User")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="airbnbPassword">Password</Label>
-              <Input
-                id="airbnbPassword"
-                type="password"
-                value={formData.airbnbPassword}
-                onChange={(e) => setFormData({ ...formData, airbnbPassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="airbnbPassword"
+                  type="password"
+                  value={formData.airbnbPassword}
+                  onChange={(e) => setFormData({ ...formData, airbnbPassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.airbnbPassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.airbnbPassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -240,23 +274,49 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="bookingUser">User</Label>
-              <Input
-                id="bookingUser"
-                type="email"
-                value={formData.bookingUser}
-                onChange={(e) => setFormData({ ...formData, bookingUser: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="bookingUser"
+                  type="email"
+                  value={formData.bookingUser}
+                  onChange={(e) => setFormData({ ...formData, bookingUser: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.bookingUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.bookingUser, "User")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="bookingPassword">Password</Label>
-              <Input
-                id="bookingPassword"
-                type="password"
-                value={formData.bookingPassword}
-                onChange={(e) => setFormData({ ...formData, bookingPassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="bookingPassword"
+                  type="password"
+                  value={formData.bookingPassword}
+                  onChange={(e) => setFormData({ ...formData, bookingPassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.bookingPassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.bookingPassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -269,22 +329,48 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="taxaTuristicaUser">User</Label>
-              <Input
-                id="taxaTuristicaUser"
-                value={formData.taxaTuristicaUser}
-                onChange={(e) => setFormData({ ...formData, taxaTuristicaUser: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="taxaTuristicaUser"
+                  value={formData.taxaTuristicaUser}
+                  onChange={(e) => setFormData({ ...formData, taxaTuristicaUser: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.taxaTuristicaUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.taxaTuristicaUser, "User")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="taxaTuristicaPassword">Password</Label>
-              <Input
-                id="taxaTuristicaPassword"
-                type="password"
-                value={formData.taxaTuristicaPassword}
-                onChange={(e) => setFormData({ ...formData, taxaTuristicaPassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="taxaTuristicaPassword"
+                  type="password"
+                  value={formData.taxaTuristicaPassword}
+                  onChange={(e) => setFormData({ ...formData, taxaTuristicaPassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.taxaTuristicaPassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.taxaTuristicaPassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -297,30 +383,69 @@ const Acessos = () => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="sibaUnidadeHoteleira">Unidade Hoteleira</Label>
-              <Input
-                id="sibaUnidadeHoteleira"
-                value={formData.sibaUnidadeHoteleira}
-                onChange={(e) => setFormData({ ...formData, sibaUnidadeHoteleira: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="sibaUnidadeHoteleira"
+                  value={formData.sibaUnidadeHoteleira}
+                  onChange={(e) => setFormData({ ...formData, sibaUnidadeHoteleira: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.sibaUnidadeHoteleira && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.sibaUnidadeHoteleira, "Unidade Hoteleira")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="sibaEstabelecimento">Estabelecimento</Label>
-              <Input
-                id="sibaEstabelecimento"
-                value={formData.sibaEstabelecimento}
-                onChange={(e) => setFormData({ ...formData, sibaEstabelecimento: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="sibaEstabelecimento"
+                  value={formData.sibaEstabelecimento}
+                  onChange={(e) => setFormData({ ...formData, sibaEstabelecimento: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.sibaEstabelecimento && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.sibaEstabelecimento, "Estabelecimento")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="sibaChaveAtivacao">Chave de Ativação</Label>
-              <Input
-                id="sibaChaveAtivacao"
-                value={formData.sibaChaveAtivacao}
-                onChange={(e) => setFormData({ ...formData, sibaChaveAtivacao: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="sibaChaveAtivacao"
+                  value={formData.sibaChaveAtivacao}
+                  onChange={(e) => setFormData({ ...formData, sibaChaveAtivacao: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.sibaChaveAtivacao && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.sibaChaveAtivacao, "Chave de Ativação")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -333,40 +458,92 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="ineCodigoIdentificador">Código Identificador</Label>
-              <Input
-                id="ineCodigoIdentificador"
-                value={formData.ineCodigoIdentificador}
-                onChange={(e) => setFormData({ ...formData, ineCodigoIdentificador: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="ineCodigoIdentificador"
+                  value={formData.ineCodigoIdentificador}
+                  onChange={(e) => setFormData({ ...formData, ineCodigoIdentificador: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.ineCodigoIdentificador && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.ineCodigoIdentificador, "Código Identificador")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="ineChaveMestre">Chave Mestre</Label>
-              <Input
-                id="ineChaveMestre"
-                value={formData.ineChaveMestre}
-                onChange={(e) => setFormData({ ...formData, ineChaveMestre: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="ineChaveMestre"
+                  value={formData.ineChaveMestre}
+                  onChange={(e) => setFormData({ ...formData, ineChaveMestre: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.ineChaveMestre && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.ineChaveMestre, "Chave Mestre")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="ineCodigo">Código</Label>
-              <Input
-                id="ineCodigo"
-                value={formData.ineCodigo}
-                onChange={(e) => setFormData({ ...formData, ineCodigo: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="ineCodigo"
+                  value={formData.ineCodigo}
+                  onChange={(e) => setFormData({ ...formData, ineCodigo: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.ineCodigo && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.ineCodigo, "Código")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="inePassword">Password</Label>
-              <Input
-                id="inePassword"
-                type="password"
-                value={formData.inePassword}
-                onChange={(e) => setFormData({ ...formData, inePassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="inePassword"
+                  type="password"
+                  value={formData.inePassword}
+                  onChange={(e) => setFormData({ ...formData, inePassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.inePassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.inePassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -379,22 +556,48 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="livroReclamacoesUser">Utilizador</Label>
-              <Input
-                id="livroReclamacoesUser"
-                value={formData.livroReclamacoesUser}
-                onChange={(e) => setFormData({ ...formData, livroReclamacoesUser: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="livroReclamacoesUser"
+                  value={formData.livroReclamacoesUser}
+                  onChange={(e) => setFormData({ ...formData, livroReclamacoesUser: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.livroReclamacoesUser && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.livroReclamacoesUser, "Utilizador")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="livroReclamacoesPassword">Password</Label>
-              <Input
-                id="livroReclamacoesPassword"
-                type="password"
-                value={formData.livroReclamacoesPassword}
-                onChange={(e) => setFormData({ ...formData, livroReclamacoesPassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="livroReclamacoesPassword"
+                  type="password"
+                  value={formData.livroReclamacoesPassword}
+                  onChange={(e) => setFormData({ ...formData, livroReclamacoesPassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.livroReclamacoesPassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.livroReclamacoesPassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -407,22 +610,48 @@ const Acessos = () => {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="portalFinancasNif">NIF</Label>
-              <Input
-                id="portalFinancasNif"
-                value={formData.portalFinancasNif}
-                onChange={(e) => setFormData({ ...formData, portalFinancasNif: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="portalFinancasNif"
+                  value={formData.portalFinancasNif}
+                  onChange={(e) => setFormData({ ...formData, portalFinancasNif: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.portalFinancasNif && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.portalFinancasNif, "NIF")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div>
               <Label htmlFor="portalFinancasPassword">Password</Label>
-              <Input
-                id="portalFinancasPassword"
-                type="password"
-                value={formData.portalFinancasPassword}
-                onChange={(e) => setFormData({ ...formData, portalFinancasPassword: e.target.value })}
-                disabled={!isEditing}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="portalFinancasPassword"
+                  type="password"
+                  value={formData.portalFinancasPassword}
+                  onChange={(e) => setFormData({ ...formData, portalFinancasPassword: e.target.value })}
+                  disabled={!isEditing}
+                  className="flex-1"
+                />
+                {formData.portalFinancasPassword && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(formData.portalFinancasPassword, "Password")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -449,30 +678,69 @@ const Acessos = () => {
             <CardContent className="space-y-4">
               <div>
                 <Label>Nome da Plataforma</Label>
-                <Input
-                  value={access.name}
-                  onChange={(e) => updateCustomAccess(access.id, "name", e.target.value)}
-                  disabled={!isEditing}
-                  placeholder="Ex: Outra plataforma"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={access.name}
+                    onChange={(e) => updateCustomAccess(access.id, "name", e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Ex: Outra plataforma"
+                    className="flex-1"
+                  />
+                  {access.name && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(access.name, "Nome")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>User</Label>
-                  <Input
-                    value={access.user}
-                    onChange={(e) => updateCustomAccess(access.id, "user", e.target.value)}
-                    disabled={!isEditing}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={access.user}
+                      onChange={(e) => updateCustomAccess(access.id, "user", e.target.value)}
+                      disabled={!isEditing}
+                      className="flex-1"
+                    />
+                    {access.user && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => copyToClipboard(access.user, "User")}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <Label>Password</Label>
-                  <Input
-                    type="password"
-                    value={access.password}
-                    onChange={(e) => updateCustomAccess(access.id, "password", e.target.value)}
-                    disabled={!isEditing}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="password"
+                      value={access.password}
+                      onChange={(e) => updateCustomAccess(access.id, "password", e.target.value)}
+                      disabled={!isEditing}
+                      className="flex-1"
+                    />
+                    {access.password && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => copyToClipboard(access.password, "Password")}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardContent>

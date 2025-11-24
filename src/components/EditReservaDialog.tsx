@@ -21,11 +21,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Guest {
   id: string;
-  nome: string;
-  documento: string;
-  tipoDocumento: "passaporte" | "cc";
+  nomeCompleto: string;
   dataNascimento: string;
+  localNascimento: string;
   nacionalidade: string;
+  localResidencia: string;
+  paisResidencia: string;
+  tipoDocumento: "cc" | "passaporte";
+  numeroDocumento: string;
+  paisEmissor: string;
 }
 
 interface Reserva {
@@ -66,11 +70,15 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
   const [guests, setGuests] = useState<Guest[]>([
     {
       id: "1",
-      nome: "",
-      documento: "",
-      tipoDocumento: "cc",
+      nomeCompleto: "",
       dataNascimento: "",
+      localNascimento: "",
       nacionalidade: "",
+      localResidencia: "",
+      paisResidencia: "",
+      tipoDocumento: "cc",
+      numeroDocumento: "",
+      paisEmissor: "",
     },
   ]);
 
@@ -136,11 +144,15 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
       ...guests,
       {
         id: Date.now().toString(),
-        nome: "",
-        documento: "",
-        tipoDocumento: "cc",
+        nomeCompleto: "",
         dataNascimento: "",
+        localNascimento: "",
         nacionalidade: "",
+        localResidencia: "",
+        paisResidencia: "",
+        tipoDocumento: "cc",
+        numeroDocumento: "",
+        paisEmissor: "",
       },
     ]);
   };
@@ -406,12 +418,66 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                     <div>
                       <Label>Nome Completo</Label>
                       <Input
-                        value={guest.nome}
-                        onChange={(e) => updateGuest(guest.id, "nome", e.target.value)}
+                        value={guest.nomeCompleto}
+                        onChange={(e) => updateGuest(guest.id, "nomeCompleto", e.target.value)}
                         placeholder="Nome completo do hóspede"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Data de Nascimento</Label>
+                        <Input
+                          type="date"
+                          value={guest.dataNascimento}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "dataNascimento", e.target.value)
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Label>Local de Nascimento</Label>
+                        <Input
+                          value={guest.localNascimento}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "localNascimento", e.target.value)
+                          }
+                          placeholder="Cidade/Local"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Nacionalidade</Label>
+                        <Input
+                          value={guest.nacionalidade}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "nacionalidade", e.target.value)
+                          }
+                          placeholder="Ex: Portuguesa"
+                        />
+                      </div>
+                      <div>
+                        <Label>Local de Residência</Label>
+                        <Input
+                          value={guest.localResidencia}
+                          onChange={(e) =>
+                            updateGuest(guest.id, "localResidencia", e.target.value)
+                          }
+                          placeholder="Cidade"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>País de Residência</Label>
+                      <Input
+                        value={guest.paisResidencia}
+                        onChange={(e) =>
+                          updateGuest(guest.id, "paisResidencia", e.target.value)
+                        }
+                        placeholder="País"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <Label>Tipo de Documento</Label>
                         <Select
@@ -432,31 +498,19 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                       <div>
                         <Label>Número do Documento</Label>
                         <Input
-                          value={guest.documento}
-                          onChange={(e) => updateGuest(guest.id, "documento", e.target.value)}
+                          value={guest.numeroDocumento}
+                          onChange={(e) => updateGuest(guest.id, "numeroDocumento", e.target.value)}
                           placeholder="Número"
                         />
                       </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Data de Nascimento</Label>
+                        <Label>País Emissor</Label>
                         <Input
-                          type="date"
-                          value={guest.dataNascimento}
+                          value={guest.paisEmissor}
                           onChange={(e) =>
-                            updateGuest(guest.id, "dataNascimento", e.target.value)
+                            updateGuest(guest.id, "paisEmissor", e.target.value)
                           }
-                        />
-                      </div>
-                      <div>
-                        <Label>Nacionalidade</Label>
-                        <Input
-                          value={guest.nacionalidade}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "nacionalidade", e.target.value)
-                          }
-                          placeholder="Ex: Portuguesa"
+                          placeholder="País"
                         />
                       </div>
                     </div>

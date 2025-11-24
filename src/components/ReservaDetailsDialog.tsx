@@ -25,11 +25,15 @@ import autoTable from "jspdf-autotable";
 
 interface Guest {
   id: string;
-  nome: string;
-  documento: string;
-  tipoDocumento: "passaporte" | "cc";
+  nomeCompleto: string;
   dataNascimento: string;
+  localNascimento: string;
   nacionalidade: string;
+  localResidencia: string;
+  paisResidencia: string;
+  tipoDocumento: "cc" | "passaporte";
+  numeroDocumento: string;
+  paisEmissor: string;
 }
 
 interface Reserva {
@@ -152,20 +156,25 @@ export const ReservaDetailsDialog = ({
       doc.text("Hóspedes:", 14, lastY + 15);
       
       const guestsData = reserva.hospedes.map((guest) => [
-        guest.nome || "Não informado",
-        guest.tipoDocumento === "cc" ? "CC" : "Passaporte",
-        guest.documento || "Não informado",
+        guest.nomeCompleto || "Não informado",
         guest.dataNascimento 
           ? new Date(guest.dataNascimento).toLocaleDateString("pt-PT")
           : "Não informado",
+        guest.localNascimento || "Não informado",
         guest.nacionalidade || "Não informado",
+        guest.localResidencia || "Não informado",
+        guest.paisResidencia || "Não informado",
+        guest.tipoDocumento === "cc" ? "CC" : "Passaporte",
+        guest.numeroDocumento || "Não informado",
+        guest.paisEmissor || "Não informado",
       ]);
       
       autoTable(doc, {
         startY: lastY + 20,
-        head: [["Nome", "Tipo Doc.", "Documento", "Data Nasc.", "Nacionalidade"]],
+        head: [["Nome", "Data Nasc.", "Local Nasc.", "Nacionalidade", "Local Res.", "País Res.", "Tipo Doc.", "Nº Doc.", "País Emissor"]],
         body: guestsData,
         theme: "grid",
+        styles: { fontSize: 8 },
       });
     }
     
@@ -377,20 +386,10 @@ export const ReservaDetailsDialog = ({
                 {reserva.hospedes.map((guest, index) => (
                   <div key={guest.id} className="space-y-2">
                     {index > 0 && <Separator />}
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-muted-foreground">Nome:</p>
-                        <p className="font-medium">{guest.nome || "Não informado"}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Nacionalidade:</p>
-                        <p className="font-medium">{guest.nacionalidade || "Não informado"}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Documento:</p>
-                        <p className="font-medium">
-                          {guest.tipoDocumento === "cc" ? "CC" : "Passaporte"}: {guest.documento || "Não informado"}
-                        </p>
+                        <p className="text-muted-foreground">Nome Completo:</p>
+                        <p className="font-medium">{guest.nomeCompleto || "Não informado"}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Data de Nascimento:</p>
@@ -399,6 +398,34 @@ export const ReservaDetailsDialog = ({
                             ? new Date(guest.dataNascimento).toLocaleDateString("pt-PT")
                             : "Não informado"}
                         </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Local de Nascimento:</p>
+                        <p className="font-medium">{guest.localNascimento || "Não informado"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Nacionalidade:</p>
+                        <p className="font-medium">{guest.nacionalidade || "Não informado"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Local de Residência:</p>
+                        <p className="font-medium">{guest.localResidencia || "Não informado"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">País de Residência:</p>
+                        <p className="font-medium">{guest.paisResidencia || "Não informado"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Tipo de Documento:</p>
+                        <p className="font-medium">{guest.tipoDocumento === "cc" ? "Cartão de Cidadão" : "Passaporte"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Número do Documento:</p>
+                        <p className="font-medium">{guest.numeroDocumento || "Não informado"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">País Emissor:</p>
+                        <p className="font-medium">{guest.paisEmissor || "Não informado"}</p>
                       </div>
                     </div>
                   </div>

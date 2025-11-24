@@ -21,9 +21,17 @@ import {
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
 
-export const AddPropertyDialog = () => {
+interface AddPropertyDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const AddPropertyDialog = ({ open: externalOpen, onOpenChange }: AddPropertyDialogProps = {}) => {
   const { addProperty } = useProperty();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const [importUrl, setImportUrl] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const [formData, setFormData] = useState({

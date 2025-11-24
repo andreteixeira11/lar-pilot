@@ -8,7 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PropertySelector } from "@/components/PropertySelector";
+import { PropertySelectorCommand } from "@/components/PropertySelectorCommand";
 import { NotificationMenu } from "@/components/NotificationMenu";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -47,7 +47,7 @@ const App = () => (
                     <main className="flex-1 md:ml-64 bg-background">
                       <header className="h-14 border-b border-border flex items-center justify-between gap-4 px-4 bg-card sticky top-0 z-10">
                         <div className="flex-1 max-w-md">
-                          <PropertySelector />
+                          <PropertySelectorCommand />
                         </div>
                         <NotificationMenu />
                       </header>

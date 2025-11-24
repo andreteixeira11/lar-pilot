@@ -351,6 +351,7 @@ export type Database = {
           booking_source: string | null
           check_in: string
           check_out: string
+          checkin_token: string | null
           country_origin: string
           created_at: string
           guest_email: string
@@ -369,6 +370,7 @@ export type Database = {
           booking_source?: string | null
           check_in: string
           check_out: string
+          checkin_token?: string | null
           country_origin: string
           created_at?: string
           guest_email: string
@@ -387,6 +389,7 @@ export type Database = {
           booking_source?: string | null
           check_in?: string
           check_out?: string
+          checkin_token?: string | null
           country_origin?: string
           created_at?: string
           guest_email?: string
@@ -463,7 +466,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_checkin_token: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never

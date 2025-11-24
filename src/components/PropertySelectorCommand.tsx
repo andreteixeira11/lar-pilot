@@ -33,39 +33,39 @@ export function PropertySelectorCommand() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between bg-background hover:bg-accent border-border transition-all duration-200"
+            className="w-full justify-between bg-background hover:bg-accent border-border transition-all duration-200 h-10 sm:h-11"
           >
             {selectedProperty ? (
               <motion.div 
-                className="flex items-center gap-2 flex-1 min-w-0"
+                className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
               >
-                <Building2 className="h-4 w-4 text-primary shrink-0" />
+                <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary shrink-0" />
                 <div className="flex flex-col items-start flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate w-full text-left">
+                  <span className="text-xs sm:text-sm font-medium truncate w-full text-left">
                     {selectedProperty.name}
                   </span>
-                  <span className="text-xs text-muted-foreground truncate w-full text-left">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground truncate w-full text-left hidden sm:block">
                     {selectedProperty.address}
                   </span>
                 </div>
               </motion.div>
             ) : (
-              <span className="text-muted-foreground">Selecionar propriedade...</span>
+              <span className="text-xs sm:text-sm text-muted-foreground">Selecionar...</span>
             )}
             <motion.div
               animate={{ rotate: open ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <ChevronsUpDown className="ml-1 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 opacity-50" />
             </motion.div>
           </Button>
         </PopoverTrigger>
         <AnimatePresence>
           {open && (
-            <PopoverContent className="w-[400px] p-0" align="start" asChild>
+            <PopoverContent className="w-[90vw] sm:w-[400px] max-w-md p-0" align="start" asChild>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: -10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}

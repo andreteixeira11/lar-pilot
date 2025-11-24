@@ -152,6 +152,7 @@ export type Database = {
           id: string
           name: string
           parking_info: string | null
+          region: string | null
           updated_at: string
           user_id: string
           wifi_password: string | null
@@ -168,6 +169,7 @@ export type Database = {
           id?: string
           name: string
           parking_info?: string | null
+          region?: string | null
           updated_at?: string
           user_id: string
           wifi_password?: string | null
@@ -184,6 +186,7 @@ export type Database = {
           id?: string
           name?: string
           parking_info?: string | null
+          region?: string | null
           updated_at?: string
           user_id?: string
           wifi_password?: string | null

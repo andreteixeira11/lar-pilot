@@ -13,6 +13,7 @@ export interface Property {
   wifiPassword: string;
   parkingInfo: string;
   alNumber?: string;
+  region: 'madeira' | 'continental';
 }
 
 interface PropertyContextType {
@@ -40,6 +41,7 @@ const initialProperties: Property[] = [
     checkOutTime: "11:00",
     wifiPassword: "praia2024",
     parkingInfo: "Estacionamento gratuito na rua",
+    region: "continental",
   },
   {
     id: "2",
@@ -53,6 +55,7 @@ const initialProperties: Property[] = [
     checkOutTime: "12:00",
     wifiPassword: "lisboa123",
     parkingInfo: "Garagem privada incluída",
+    region: "continental",
   },
   {
     id: "3",
@@ -66,6 +69,7 @@ const initialProperties: Property[] = [
     checkOutTime: "10:00",
     wifiPassword: "douro2024",
     parkingInfo: "Estacionamento privado para 3 carros",
+    region: "continental",
   },
 ];
 

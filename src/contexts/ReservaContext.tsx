@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./AuthContext";
+import { toast } from "sonner";
 
 export interface Reserva {
   id: string;
@@ -24,85 +27,151 @@ interface ReservaContextType {
 
 const ReservaContext = createContext<ReservaContextType | undefined>(undefined);
 
-const mockReservas: Reserva[] = [
-  {
-    id: "1",
-    hospede: "João Silva",
-    checkIn: "2025-01-15",
-    checkOut: "2025-01-20",
-    noites: 5,
-    plataforma: "Airbnb",
-    valor: 650,
-    status: "confirmada",
-    propertyId: "1",
-    nrHospedes: 2,
-    paisOrigem: "Portugal",
-  },
-  {
-    id: "2",
-    hospede: "Maria Santos",
-    checkIn: "2025-01-22",
-    checkOut: "2025-01-25",
-    noites: 3,
-    plataforma: "Booking",
-    valor: 420,
-    status: "confirmada",
-    propertyId: "1",
-    nrHospedes: 4,
-    paisOrigem: "Espanha",
-  },
-  {
-    id: "3",
-    hospede: "Pedro Costa",
-    checkIn: "2025-02-18",
-    checkOut: "2025-02-25",
-    noites: 7,
-    plataforma: "Airbnb",
-    valor: 890,
-    status: "confirmada",
-    propertyId: "1",
-    nrHospedes: 3,
-    paisOrigem: "França",
-  },
-  {
-    id: "4",
-    hospede: "Ana Ferreira",
-    checkIn: "2025-03-05",
-    checkOut: "2025-03-12",
-    noites: 7,
-    plataforma: "Booking",
-    valor: 980,
-    status: "confirmada",
-    propertyId: "1",
-    nrHospedes: 2,
-    paisOrigem: "Alemanha",
-  },
-];
+// Dados de exemplo removidos - agora usa dados do Supabase
 
 export const ReservaProvider = ({ children }: { children: ReactNode }) => {
-  const [reservas, setReservas] = useState<Reserva[]>(() => {
-    const stored = localStorage.getItem("reservas");
-    return stored ? JSON.parse(stored) : mockReservas;
-  });
+  const { user } = useAuth();
+  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addReserva = (reserva: Reserva) => {
-    const updated = [reserva, ...reservas];
-    setReservas(updated);
-    localStorage.setItem("reservas", JSON.stringify(updated));
+  // Carregar reservas do Supabase
+  useEffect(() => {
+    if (user) {
+      loadReservas();
+    }
+  }, [user]);
+
+  const loadReservas = async () => {
+    try {
+      const { data: properties } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('user_id', user?.id);
+
+      if (!properties) return;
+
+      const propertyIds = properties.map(p => p.id);
+
+      const { data, error } = await supabase
+        .from('reservations')
+        .select('*')
+        .in('property_id', propertyIds);
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedReservas: Reserva[] = data.map(r => ({
+          id: r.id,
+          hospede: r.guest_name,
+          checkIn: r.check_in,
+          checkOut: r.check_out,
+          noites: r.num_nights,
+          plataforma: r.booking_source || 'Direto',
+          valor: Number(r.total_price) || 0,
+          status: r.status,
+          propertyId: r.property_id,
+          nrHospedes: r.num_guests,
+          paisOrigem: r.country_origin,
+        }));
+        setReservas(formattedReservas);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar reservas:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const updateReserva = (id: string, updatedReserva: Partial<Reserva>) => {
-    const updated = reservas.map((r) =>
-      r.id === id ? { ...r, ...updatedReserva } : r
-    );
-    setReservas(updated);
-    localStorage.setItem("reservas", JSON.stringify(updated));
+  const addReserva = async (reserva: Reserva) => {
+    try {
+      const { data, error } = await supabase
+        .from('reservations')
+        .insert({
+          property_id: reserva.propertyId,
+          guest_name: reserva.hospede,
+          guest_email: 'email@example.com', // Você pode adicionar este campo no formulário
+          check_in: reserva.checkIn,
+          check_out: reserva.checkOut,
+          num_nights: reserva.noites,
+          num_guests: reserva.nrHospedes,
+          booking_source: reserva.plataforma,
+          country_origin: reserva.paisOrigem,
+          total_price: reserva.valor,
+          status: reserva.status,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const newReserva: Reserva = {
+          id: data.id,
+          hospede: data.guest_name,
+          checkIn: data.check_in,
+          checkOut: data.check_out,
+          noites: data.num_nights,
+          plataforma: data.booking_source || 'Direto',
+          valor: Number(data.total_price) || 0,
+          status: data.status,
+          propertyId: data.property_id,
+          nrHospedes: data.num_guests,
+          paisOrigem: data.country_origin,
+        };
+        setReservas([newReserva, ...reservas]);
+        toast.success('Reserva adicionada com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar reserva:', error);
+      toast.error('Erro ao adicionar reserva');
+    }
   };
 
-  const deleteReserva = (id: string) => {
-    const updated = reservas.filter((r) => r.id !== id);
-    setReservas(updated);
-    localStorage.setItem("reservas", JSON.stringify(updated));
+  const updateReserva = async (id: string, updatedReserva: Partial<Reserva>) => {
+    try {
+      const updateData: any = {};
+      if (updatedReserva.hospede) updateData.guest_name = updatedReserva.hospede;
+      if (updatedReserva.checkIn) updateData.check_in = updatedReserva.checkIn;
+      if (updatedReserva.checkOut) updateData.check_out = updatedReserva.checkOut;
+      if (updatedReserva.noites) updateData.num_nights = updatedReserva.noites;
+      if (updatedReserva.nrHospedes) updateData.num_guests = updatedReserva.nrHospedes;
+      if (updatedReserva.plataforma) updateData.booking_source = updatedReserva.plataforma;
+      if (updatedReserva.paisOrigem) updateData.country_origin = updatedReserva.paisOrigem;
+      if (updatedReserva.valor) updateData.total_price = updatedReserva.valor;
+      if (updatedReserva.status) updateData.status = updatedReserva.status;
+
+      const { error } = await supabase
+        .from('reservations')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setReservas(reservas.map((r) =>
+        r.id === id ? { ...r, ...updatedReserva } : r
+      ));
+      toast.success('Reserva atualizada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao atualizar reserva:', error);
+      toast.error('Erro ao atualizar reserva');
+    }
+  };
+
+  const deleteReserva = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setReservas(reservas.filter((r) => r.id !== id));
+      toast.success('Reserva excluída com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir reserva:', error);
+      toast.error('Erro ao excluir reserva');
+    }
   };
 
   const getReservasByProperty = (propertyId: string) => {

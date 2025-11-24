@@ -156,6 +156,9 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       return;
     }
 
+    // Obter país de origem do primeiro hóspede
+    const paisOrigem = guests[0]?.paisResidencia || guests[0]?.nacionalidade || "Portugal";
+
     const comissaoPlataforma = calculateComissoes();
     const valorTotal = calculateValorTotalReserva();
 
@@ -167,10 +170,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       comissaoPlataforma,
       hospedes: guests,
       propertyId: "1",
+      paisOrigem,
+      status: "confirmada", // Define como confirmada por padrão
+      nrHospedes: formData.numHospedes,
     };
 
     onAdd(novaReserva);
-    toast.success("Reserva adicionada com sucesso!");
     setOpen(false);
     setFormData({
       hospede: "",

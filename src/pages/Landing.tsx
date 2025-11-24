@@ -311,7 +311,7 @@ const Landing = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
         </div>
-        <div className="container relative z-10 mx-auto px-4 py-32 text-center">
+        <div className="container relative z-10 mx-auto px-4 pt-20 pb-32 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Gestão de Alojamento Local
             <br />

@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Home,
   Key,
   Settings,
   DollarSign,
   BarChart3,
   FileText,
+  CalendarDays,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,9 +23,10 @@ import {
 
 
 const menuItems = [
-  { title: "Reservas", url: "/reservas", icon: Calendar },
+  { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
   { title: "Acessos", url: "/acessos", icon: Key },
+  { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
   { title: "INE", url: "/ine", icon: BarChart3 },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },

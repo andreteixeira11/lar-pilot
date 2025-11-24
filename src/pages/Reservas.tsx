@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User } from "lucide-react";
 import { AddReservaDialog } from "@/components/AddReservaDialog";
+import { ReservaDetailsDialog } from "@/components/ReservaDetailsDialog";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,8 @@ const Reservas = () => {
   const [filterYear, setFilterYear] = useState("2025");
   const [filterMonth, setFilterMonth] = useState("all");
   const [refresh, setRefresh] = useState(0);
+  const [selectedReserva, setSelectedReserva] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Listen for property changes
   useEffect(() => {
@@ -31,6 +34,11 @@ const Reservas = () => {
 
   const handleAddReserva = (novaReserva: any) => {
     addReserva({ ...novaReserva, propertyId: selectedPropertyId });
+  };
+
+  const handleReservaClick = (reserva: any) => {
+    setSelectedReserva(reserva);
+    setDetailsOpen(true);
   };
 
   const filteredReservas = reservas.filter((reserva) => {
@@ -116,7 +124,11 @@ const Reservas = () => {
           </Card>
         ) : (
           filteredReservas.map((reserva) => (
-            <Card key={reserva.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={reserva.id} 
+              className="hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer"
+              onClick={() => handleReservaClick(reserva)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
               <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -177,6 +189,12 @@ const Reservas = () => {
           ))
         )}
       </div>
+
+      <ReservaDetailsDialog
+        reserva={selectedReserva}
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+      />
     </div>
   );
 };

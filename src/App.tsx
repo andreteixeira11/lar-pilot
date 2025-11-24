@@ -10,6 +10,7 @@ import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { UserMenu } from "@/components/UserMenu";
+import { PropertySelector } from "@/components/PropertySelector";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Reservas from "./pages/Reservas";
@@ -44,8 +45,11 @@ const App = () => (
                       <div className="flex min-h-screen w-full">
                         <AppSidebar />
                         <main className="flex-1 bg-background">
-                          <header className="h-14 border-b border-border flex items-center justify-between px-4 bg-card sticky top-0 z-10">
+                          <header className="h-14 border-b border-border flex items-center justify-between gap-4 px-4 bg-card sticky top-0 z-10">
                             <SidebarTrigger />
+                            <div className="flex-1 max-w-md">
+                              <PropertySelector />
+                            </div>
                             <UserMenu />
                           </header>
                           <Routes>

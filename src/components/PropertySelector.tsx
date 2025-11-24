@@ -23,20 +23,20 @@ export const PropertySelector = () => {
   }, [selectedPropertyId]);
 
   return (
-    <div className="px-4 py-3 border-b border-sidebar-border space-y-3">
+    <div className="flex items-center gap-2 w-full">
       <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
-        <SelectTrigger className="flex-1 bg-sidebar-accent border-sidebar-border hover:bg-sidebar-border transition-colors">
-          <div className="flex items-center gap-3 w-full">
-            <Building2 className="h-5 w-5 text-sidebar-primary shrink-0" />
+        <SelectTrigger className="flex-1 bg-background border-border hover:bg-accent transition-colors">
+          <div className="flex items-center gap-2 w-full">
+            <Building2 className="h-4 w-4 text-primary shrink-0" />
             <div className="flex flex-col items-start flex-1 min-w-0">
-              <span className="text-sm font-semibold text-sidebar-foreground truncate w-full">
+              <span className="text-sm font-medium text-foreground truncate w-full">
                 {selectedProperty?.name}
               </span>
-              <span className="text-xs text-sidebar-foreground/70 truncate w-full">
+              <span className="text-xs text-muted-foreground truncate w-full">
                 {selectedProperty?.address}
               </span>
             </div>
-            <ChevronDown className="h-4 w-4 text-sidebar-foreground/70 shrink-0" />
+            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
           </div>
         </SelectTrigger>
         <SelectContent>
@@ -52,7 +52,6 @@ export const PropertySelector = () => {
           ))}
         </SelectContent>
       </Select>
-
       <AddPropertyDialog />
     </div>
   );

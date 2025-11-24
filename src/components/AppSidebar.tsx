@@ -19,7 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { PropertySelector } from "./PropertySelector";
+
 
 const menuItems = [
   { title: "Reservas", url: "/reservas", icon: Calendar },
@@ -46,8 +46,6 @@ export function AppSidebar() {
             />
           </div>
         )}
-
-        {state !== "collapsed" && <PropertySelector />}
 
         <SidebarGroup>
           <SidebarGroupLabel>Navegação</SidebarGroupLabel>

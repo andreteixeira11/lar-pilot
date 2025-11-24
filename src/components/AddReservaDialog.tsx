@@ -75,6 +75,10 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     return formData.valorBaseLimpeza + formData.ivaLimpeza;
   };
 
+  const calculateValorTotalReserva = () => {
+    return calculateValorTotalEstadia() + calculateValorTotalLimpeza() + formData.taxaTuristica;
+  };
+
   const calculateComissoes = () => {
     const { plataforma, taxaTuristica } = formData;
     const valorTotalEstadia = calculateValorTotalEstadia();
@@ -342,6 +346,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   </p>
                 </div>
               )}
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <span className="text-base font-semibold">Valor Total da Reserva:</span>
+                  <span className="text-xl font-bold text-primary">€{calculateValorTotalReserva().toFixed(2)}</span>
+                </div>
+              </div>
               <div>
                 <Label htmlFor="status">Estado</Label>
                 <Select

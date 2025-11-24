@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
-import { Save, Plus, X, Copy } from "lucide-react";
+import { Save, Plus, X, Copy, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CustomAccess {
@@ -20,6 +20,7 @@ const Acessos = () => {
   const { selectedProperty } = useProperty();
   const [isEditing, setIsEditing] = useState(false);
   const [customAccess, setCustomAccess] = useState<CustomAccess[]>([]);
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
   
   const [formData, setFormData] = useState({
     // Airbnb
@@ -173,6 +174,10 @@ const Acessos = () => {
     });
   };
 
+  const togglePasswordVisibility = (fieldName: string) => {
+    setShowPasswords(prev => ({ ...prev, [fieldName]: !prev[fieldName] }));
+  };
+
   if (!selectedProperty) {
     return (
       <div className="p-8">
@@ -242,21 +247,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="airbnbPassword"
-                  type="password"
+                  type={showPasswords.airbnbPassword ? "text" : "password"}
                   value={formData.airbnbPassword}
                   onChange={(e) => setFormData({ ...formData, airbnbPassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.airbnbPassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.airbnbPassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('airbnbPassword')}
+                    >
+                      {showPasswords.airbnbPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.airbnbPassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -300,21 +315,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="bookingPassword"
-                  type="password"
+                  type={showPasswords.bookingPassword ? "text" : "password"}
                   value={formData.bookingPassword}
                   onChange={(e) => setFormData({ ...formData, bookingPassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.bookingPassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.bookingPassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('bookingPassword')}
+                    >
+                      {showPasswords.bookingPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.bookingPassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -354,21 +379,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="taxaTuristicaPassword"
-                  type="password"
+                  type={showPasswords.taxaTuristicaPassword ? "text" : "password"}
                   value={formData.taxaTuristicaPassword}
                   onChange={(e) => setFormData({ ...formData, taxaTuristicaPassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.taxaTuristicaPassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.taxaTuristicaPassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('taxaTuristicaPassword')}
+                    >
+                      {showPasswords.taxaTuristicaPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.taxaTuristicaPassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -527,21 +562,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="inePassword"
-                  type="password"
+                  type={showPasswords.inePassword ? "text" : "password"}
                   value={formData.inePassword}
                   onChange={(e) => setFormData({ ...formData, inePassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.inePassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.inePassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('inePassword')}
+                    >
+                      {showPasswords.inePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.inePassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -581,21 +626,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="livroReclamacoesPassword"
-                  type="password"
+                  type={showPasswords.livroReclamacoesPassword ? "text" : "password"}
                   value={formData.livroReclamacoesPassword}
                   onChange={(e) => setFormData({ ...formData, livroReclamacoesPassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.livroReclamacoesPassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.livroReclamacoesPassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('livroReclamacoesPassword')}
+                    >
+                      {showPasswords.livroReclamacoesPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.livroReclamacoesPassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -635,21 +690,31 @@ const Acessos = () => {
               <div className="flex gap-2">
                 <Input
                   id="portalFinancasPassword"
-                  type="password"
+                  type={showPasswords.portalFinancasPassword ? "text" : "password"}
                   value={formData.portalFinancasPassword}
                   onChange={(e) => setFormData({ ...formData, portalFinancasPassword: e.target.value })}
                   disabled={!isEditing}
                   className="flex-1"
                 />
                 {formData.portalFinancasPassword && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(formData.portalFinancasPassword, "Password")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => togglePasswordVisibility('portalFinancasPassword')}
+                    >
+                      {showPasswords.portalFinancasPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => copyToClipboard(formData.portalFinancasPassword, "Password")}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -724,21 +789,31 @@ const Acessos = () => {
                   <Label>Password</Label>
                   <div className="flex gap-2">
                     <Input
-                      type="password"
+                      type={showPasswords[`custom_${access.id}`] ? "text" : "password"}
                       value={access.password}
                       onChange={(e) => updateCustomAccess(access.id, "password", e.target.value)}
                       disabled={!isEditing}
                       className="flex-1"
                     />
                     {access.password && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => copyToClipboard(access.password, "Password")}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => togglePasswordVisibility(`custom_${access.id}`)}
+                        >
+                          {showPasswords[`custom_${access.id}`] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(access.password, "Password")}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
                 </div>

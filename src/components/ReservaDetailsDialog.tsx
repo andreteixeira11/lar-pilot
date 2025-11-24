@@ -17,9 +17,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download } from "lucide-react";
+import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download, Send } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -69,7 +71,9 @@ export const ReservaDetailsDialog = ({
   onEdit,
   onDelete
 }: ReservaDetailsDialogProps) => {
+  const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isSendingCheckin, setIsSendingCheckin] = useState(false);
 
   if (!reserva) return null;
 
@@ -85,6 +89,31 @@ export const ReservaDetailsDialog = ({
       onDelete(reserva.id);
       setDeleteDialogOpen(false);
       onOpenChange(false);
+    }
+  };
+
+  const handleSendCheckin = async () => {
+    setIsSendingCheckin(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-checkin-link", {
+        body: { reservationId: reserva.id },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Link enviado!",
+        description: "O link de check-in foi enviado com sucesso para o hóspede",
+      });
+    } catch (error: any) {
+      console.error("Error sending check-in link:", error);
+      toast({
+        title: "Erro ao enviar link",
+        description: error.message || "Não foi possível enviar o link de check-in",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCheckin(false);
     }
   };
 
@@ -188,6 +217,16 @@ export const ReservaDetailsDialog = ({
           <div className="flex items-center justify-between">
             <DialogTitle>Detalhes da Reserva</DialogTitle>
             <div className="flex gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSendCheckin}
+                disabled={isSendingCheckin}
+                className="gap-2"
+              >
+                <Send className="h-4 w-4" />
+                {isSendingCheckin ? "A enviar..." : "Check-in"}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"

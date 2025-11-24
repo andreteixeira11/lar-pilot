@@ -45,8 +45,8 @@ const App = () => (
                   <div className="flex min-h-screen w-full">
                     <AnimatedSidebar />
                     <main className="flex-1 md:ml-64 bg-background">
-                      <header className="h-14 border-b border-border flex items-center justify-between gap-4 px-4 bg-card sticky top-0 z-10">
-                        <div className="flex-1 max-w-md">
+                      <header className="h-14 sm:h-16 border-b border-border flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4 bg-card sticky top-0 z-10">
+                        <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-md">
                           <PropertySelectorCommand />
                         </div>
                         <NotificationMenu />

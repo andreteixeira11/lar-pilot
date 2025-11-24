@@ -86,8 +86,8 @@ export function NotificationMenu() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-96 max-h-[500px] overflow-y-auto">
-        <div className="p-4">
+      <DropdownMenuContent align="end" className="w-[90vw] sm:w-96 max-w-md max-h-[80vh] sm:max-h-[500px] overflow-y-auto">
+        <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-sm">Tarefas Fiscais Pendentes</h3>
             {tarefasPendentes.length > 0 && (

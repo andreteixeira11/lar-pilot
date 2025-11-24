@@ -106,4 +106,27 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Garante que o body não tenha scroll horizontal no mobile */
+  html, body {
+    @apply overflow-x-hidden;
+    max-width: 100vw;
+  }
+
+  /* Touch-friendly: elementos clicáveis devem ter pelo menos 44x44px no mobile */
+  @media (max-width: 768px) {
+    button:not(.p-0):not(.h-auto) {
+      @apply min-h-[44px];
+    }
+  }
+
+  /* Melhora o scroll suave */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Garante que tabelas tenham scroll horizontal no mobile */
+  .table-container {
+    @apply overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0;
+  }
 }

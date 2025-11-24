@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -13,13 +14,14 @@ import {
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
-import { Save, Upload, FileText } from "lucide-react";
+import { Save, Upload, FileText, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const DadosAlojamento = () => {
   const { selectedProperty, updateProperty } = useProperty();
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [insuranceAlert, setInsuranceAlert] = useState<{ type: 'warning' | 'error'; message: string } | null>(null);
   const [formData, setFormData] = useState(
     selectedProperty || {
       name: "",
@@ -36,6 +38,28 @@ const DadosAlojamento = () => {
       platformStatus: "nao_submetido" as "nao_submetido" | "submetido" | "aprovado",
     }
   );
+
+  useEffect(() => {
+    if (formData.insuranceValidity) {
+      const validityDate = new Date(formData.insuranceValidity);
+      const today = new Date();
+      const daysUntilExpiry = Math.ceil((validityDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+      if (daysUntilExpiry < 0) {
+        setInsuranceAlert({
+          type: 'error',
+          message: 'O seguro de responsabilidade civil expirou! Atualize urgentemente.'
+        });
+      } else if (daysUntilExpiry <= 30) {
+        setInsuranceAlert({
+          type: 'warning',
+          message: `O seguro expira em ${daysUntilExpiry} dias. Renove o seguro em breve.`
+        });
+      } else {
+        setInsuranceAlert(null);
+      }
+    }
+  }, [formData.insuranceValidity]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -168,6 +192,12 @@ const DadosAlojamento = () => {
             <CardTitle>Seguro de Responsabilidade Civil</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {insuranceAlert && (
+              <Alert variant={insuranceAlert.type === 'error' ? 'destructive' : 'default'} className={insuranceAlert.type === 'warning' ? 'border-yellow-500 text-yellow-700' : ''}>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{insuranceAlert.message}</AlertDescription>
+              </Alert>
+            )}
             <div>
               <Label htmlFor="insuranceValidity">Validade do Seguro</Label>
               <Input
@@ -208,16 +238,8 @@ const DadosAlojamento = () => {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Estado da Plataforma</CardTitle>
-          </CardHeader>
-          <CardContent>
             <div>
-              <Label htmlFor="platformStatus">Estado</Label>
+              <Label htmlFor="platformStatus">Estado da Submissão</Label>
               <Select
                 value={formData.platformStatus}
                 onValueChange={(value: "nao_submetido" | "submetido" | "aprovado") =>
@@ -230,7 +252,7 @@ const DadosAlojamento = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="nao_submetido">Não Submetido</SelectItem>
-                  <SelectItem value="submetido">Submetido na Plataforma</SelectItem>
+                  <SelectItem value="submetido">Submetido</SelectItem>
                   <SelectItem value="aprovado">Aprovado</SelectItem>
                 </SelectContent>
               </Select>

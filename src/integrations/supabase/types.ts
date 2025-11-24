@@ -205,6 +205,41 @@ export type Database = {
         }
         Relationships: []
       }
+      property_access_credentials: {
+        Row: {
+          created_at: string
+          credentials: Json
+          id: string
+          platform: string
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credentials: Json
+          id?: string
+          platform: string
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credentials?: Json
+          id?: string
+          platform?: string
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_access_credentials_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           booking_source: string | null

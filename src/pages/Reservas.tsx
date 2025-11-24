@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, User } from "lucide-react";
 import { AddReservaDialog } from "@/components/AddReservaDialog";
 import { ReservaDetailsDialog } from "@/components/ReservaDetailsDialog";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import { useReserva } from "@/contexts/ReservaContext";
 
 const Reservas = () => {
   const { selectedPropertyId } = useProperty();
-  const { reservas, addReserva } = useReserva();
+  const { reservas, addReserva, deleteReserva } = useReserva();
   const [filterPlatform, setFilterPlatform] = useState("all");
   const [filterYear, setFilterYear] = useState("2025");
   const [filterMonth, setFilterMonth] = useState("all");
@@ -39,6 +40,16 @@ const Reservas = () => {
   const handleReservaClick = (reserva: any) => {
     setSelectedReserva(reserva);
     setDetailsOpen(true);
+  };
+
+  const handleEditReserva = (reserva: any) => {
+    // TODO: Implementar dialog de edição
+    console.log("Edit reserva:", reserva);
+  };
+
+  const handleDeleteReserva = (reservaId: string) => {
+    deleteReserva(reservaId);
+    toast.success("Reserva excluída com sucesso!");
   };
 
   const filteredReservas = reservas.filter((reserva) => {
@@ -194,6 +205,8 @@ const Reservas = () => {
         reserva={selectedReserva}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
+        onEdit={handleEditReserva}
+        onDelete={handleDeleteReserva}
       />
     </div>
   );

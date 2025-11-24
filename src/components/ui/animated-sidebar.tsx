@@ -18,7 +18,13 @@ import {
   User,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const AnimatedMenuToggle = ({
   toggle,
@@ -177,49 +183,49 @@ export const AnimatedSidebar = () => {
 
                 {/* User Profile Section */}
                 <div className="p-4 border-t border-border">
-                  <div className="flex items-center gap-3 mb-3 px-2">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{user?.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-                    </div>
-                  </div>
-                  
-                  <Separator className="mb-3" />
-                  
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => {
-                        navigate("/perfil");
-                        toggleSidebar();
-                      }}
-                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
-                    >
-                      <UserCircle className="h-4 w-4" />
-                      <span>Perfil</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate("/subscriptions");
-                        toggleSidebar();
-                      }}
-                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
-                    >
-                      <CreditCard className="h-4 w-4" />
-                      <span>Subscrições</span>
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-destructive/10 text-destructive text-sm"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Sair</span>
-                    </button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-accent transition-colors">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-medium truncate">{user?.name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                        </div>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          navigate("/perfil");
+                          toggleSidebar();
+                        }}
+                      >
+                        <UserCircle className="mr-2 h-4 w-4" />
+                        <span>Perfil</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          navigate("/subscriptions");
+                          toggleSidebar();
+                        }}
+                      >
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        <span>Subscrições</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sair</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </motion.div>
@@ -264,43 +270,39 @@ export const AnimatedSidebar = () => {
 
         {/* User Profile Section */}
         <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 mb-3 px-2">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-            </div>
-          </div>
-          
-          <Separator className="mb-3" />
-          
-          <div className="space-y-1">
-            <button
-              onClick={() => navigate("/perfil")}
-              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
-            >
-              <UserCircle className="h-4 w-4" />
-              <span>Perfil</span>
-            </button>
-            <button
-              onClick={() => navigate("/subscriptions")}
-              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-accent text-foreground text-sm"
-            >
-              <CreditCard className="h-4 w-4" />
-              <span>Subscrições</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex gap-3 items-center w-full py-2 px-3 rounded-lg transition-colors hover:bg-destructive/10 text-destructive text-sm"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sair</span>
-            </button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-accent transition-colors">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => navigate("/perfil")}>
+                <UserCircle className="mr-2 h-4 w-4" />
+                <span>Perfil</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/subscriptions")}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Subscrições</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

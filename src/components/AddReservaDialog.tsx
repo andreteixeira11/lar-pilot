@@ -45,6 +45,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     ivaLimpeza: 0,
     taxaTuristica: 0,
     status: "pendente",
+    numHospedes: 1,
   });
   const [guests, setGuests] = useState<Guest[]>([
     {
@@ -160,6 +161,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       ivaLimpeza: 0,
       taxaTuristica: 0,
       status: "pendente",
+      numHospedes: 1,
     });
     setGuests([
       {
@@ -260,8 +262,21 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                         setFormData({ ...formData, valorBaseEstadia: parseFloat(e.target.value) || 0 })
                       }
                     />
-                  </div>
-                  <div>
+              </div>
+              <div>
+                <Label htmlFor="numHospedes">N.º de Hóspedes *</Label>
+                <Input
+                  id="numHospedes"
+                  type="number"
+                  min="1"
+                  value={formData.numHospedes}
+                  onChange={(e) =>
+                    setFormData({ ...formData, numHospedes: parseInt(e.target.value) || 1 })
+                  }
+                  required
+                />
+              </div>
+              <div>
                     <Label htmlFor="ivaEstadia">IVA Estadia (€)</Label>
                     <Input
                       id="ivaEstadia"

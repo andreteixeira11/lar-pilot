@@ -40,6 +40,11 @@ interface Reserva {
   noites: number;
   status: string;
   comissaoPlataforma?: number;
+  valorBaseEstadia?: number;
+  ivaEstadia?: number;
+  valorBaseLimpeza?: number;
+  ivaLimpeza?: number;
+  taxaTuristica?: number;
   hospedes?: Guest[];
 }
 
@@ -141,10 +146,10 @@ export const ReservaDetailsDialog = ({
 
           {/* Datas */}
           <div className="grid grid-cols-2 gap-4">
-            <Card>
+            <Card className="bg-green-500/10 border-green-500/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-green-600" />
                   Check-in
                 </CardTitle>
               </CardHeader>
@@ -159,10 +164,10 @@ export const ReservaDetailsDialog = ({
                 </p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-red-500/10 border-red-500/20">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-4 w-4 text-red-600" />
                   Check-out
                 </CardTitle>
               </CardHeader>
@@ -187,11 +192,59 @@ export const ReservaDetailsDialog = ({
                 Informação Financeira
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Valor Total:</span>
-                <span className="font-semibold">€{reserva.valor.toFixed(2)}</span>
+            <CardContent className="space-y-3">
+              {/* Estadia */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Estadia</p>
+                <div className="flex justify-between text-sm pl-2">
+                  <span className="text-muted-foreground">Valor Base:</span>
+                  <span className="font-medium">€{(reserva.valorBaseEstadia || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-2">
+                  <span className="text-muted-foreground">IVA:</span>
+                  <span className="font-medium">€{(reserva.ivaEstadia || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-2 font-semibold border-t pt-1">
+                  <span>Total Estadia:</span>
+                  <span>€{((reserva.valorBaseEstadia || 0) + (reserva.ivaEstadia || 0)).toFixed(2)}</span>
+                </div>
               </div>
+
+              <Separator />
+
+              {/* Limpeza */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Limpeza</p>
+                <div className="flex justify-between text-sm pl-2">
+                  <span className="text-muted-foreground">Valor Base:</span>
+                  <span className="font-medium">€{(reserva.valorBaseLimpeza || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-2">
+                  <span className="text-muted-foreground">IVA:</span>
+                  <span className="font-medium">€{(reserva.ivaLimpeza || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-2 font-semibold border-t pt-1">
+                  <span>Total Limpeza:</span>
+                  <span>€{((reserva.valorBaseLimpeza || 0) + (reserva.ivaLimpeza || 0)).toFixed(2)}</span>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Taxa Turística */}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Taxa Turística:</span>
+                <span className="font-medium">€{(reserva.taxaTuristica || 0).toFixed(2)}</span>
+              </div>
+
+              <Separator />
+
+              {/* Total */}
+              <div className="flex justify-between text-base bg-primary/5 p-2 rounded">
+                <span className="font-semibold">Valor Total:</span>
+                <span className="font-bold text-primary">€{reserva.valor.toFixed(2)}</span>
+              </div>
+
               {reserva.comissaoPlataforma && reserva.comissaoPlataforma > 0 && (
                 <>
                   <Separator />
@@ -201,9 +254,9 @@ export const ReservaDetailsDialog = ({
                       -€{reserva.comissaoPlataforma.toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-base pt-2 border-t">
-                    <span className="font-medium">Valor Líquido:</span>
-                    <span className="font-bold text-primary">
+                  <div className="flex justify-between text-base bg-green-500/10 p-2 rounded">
+                    <span className="font-semibold">Valor Líquido:</span>
+                    <span className="font-bold text-green-600">
                       €{(reserva.valor - reserva.comissaoPlataforma).toFixed(2)}
                     </span>
                   </div>

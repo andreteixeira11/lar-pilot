@@ -240,6 +240,62 @@ export type Database = {
           },
         ]
       }
+      reservation_guests: {
+        Row: {
+          created_at: string
+          data_nascimento: string | null
+          id: string
+          local_nascimento: string | null
+          local_residencia: string | null
+          nacionalidade: string | null
+          nome_completo: string
+          numero_documento: string | null
+          pais_emissor: string | null
+          pais_residencia: string
+          reservation_id: string
+          tipo_documento: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_nascimento?: string | null
+          id?: string
+          local_nascimento?: string | null
+          local_residencia?: string | null
+          nacionalidade?: string | null
+          nome_completo: string
+          numero_documento?: string | null
+          pais_emissor?: string | null
+          pais_residencia: string
+          reservation_id: string
+          tipo_documento?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_nascimento?: string | null
+          id?: string
+          local_nascimento?: string | null
+          local_residencia?: string | null
+          nacionalidade?: string | null
+          nome_completo?: string
+          numero_documento?: string | null
+          pais_emissor?: string | null
+          pais_residencia?: string
+          reservation_id?: string
+          tipo_documento?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_guests_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           booking_source: string | null

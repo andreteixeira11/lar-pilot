@@ -22,7 +22,7 @@ import Acessos from "./pages/Acessos";
 import CalendarioFiscal from "./pages/CalendarioFiscal";
 import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
-import PropertySettings from "./pages/PropertySettings";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,7 +62,6 @@ const App = () => (
                             <Route path="/resumo-mensal" element={<ResumoMensal />} />
                             <Route path="/taxa-turistica" element={<TaxaTuristica />} />
                             <Route path="/ine" element={<INE />} />
-                            <Route path="/definicoes" element={<PropertySettings />} />
                             <Route path="/perfil" element={<Perfil />} />
                             <Route path="/subscriptions" element={<Subscriptions />} />
                             <Route path="*" element={<NotFound />} />

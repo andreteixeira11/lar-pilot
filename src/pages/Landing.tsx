@@ -364,16 +364,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Trust Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <Shield className="h-16 w-16 text-primary mx-auto mb-6" />
-        <h2 className="text-3xl font-bold mb-4">Seguro e Confiável</h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Os seus dados estão protegidos com encriptação de nível bancário. Conforme com RGPD e todas as regulamentações
-          portuguesas.
-        </p>
-      </section>
-
       {/* CTA */}
       <section className="container mx-auto px-4 py-20 text-center">
         <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-accent/10 border-2">

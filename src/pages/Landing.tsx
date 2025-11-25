@@ -133,7 +133,66 @@ const Landing = () => {
       description: "Calcule e submeta a taxa turística de forma automática",
     },
   ];
+import { Button } from "@/components/ui/button";
+const resourceItems = [
+{ title: "Centro de Ajuda", description: "Tutoriais e guias completos", icon: HelpCircle, href: "#" },
+{ title: "Blog", description: "Artigos e dicas sobre gestão de AL", icon: BookOpen, href: "#" },
+{ title: "Contacto", description: "Fale connosco", icon: Phone, href: "#" },
+];
 
+
+const features = [
+{ icon: Calendar, title: "Gestão de Reservas", description: "Controle todas as suas reservas num só lugar, com sincronização automática" },
+{ icon: TrendingUp, title: "Análise Financeira", description: "Acompanhe receitas, despesas e rentabilidade em tempo real" },
+{ icon: FileText, title: "Relatórios INE", description: "Gere automaticamente os relatórios mensais para o INE" },
+{ icon: Users, title: "Taxa Turística", description: "Calcule e submeta a taxa turística de forma automática" },
+];
+
+
+const testimonials = [
+{ name: "Maria Silva", role: "Proprietária de 3 apartamentos", content: "Desde que comecei a usar a plataforma, poupo horas todos os meses. A gestão de reservas e relatórios automáticos são fantásticos!", rating: 5, initials: "MS" },
+{ name: "João Costa", role: "Gestor de Alojamento Local", content: "A integração com o Airbnb e Booking facilita muito o trabalho. Recomendo a todos os proprietários de AL.", rating: 5, initials: "JC" },
+{ name: "Ana Rodrigues", role: "Proprietária de 5 propriedades", content: "Plataforma intuitiva e completa. O suporte é excelente e os relatórios do INE são gerados automaticamente. Perfeito!", rating: 5, initials: "AR" },
+];
+
+
+const plans = [
+{ name: "Free", price: "0€", period: "para sempre", features: ["1 propriedade", "Gestão básica de reservas", "Relatórios mensais", "Suporte por email"] },
+{ name: "Basic", price: "19€", period: "/mês", popular: true, features: ["Até 3 propriedades", "Sincronização Airbnb/Booking", "Relatórios avançados", "Taxa turística automática", "Suporte prioritário"] },
+{ name: "Premium", price: "49€", period: "/mês", features: ["Propriedades ilimitadas", "Todas as integrações", "Relatórios personalizados", "Automação completa", "Gestor de conta dedicado", "API de acesso"] },
+];
+
+
+// Statistics data
+const statistics = [
+{ label: "Propriedades geridas", value: 370, icon: Home, color: "bg-primary/20 text-primary" },
+{ label: "Reservas processadas", value: 120000, icon: Calendar, color: "bg-accent/20 text-accent" },
+{ label: "Uptime da plataforma", value: 99.9, suffix: "%", icon: BarChart3, color: "bg-green-200 text-green-700" },
+{ label: "Suporte ativo", value: 24, suffix: "/7", icon: Headphones, color: "bg-yellow-200 text-yellow-700" },
+];
+
+
+const [counts, setCounts] = useState(statistics.map(() => 0));
+
+
+useEffect(() => {
+const interval = setInterval(() => {
+setCounts(prevCounts => prevCounts.map((count, i) => {
+const target = statistics[i].value;
+const increment = target / 100;
+if (count < target) return Math.min(count + increment, target);
+return count;
+}));
+}, 20);
+return () => clearInterval(interval);
+}, []);
+
+
+const formatNumber = num => num >= 1000 ? Math.floor(num).toLocaleString() : Number(num.toFixed(1));
+
+
+return (
+<div className="min-h-screen bg-gradient-to-b from-background to-muted">
   const testimonials = [
     {
       name: "Maria Silva",

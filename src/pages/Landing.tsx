@@ -277,6 +277,14 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Desenhado para todos */}
+      <section className="container mx-auto px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold mb-4">Desenhado para todos</h2>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          A Monumental Atlantic é 100% escalável a todos os tipos de estabelecimentos e modus operandi.
+        </p>
+      </section>
+
       {/* Features */}
       <section id="features" className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-12">Tudo o que precisa para gerir o seu alojamento</h2>

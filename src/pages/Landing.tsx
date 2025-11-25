@@ -37,6 +37,8 @@ import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
 import bookingImage from "@/assets/booking-feature.jpg";
 import StatisticsSection from "@/components/StatisticsSection";
+import { Button } from "@/components/ui/button";
+
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -133,7 +135,7 @@ const Landing = () => {
       description: "Calcule e submeta a taxa turística de forma automática",
     },
   ];
-import { Button } from "@/components/ui/button";
+  
 const resourceItems = [
 { title: "Centro de Ajuda", description: "Tutoriais e guias completos", icon: HelpCircle, href: "#" },
 { title: "Blog", description: "Artigos e dicas sobre gestão de AL", icon: BookOpen, href: "#" },

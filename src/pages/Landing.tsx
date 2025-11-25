@@ -254,18 +254,16 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img src={heroImage} alt="Property Management" className="w-full h-full object-cover opacity-20" />
+          <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
         </div>
         <div className="container relative z-10 mx-auto px-4 pt-20 pb-32 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Gestão de Alojamento Local
-            <br />
-            Simplificada
+            Gestão de Alojamento Local Simplificada
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Plataforma completa para gerir as suas propriedades de alojamento local. Reservas, finanças, relatórios INE
-            e taxa turística - tudo num só lugar.
+            Plataforma completa para gerir as suas propriedades de AL. Reservas, finanças, relatórios INE e taxa
+            turística - tudo num só lugar.
           </p>
           <div className="flex gap-4 justify-center">
             <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
@@ -275,6 +273,7 @@ const Landing = () => {
               Ver Demo
             </Button>
           </div>
+          <p className="mt-4 text-muted-foreground">+370 propriedades já geridas através da Monumental Atlantic</p>
         </div>
       </section>
 

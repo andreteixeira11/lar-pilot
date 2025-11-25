@@ -299,33 +299,25 @@ const Landing = () => {
 
       {/* Testimonials */}
       <section className="container mx-auto px-4 py-20 bg-muted/50">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">O que dizem os nossos clientes</h2>
-          <p className="text-muted-foreground text-lg">Centenas de proprietários já confiam na nossa plataforma</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {testimonials.map((testimonial, index) => (
-            <Card
-              key={index}
-              className="relative border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 hover:bg-primary/5"
-            >
+        <h2 className="text-3xl font-bold text-center mb-8">O que dizem os nossos clientes</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {testimonials.map((t, i) => (
+            <Card key={i} className="border-2 hover:shadow-md transition-all duration-300">
               <CardContent className="pt-6">
                 <Quote className="h-10 w-10 text-primary/20 mb-4" />
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                <div className="flex gap-1 mb-2">
+                  {[...Array(t.rating)].map((_, i) => (
+                    <Star key={i} className="h-5 w-5 text-primary" />
                   ))}
                 </div>
-                <p className="text-muted-foreground mb-6 italic">"{testimonial.content}"</p>
+                <p className="text-muted-foreground mb-4 italic">"{t.content}"</p>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {testimonial.initials}
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">{t.initials}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                    <p className="font-semibold">{t.name}</p>
+                    <p className="text-sm text-muted-foreground">{t.role}</p>
                   </div>
                 </div>
               </CardContent>

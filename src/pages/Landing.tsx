@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useState, UseEffect } from "react";
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
 import bookingImage from "@/assets/booking-feature.jpg";

@@ -285,6 +285,51 @@ const Landing = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           A Monumental Atlantic é 100% escalável a todos os tipos de estabelecimentos e modus operandi.
         </p>
+        <div className="mt-8 grid md:grid-cols-4 gap-6">
+          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
+            <img src="/images/proprietarios.png" alt="Proprietários e Gestores" className="h-24 w-auto mx-auto mb-4" />
+            <h3 className="font-semibold">Proprietários e Gestores de Alojamento Local</h3>
+          </Card>
+          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
+            <img src="/images/hoteis.png" alt="Hóteis e Estabelecimentos" className="h-24 w-auto mx-auto mb-4" />
+            <h3 className="font-semibold">Hóteis e Estabelecimentos de Hospedagem</h3>
+          </Card>
+          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
+            <img
+              src="/images/empreendimentos.png"
+              alt="Empreendimentos Turísticos"
+              className="h-24 w-auto mx-auto mb-4"
+            />
+            <h3 className="font-semibold">Empreendimentos Turísticos</h3>
+          </Card>
+          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
+            <img src="/images/camping.png" alt="Parques de Campismo e Glamping" className="h-24 w-auto mx-auto mb-4" />
+            <h3 className="font-semibold">Parques de Campismo e Glamping</h3>
+          </Card>
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="container mx-auto px-4 py-20 text-center">
+        <h2 className="text-3xl font-bold mb-12">Que os dados falem por nós!</h2>
+        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          {statistics.map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={i}
+                className={`rounded-lg p-6 flex flex-col items-center justify-center ${stat.color} shadow-md hover:shadow-lg transition`}
+              >
+                <Icon className="h-12 w-12 mb-4" />
+                <span className="text-4xl md:text-5xl font-bold">
+                  {formatNumber(counts[i])}
+                  {stat.suffix || ""}
+                </span>
+                <p className="mt-2 text-lg font-medium text-muted-foreground">{stat.label}</p>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* Features */}

@@ -399,9 +399,69 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t mt-20">
-        <div className="container mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>© 2025 Monumental Atantic. Todos os direitos reservados.</p>
+      <footer className="border-t mt-20 bg-background/90 py-8">
+        <div className="container mx-auto px-4 grid md:grid-cols-4 gap-4 text-center md:text-left">
+          <div>
+            <h5 className="font-bold mb-2">Monumental Atlantic</h5>
+            <p>Gestão profissional de Alojamento Local na Madeira.</p>
+          </div>
+          <div>
+            <h6 className="font-bold mb-2">Links</h6>
+            <ul className="space-y-1">
+              <li>
+                <Button variant="link" onClick={() => navigate("/")}>
+                  Início
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" onClick={() => navigate("/pricing")}>
+                  Planos
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" onClick={() => navigate("/features")}>
+                  Serviços
+                </Button>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h6 className="font-bold mb-2">Suporte</h6>
+            <ul className="space-y-1">
+              <li>
+                <Button variant="link" onClick={() => navigate("/contact")}>
+                  Contacto
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" onClick={() => navigate("/privacy")}>
+                  Política de Privacidade
+                </Button>
+              </li>
+              <li>
+                <Button variant="link" onClick={() => navigate("/terms")}>
+                  Termos e Condições
+                </Button>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h6 className="font-bold mb-2">Redes Sociais</h6>
+            <ul className="space-y-1">
+              <li>
+                <a href="#">Instagram</a>
+              </li>
+              <li>
+                <a href="#">Facebook</a>
+              </li>
+              <li>
+                <a href="#">LinkedIn</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="text-center mt-6">
+          <p>© 2025 Monumental Atlantic. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

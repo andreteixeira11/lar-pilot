@@ -388,8 +388,8 @@ const Landing = () => {
         <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-accent/10 border-2">
           <CardContent className="pt-12 pb-12">
             <h2 className="text-3xl font-bold mb-4">Pronto para simplificar a sua gestão?</h2>
-            <p className="text-xl text-muted-foreground mb-8">
-              Junte-se a centenas de proprietários que já confiam na nossa plataforma
+            <p className="text-xl text-muted-foreground mb-4">
+              +370 propriedades já geridas através da Monumental Atlantic
             </p>
             <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
               Comece Gratuitamente

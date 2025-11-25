@@ -1,14 +1,9 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Check,
@@ -16,103 +11,28 @@ import {
   TrendingUp,
   FileText,
   Users,
-  Shield,
   Star,
   Quote,
   Home,
   Building2,
   BarChart3,
-  FileBarChart,
   Coins,
-  Settings,
   HelpCircle,
   BookOpen,
   Phone,
   Menu,
+  Headphones,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useState, UseEffect } from "react";
+
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
 import bookingImage from "@/assets/booking-feature.jpg";
-import StatisticsSection from "@/components/StatisticsSection";
-import { Button } from "@/components/ui/button";
-
 
 const Landing = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const functionalityItems = [
-    {
-      title: "Gestão de Reservas",
-      description: "Centralize todas as suas reservas num único painel",
-      icon: Calendar,
-      href: "#features",
-    },
-    {
-      title: "Relatórios INE",
-      description: "Gere automaticamente os relatórios mensais",
-      icon: FileText,
-      href: "#features",
-    },
-    {
-      title: "Taxa Turística",
-      description: "Calcule e submeta automaticamente",
-      icon: Coins,
-      href: "#features",
-    },
-    {
-      title: "Análise Financeira",
-      description: "Acompanhe a rentabilidade em tempo real",
-      icon: TrendingUp,
-      href: "#features",
-    },
-  ];
-
-  const solutionItems = [
-    {
-      title: "Proprietários Individuais",
-      description: "Solução ideal para quem tem 1-3 propriedades",
-      icon: Home,
-      href: "#pricing",
-    },
-    {
-      title: "Gestores Profissionais",
-      description: "Para quem gere múltiplas propriedades",
-      icon: Building2,
-      href: "#pricing",
-    },
-    {
-      title: "Agências",
-      description: "Soluções enterprise para grandes volumes",
-      icon: Users,
-      href: "#pricing",
-    },
-  ];
-
-  const resourceItems = [
-    {
-      title: "Centro de Ajuda",
-      description: "Tutoriais e guias completos",
-      icon: HelpCircle,
-      href: "#",
-    },
-    {
-      title: "Blog",
-      description: "Artigos e dicas sobre gestão de AL",
-      icon: BookOpen,
-      href: "#",
-    },
-    {
-      title: "Contacto",
-      description: "Fale connosco",
-      icon: Phone,
-      href: "#",
-    },
-  ];
-
+  // Features
   const features = [
     {
       icon: Calendar,
@@ -135,66 +55,8 @@ const Landing = () => {
       description: "Calcule e submeta a taxa turística de forma automática",
     },
   ];
-  
-const resourceItems = [
-{ title: "Centro de Ajuda", description: "Tutoriais e guias completos", icon: HelpCircle, href: "#" },
-{ title: "Blog", description: "Artigos e dicas sobre gestão de AL", icon: BookOpen, href: "#" },
-{ title: "Contacto", description: "Fale connosco", icon: Phone, href: "#" },
-];
 
-
-const features = [
-{ icon: Calendar, title: "Gestão de Reservas", description: "Controle todas as suas reservas num só lugar, com sincronização automática" },
-{ icon: TrendingUp, title: "Análise Financeira", description: "Acompanhe receitas, despesas e rentabilidade em tempo real" },
-{ icon: FileText, title: "Relatórios INE", description: "Gere automaticamente os relatórios mensais para o INE" },
-{ icon: Users, title: "Taxa Turística", description: "Calcule e submeta a taxa turística de forma automática" },
-];
-
-
-const testimonials = [
-{ name: "Maria Silva", role: "Proprietária de 3 apartamentos", content: "Desde que comecei a usar a plataforma, poupo horas todos os meses. A gestão de reservas e relatórios automáticos são fantásticos!", rating: 5, initials: "MS" },
-{ name: "João Costa", role: "Gestor de Alojamento Local", content: "A integração com o Airbnb e Booking facilita muito o trabalho. Recomendo a todos os proprietários de AL.", rating: 5, initials: "JC" },
-{ name: "Ana Rodrigues", role: "Proprietária de 5 propriedades", content: "Plataforma intuitiva e completa. O suporte é excelente e os relatórios do INE são gerados automaticamente. Perfeito!", rating: 5, initials: "AR" },
-];
-
-
-const plans = [
-{ name: "Free", price: "0€", period: "para sempre", features: ["1 propriedade", "Gestão básica de reservas", "Relatórios mensais", "Suporte por email"] },
-{ name: "Basic", price: "19€", period: "/mês", popular: true, features: ["Até 3 propriedades", "Sincronização Airbnb/Booking", "Relatórios avançados", "Taxa turística automática", "Suporte prioritário"] },
-{ name: "Premium", price: "49€", period: "/mês", features: ["Propriedades ilimitadas", "Todas as integrações", "Relatórios personalizados", "Automação completa", "Gestor de conta dedicado", "API de acesso"] },
-];
-
-
-// Statistics data
-const statistics = [
-{ label: "Propriedades geridas", value: 370, icon: Home, color: "bg-primary/20 text-primary" },
-{ label: "Reservas processadas", value: 120000, icon: Calendar, color: "bg-accent/20 text-accent" },
-{ label: "Uptime da plataforma", value: 99.9, suffix: "%", icon: BarChart3, color: "bg-green-200 text-green-700" },
-{ label: "Suporte ativo", value: 24, suffix: "/7", icon: Headphones, color: "bg-yellow-200 text-yellow-700" },
-];
-
-
-const [counts, setCounts] = useState(statistics.map(() => 0));
-
-
-useEffect(() => {
-const interval = setInterval(() => {
-setCounts(prevCounts => prevCounts.map((count, i) => {
-const target = statistics[i].value;
-const increment = target / 100;
-if (count < target) return Math.min(count + increment, target);
-return count;
-}));
-}, 20);
-return () => clearInterval(interval);
-}, []);
-
-
-const formatNumber = num => num >= 1000 ? Math.floor(num).toLocaleString() : Number(num.toFixed(1));
-
-
-return (
-<div className="min-h-screen bg-gradient-to-b from-background to-muted">
+  // Testimonials
   const testimonials = [
     {
       name: "Maria Silva",
@@ -222,6 +84,7 @@ return (
     },
   ];
 
+  // Plans
   const plans = [
     {
       name: "Free",
@@ -257,20 +120,42 @@ return (
     },
   ];
 
+  // Statistics
+  const statistics = [
+    { label: "Propriedades geridas", value: 370, icon: Home, color: "bg-primary/20 text-primary" },
+    { label: "Reservas processadas", value: 120000, icon: Calendar, color: "bg-accent/20 text-accent" },
+    { label: "Uptime da plataforma", value: 99.9, suffix: "%", icon: BarChart3, color: "bg-green-200 text-green-700" },
+    { label: "Suporte ativo", value: 24, suffix: "/7", icon: Headphones, color: "bg-yellow-200 text-yellow-700" },
+  ];
+
+  const [counts, setCounts] = useState(statistics.map(() => 0));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCounts((prevCounts) =>
+        prevCounts.map((count, i) => {
+          const target = statistics[i].value;
+          const increment = target / 100;
+          if (count < target) return Math.min(count + increment, target);
+          return count;
+        }),
+      );
+    }, 20);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatNumber = (num: number) => (num >= 1000 ? Math.floor(num).toLocaleString() : Number(num.toFixed(1)));
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
       <header className="sticky top-4 z-50 mx-auto max-w-7xl px-4">
         <div className="rounded-full border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-              <img src="/logos/monumenta-logo.svg" alt="Monumental Atantic" className="h-10 w-auto" />
+              <img src="/logos/monumenta-logo.svg" alt="Monumental Atlantic" className="h-10 w-auto" />
             </div>
-
-            {/* Action Buttons */}
             <div className="flex items-center gap-3">
-              {/* Mobile Menu */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden">
@@ -302,7 +187,6 @@ return (
                   </nav>
                 </SheetContent>
               </Sheet>
-
               <Button variant="ghost" onClick={() => navigate("/auth?mode=login")} className="hidden sm:flex">
                 Entrar
               </Button>
@@ -314,7 +198,7 @@ return (
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-20" />
@@ -340,37 +224,7 @@ return (
         </div>
       </section>
 
-      {/* Desenhado para todos */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-3xl font-bold mb-4">Desenhado para todos</h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          A Monumental Atlantic é 100% escalável a todos os tipos de estabelecimentos e modus operandi.
-        </p>
-        <div className="mt-8 grid md:grid-cols-4 gap-6">
-          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
-            <img src="/images/proprietarios.png" alt="Proprietários e Gestores" className="h-24 w-auto mx-auto mb-4" />
-            <h3 className="font-semibold">Proprietários e Gestores de Alojamento Local</h3>
-          </Card>
-          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
-            <img src="/images/hoteis.png" alt="Hóteis e Estabelecimentos" className="h-24 w-auto mx-auto mb-4" />
-            <h3 className="font-semibold">Hóteis e Estabelecimentos de Hospedagem</h3>
-          </Card>
-          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
-            <img
-              src="/images/empreendimentos.png"
-              alt="Empreendimentos Turísticos"
-              className="h-24 w-auto mx-auto mb-4"
-            />
-            <h3 className="font-semibold">Empreendimentos Turísticos</h3>
-          </Card>
-          <Card className="p-6 hover:shadow-lg transition cursor-pointer">
-            <img src="/images/camping.png" alt="Parques de Campismo e Glamping" className="h-24 w-auto mx-auto mb-4" />
-            <h3 className="font-semibold">Parques de Campismo e Glamping</h3>
-          </Card>
-        </div>
-      </section>
-
-      {/* Statistics Section */}
+      {/* Statistics */}
       <section className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-3xl font-bold mb-12">Que os dados falem por nós!</h2>
         <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">

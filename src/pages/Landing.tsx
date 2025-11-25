@@ -36,6 +36,7 @@ import { useState, UseEffect } from "react";
 import heroImage from "@/assets/hero-image.jpg";
 import analyticsImage from "@/assets/analytics-feature.jpg";
 import bookingImage from "@/assets/booking-feature.jpg";
+import StatisticsSection from "@/components/StatisticsSection";
 
 const Landing = () => {
   const navigate = useNavigate();

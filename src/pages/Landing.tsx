@@ -192,7 +192,7 @@ const Landing = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[90vh] pt-[80px]">
         <div className="absolute inset-0 z-0">
           <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>

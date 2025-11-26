@@ -137,8 +137,8 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
-      <header className="absolute top-0 left-0 w-full z-50 px-4">
-        <div className="mx-auto max-w-7xl rounded-full border bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg px-6 py-3">
+      <header className="fixed top-0 left-0 w-full z-50 px-4">
+        <div className="mx-auto max-w-7xl rounded-full border bg-background/90 backdrop-blur shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>

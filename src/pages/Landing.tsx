@@ -217,7 +217,7 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Statistics */}
+      {/* Statistics 
       <section className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-3xl font-bold mb-12">Que os dados falem por nós!</h2>
         <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
@@ -238,7 +238,7 @@ const Landing = () => {
             );
           })}
         </div>
-      </section>
+      </section>*/}
 
       {/* Features */}
       <section id="features" className="container mx-auto px-4 py-20">

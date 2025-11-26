@@ -137,7 +137,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
-      <header className="absolute top-4 left-0 right-0">
+      <header className="sticky top-4 z-50 mx-auto max-w-7xl px-4">
         <div className="rounded-full border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>

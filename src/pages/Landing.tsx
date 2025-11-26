@@ -138,11 +138,14 @@ const Landing = () => {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
       {/* Header */}
       <header className="absolute top-0 left-0 w-full z-50 px-4">
-        <div className="mx-auto max-w-7xl rounded-full border bg-background/70 backdrop-blur px-6 py-3 shadow-lg">
+        <div className="mx-auto max-w-7xl rounded-full border bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
+            {/* Logo */}
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
               <img src="/logos/monumenta-logo.svg" alt="Monumental Atlantic" className="h-10 w-auto" />
             </div>
+
+            {/* Menu / Buttons */}
             <div className="flex items-center gap-3">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
@@ -175,6 +178,8 @@ const Landing = () => {
                   </nav>
                 </SheetContent>
               </Sheet>
+
+              {/* Desktop buttons */}
               <Button variant="ghost" onClick={() => navigate("/auth?mode=login")} className="hidden sm:flex">
                 Entrar
               </Button>

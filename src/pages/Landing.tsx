@@ -76,10 +76,10 @@ const Landing = () => {
   // Plans
   const plans = [
     {
-      name: "Free",
-      price: "0€",
-      period: "para sempre",
-      features: ["1 propriedade", "Gestão básica de reservas", "Relatórios mensais", "Suporte por email"],
+      name: "Basic",
+      price: "7€",
+      period: "/mês",
+      features: ["🏠 1 propriedade", "📅 Gestão básica de reservas", "📊 Resumo mensal básico", "✉️ Suporte por email"],
     },
     {
       name: "Basic",

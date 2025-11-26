@@ -259,35 +259,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="container mx-auto px-4 py-20 bg-muted/50">
-        <h2 className="text-3xl font-bold text-center mb-8">O que dizem os nossos clientes</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((t, i) => (
-            <Card key={i} className="border-2 hover:shadow-md transition-all duration-300">
-              <CardContent className="pt-6">
-                <Quote className="h-10 w-10 text-primary/20 mb-4" />
-                <div className="flex gap-1 mb-2">
-                  {[...Array(t.rating)].map((_, j) => (
-                    <Star key={j} className="h-5 w-5 text-primary" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4 italic">"{t.content}"</p>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground">{t.initials}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-4">Planos para todos os tamanhos</h2>
@@ -321,6 +292,35 @@ const Landing = () => {
                 >
                   Começar
                 </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="container mx-auto px-4 py-20 bg-muted/50">
+        <h2 className="text-3xl font-bold text-center mb-8">O que dizem os nossos clientes</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {testimonials.map((t, i) => (
+            <Card key={i} className="border-2 hover:shadow-md transition-all duration-300">
+              <CardContent className="pt-6">
+                <Quote className="h-10 w-10 text-primary/20 mb-4" />
+                <div className="flex gap-1 mb-2">
+                  {[...Array(t.rating)].map((_, j) => (
+                    <Star key={j} className="h-5 w-5 text-primary" />
+                  ))}
+                </div>
+                <p className="text-muted-foreground mb-4 italic">"{t.content}"</p>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary text-primary-foreground">{t.initials}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-semibold">{t.name}</p>
+                    <p className="text-sm text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}

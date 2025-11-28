@@ -18,45 +18,49 @@ type PaymentMethod = "card" | "mbway" | "multibanco" | "paypal";
 
 const plans = [
   {
-    id: "free" as SubscriptionPlan,
-    name: "Gratuito",
-    price: "0",
+    id: "basic" as SubscriptionPlan,
+    name: "Basic",
+    price: "7",
     description: "Para começar",
     features: [
       "1 propriedade",
-      "Funcionalidades básicas",
+      "Gestão básica de reservas",
+      "Resumo mensal básico",
       "Suporte por email",
     ],
     icon: Home,
   },
   {
-    id: "basic" as SubscriptionPlan,
-    name: "Básico",
-    price: "29",
-    description: "Ideal para quem está a começar",
+    id: "premium" as SubscriptionPlan,
+    name: "Pro",
+    price: "19",
+    description: "Ideal para quem está a crescer",
     features: [
-      "Até 3 propriedades",
-      "Gestão de reservas",
-      "Relatórios mensais",
-      "Suporte por email",
+      "Até 5 propriedades",
+      "Formulários de check-in",
+      "Taxa turística automática",
+      "Calendário Fiscal",
+      "Suporte prioritário",
     ],
     icon: Sparkles,
-    popular: false,
+    popular: true,
   },
   {
     id: "premium" as SubscriptionPlan,
     name: "Premium",
-    price: "59",
+    price: "49",
     description: "Para gestores profissionais",
     features: [
       "Propriedades ilimitadas",
-      "Gestão de reservas avançada",
+      "Check-in automatizado completo",
+      "Taxa turística + SIBA (INE)",
+      "Calendário Fiscal completo",
       "Relatórios personalizados",
-      "Exportação de dados",
-      "Suporte prioritário",
+      "Gestor de conta dedicado",
+      "API de acesso",
     ],
     icon: Crown,
-    popular: true,
+    popular: false,
   },
 ];
 
@@ -131,11 +135,7 @@ export default function Auth() {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedPlan === "free") {
-      setStep("property");
-    } else {
-      setStep("payment");
-    }
+    setStep("payment");
   };
 
   const handlePaymentSubmit = (e: React.FormEvent) => {

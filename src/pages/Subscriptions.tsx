@@ -11,59 +11,57 @@ import { PricingSection, PricingTier } from "@/components/blocks/pricing-section
 
 const pricingTiers: PricingTier[] = [
   {
-    name: "Grátis",
+    name: "Basic",
     price: {
-      monthly: 0,
-      yearly: 0,
+      monthly: 7,
+      yearly: 70,
     },
-    description: "Ideal para experimentar a plataforma",
+    description: "Ideal para começar",
     features: [
       { name: "1 propriedade", description: "Gerir uma única propriedade", included: true },
-      { name: "Gestão de reservas", description: "Controlo básico de reservas", included: true },
-      { name: "Relatórios mensais", description: "Resumos financeiros simples", included: true },
+      { name: "Gestão básica de reservas", description: "Controlo de reservas", included: true },
+      { name: "Resumo mensal básico", description: "Resumos financeiros simples", included: true },
       { name: "Suporte por email", description: "Resposta em até 48h", included: true },
-      { name: "Exportação de dados", description: "Download de relatórios em PDF", included: false },
-      { name: "Integração calendários", description: "Sincronização automática", included: false },
     ],
     icon: <Home className="w-6 h-6" />,
     highlight: false,
   },
   {
-    name: "Básico",
+    name: "Pro",
     price: {
-      monthly: 29,
-      yearly: 290,
+      monthly: 19,
+      yearly: 190,
     },
-    description: "Ideal para quem está a começar",
+    description: "Para quem está a crescer",
     features: [
-      { name: "Até 3 propriedades", description: "Gerir múltiplas propriedades", included: true },
-      { name: "Gestão de reservas", description: "Controlo completo de reservas", included: true },
-      { name: "Relatórios mensais", description: "Resumos financeiros detalhados", included: true },
-      { name: "Suporte por email", description: "Resposta em até 24h", included: true },
-      { name: "Exportação de dados", description: "Download de relatórios em PDF", included: true },
-      { name: "Integração calendários", description: "Sincronização automática", included: false },
+      { name: "Até 5 propriedades", description: "Gerir múltiplas propriedades", included: true },
+      { name: "Formulários de check-in", description: "Envio automático aos hóspedes", included: true },
+      { name: "Taxa turística automática", description: "Cálculo automático", included: true },
+      { name: "Calendário Fiscal", description: "Notificações automáticas", included: true },
+      { name: "Suporte prioritário", description: "Resposta em até 24h", included: true },
     ],
     icon: <Building2 className="w-6 h-6" />,
-    highlight: false,
+    highlight: true,
+    badge: "Mais Popular",
   },
   {
     name: "Premium",
     price: {
-      monthly: 59,
-      yearly: 590,
+      monthly: 49,
+      yearly: 490,
     },
     description: "Para gestores profissionais",
     features: [
       { name: "Propriedades ilimitadas", description: "Sem limite de propriedades", included: true },
-      { name: "Gestão avançada", description: "Todas as funcionalidades", included: true },
+      { name: "Check-in automatizado completo", description: "Sistema completo", included: true },
+      { name: "Taxa turística + SIBA (INE)", description: "Envio automático", included: true },
+      { name: "Calendário Fiscal completo", description: "Alertas personalizados", included: true },
       { name: "Relatórios personalizados", description: "Análises detalhadas", included: true },
-      { name: "Exportação de dados", description: "Download em múltiplos formatos", included: true },
-      { name: "Suporte prioritário", description: "Resposta em até 2h", included: true },
-      { name: "Integração calendários", description: "Sincronização automática", included: true },
+      { name: "Gestor de conta dedicado", description: "Suporte VIP", included: true },
+      { name: "API de acesso", description: "Integração avançada", included: true },
     ],
     icon: <Crown className="w-6 h-6" />,
-    highlight: true,
-    badge: "Mais Popular",
+    highlight: false,
   },
 ];
 
@@ -74,14 +72,6 @@ export default function Subscriptions() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
 
   const handleSelectPlan = (tier: PricingTier, isYearly: boolean) => {
-    if (tier.name === "Grátis") {
-      toast({
-        title: "Plano Grátis",
-        description: "Você já está no plano gratuito!",
-      });
-      return;
-    }
-
     setSelectedPlan({
       name: tier.name,
       price: isYearly ? tier.price.yearly : tier.price.monthly,
@@ -122,7 +112,7 @@ export default function Subscriptions() {
             <CardTitle>Plano Atual</CardTitle>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm text-muted-foreground">
-                Subscrição {user.subscriptionPlan === "basic" ? "Básico" : "Premium"} -
+                Subscrição {user.subscriptionPlan.charAt(0).toUpperCase() + user.subscriptionPlan.slice(1)} -
               </span>
               <Badge variant={user.subscriptionStatus === "active" ? "default" : "secondary"}>
                 {user.subscriptionStatus === "active" ? "Ativo" : "Inativo"}

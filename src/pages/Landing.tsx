@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { PricingSection, PricingTier } from "@/components/blocks/pricing-section";
 import {
   Check,
   Calendar,
@@ -18,6 +19,8 @@ import {
   BarChart3,
   Headphones,
   Menu,
+  Building2,
+  Crown,
 } from "lucide-react";
 
 // Assets
@@ -74,39 +77,59 @@ const Landing = () => {
   ];
 
   // Plans
-  const plans = [
+  const pricingTiers: PricingTier[] = [
     {
       name: "Basic",
-      price: "7€",
-      period: "/mês",
-      features: ["🏠 1 propriedade", "📅 Gestão básica de reservas", "📊 Resumo mensal básico", "✉️ Suporte por email"],
+      price: {
+        monthly: 7,
+        yearly: 70,
+      },
+      description: "Para começar",
+      features: [
+        { name: "1 propriedade", description: "Gerir uma única propriedade", included: true },
+        { name: "Gestão básica de reservas", description: "Controlo de reservas", included: true },
+        { name: "Resumo mensal básico", description: "Resumos financeiros simples", included: true },
+        { name: "Suporte por email", description: "Resposta em até 48h", included: true },
+      ],
+      icon: <Home className="w-6 h-6" />,
+      highlight: false,
     },
     {
       name: "Pro",
-      price: "19€",
-      period: "/mês",
-      popular: true,
+      price: {
+        monthly: 19,
+        yearly: 190,
+      },
+      description: "Para quem está a crescer",
       features: [
-        "🏘 Até 5 propriedade",
-        "📋 Formulários de check-in e envio automático aos hóspedes",
-        "💰 Taxa turística automática",
-        "📆 Calendário Fiscal com notificações automáticas",
-        "⚡ Suporte prioritário",
+        { name: "Até 5 propriedades", description: "Gerir múltiplas propriedades", included: true },
+        { name: "Formulários de check-in", description: "Envio automático aos hóspedes", included: true },
+        { name: "Taxa turística automática", description: "Cálculo automático", included: true },
+        { name: "Calendário Fiscal", description: "Notificações automáticas", included: true },
+        { name: "Suporte prioritário", description: "Resposta em até 24h", included: true },
       ],
+      icon: <Building2 className="w-6 h-6" />,
+      highlight: true,
+      badge: "Mais Popular",
     },
     {
       name: "Premium",
-      price: "49€",
-      period: "/mês",
+      price: {
+        monthly: 49,
+        yearly: 490,
+      },
+      description: "Para gestores profissionais",
       features: [
-        "🌐 Propriedades ilimitadas",
-        "📋 Check-in automatizado completo",
-        "💰 Taxa turística + envio automático do SIBA (INE)",
-        "📆 Calendário Fiscal completo com alertas personalizados",
-        "📊 Relatórios personalizados",
-        "👤 Gestor de conta dedicado",
-        "🛠 API de acesso",
+        { name: "Propriedades ilimitadas", description: "Sem limite de propriedades", included: true },
+        { name: "Check-in automatizado completo", description: "Sistema completo", included: true },
+        { name: "Taxa turística + SIBA (INE)", description: "Envio automático", included: true },
+        { name: "Calendário Fiscal completo", description: "Alertas personalizados", included: true },
+        { name: "Relatórios personalizados", description: "Análises detalhadas", included: true },
+        { name: "Gestor de conta dedicado", description: "Suporte VIP", included: true },
+        { name: "API de acesso", description: "Integração avançada", included: true },
       ],
+      icon: <Crown className="w-6 h-6" />,
+      highlight: false,
     },
   ];
 
@@ -264,39 +287,10 @@ const Landing = () => {
       <section id="pricing" className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-4">Planos para todos os tamanhos</h2>
         <p className="text-center text-muted-foreground mb-12">Escolha o plano ideal para o seu negócio</p>
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, i) => (
-            <Card key={i} className={`relative ${plan.popular ? "border-primary border-2 shadow-lg" : ""}`}>
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
-                  Mais Popular
-                </div>
-              )}
-              <CardContent className="pt-6">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-muted-foreground">{plan.period}</span>
-                </div>
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="w-full"
-                  variant={plan.popular ? "default" : "outline"}
-                  onClick={() => navigate(`/auth?showPlans=true&plan=${plan.name.toLowerCase()}`)}
-                >
-                  Começar
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <PricingSection 
+          tiers={pricingTiers} 
+          onSelectPlan={(tier, isYearly) => navigate(`/auth?showPlans=true&plan=${tier.name.toLowerCase()}`)}
+        />
       </section>
 
       {/* CTA */}

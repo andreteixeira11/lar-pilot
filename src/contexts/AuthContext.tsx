@@ -4,16 +4,16 @@ interface User {
   id: string;
   email: string;
   name: string;
-  subscriptionPlan: "free" | "basic" | "premium" | null;
+  subscriptionPlan: "basic" | "pro" | "premium" | null;
   subscriptionStatus: "active" | "cancelled" | "expired" | null;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, plan?: "free" | "basic" | "premium") => Promise<void>;
+  signup: (email: string, password: string, name: string, plan?: "basic" | "pro" | "premium") => Promise<void>;
   logout: () => void;
-  updateSubscription: (plan: "basic" | "premium") => void;
+  updateSubscription: (plan: "basic" | "pro" | "premium") => void;
   isLoading: boolean;
 }
 
@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       id: "1",
       email,
       name: email.split("@")[0],
-      subscriptionPlan: "free",
+      subscriptionPlan: "basic",
       subscriptionStatus: null,
     };
     
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("user", JSON.stringify(mockUser));
   };
 
-  const signup = async (email: string, password: string, name: string, plan: "free" | "basic" | "premium" = "free") => {
+  const signup = async (email: string, password: string, name: string, plan: "basic" | "pro" | "premium" = "basic") => {
     // TODO: Connect to MySQL backend
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       name,
       subscriptionPlan: plan,
-      subscriptionStatus: plan !== "free" ? "active" : null,
+      subscriptionStatus: "active",
     };
     
     setUser(mockUser);
@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
   };
 
-  const updateSubscription = (plan: "basic" | "premium") => {
+  const updateSubscription = (plan: "basic" | "pro" | "premium") => {
     if (!user) return;
     
     const updatedUser = {

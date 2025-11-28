@@ -12,55 +12,64 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
+import { PricingSection, PricingTier } from "@/components/blocks/pricing-section";
 
-type SubscriptionPlan = "free" | "basic" | "premium";
+type SubscriptionPlan = "basic" | "pro" | "premium";
 type PaymentMethod = "card" | "mbway" | "multibanco" | "paypal";
 
-const plans = [
+const pricingTiers: PricingTier[] = [
   {
-    id: "basic" as SubscriptionPlan,
     name: "Basic",
-    price: "7",
+    price: {
+      monthly: 7,
+      yearly: 70,
+    },
     description: "Para começar",
     features: [
-      "1 propriedade",
-      "Gestão básica de reservas",
-      "Resumo mensal básico",
-      "Suporte por email",
+      { name: "1 propriedade", description: "Gerir uma única propriedade", included: true },
+      { name: "Gestão básica de reservas", description: "Controlo de reservas", included: true },
+      { name: "Resumo mensal básico", description: "Resumos financeiros simples", included: true },
+      { name: "Suporte por email", description: "Resposta em até 48h", included: true },
     ],
-    icon: Home,
+    icon: <Home className="w-6 h-6" />,
+    highlight: false,
   },
   {
-    id: "premium" as SubscriptionPlan,
     name: "Pro",
-    price: "19",
-    description: "Ideal para quem está a crescer",
+    price: {
+      monthly: 19,
+      yearly: 190,
+    },
+    description: "Para quem está a crescer",
     features: [
-      "Até 5 propriedades",
-      "Formulários de check-in",
-      "Taxa turística automática",
-      "Calendário Fiscal",
-      "Suporte prioritário",
+      { name: "Até 5 propriedades", description: "Gerir múltiplas propriedades", included: true },
+      { name: "Formulários de check-in", description: "Envio automático aos hóspedes", included: true },
+      { name: "Taxa turística automática", description: "Cálculo automático", included: true },
+      { name: "Calendário Fiscal", description: "Notificações automáticas", included: true },
+      { name: "Suporte prioritário", description: "Resposta em até 24h", included: true },
     ],
-    icon: Sparkles,
-    popular: true,
+    icon: <Building2 className="w-6 h-6" />,
+    highlight: true,
+    badge: "Mais Popular",
   },
   {
-    id: "premium" as SubscriptionPlan,
     name: "Premium",
-    price: "49",
+    price: {
+      monthly: 49,
+      yearly: 490,
+    },
     description: "Para gestores profissionais",
     features: [
-      "Propriedades ilimitadas",
-      "Check-in automatizado completo",
-      "Taxa turística + SIBA (INE)",
-      "Calendário Fiscal completo",
-      "Relatórios personalizados",
-      "Gestor de conta dedicado",
-      "API de acesso",
+      { name: "Propriedades ilimitadas", description: "Sem limite de propriedades", included: true },
+      { name: "Check-in automatizado completo", description: "Sistema completo", included: true },
+      { name: "Taxa turística + SIBA (INE)", description: "Envio automático", included: true },
+      { name: "Calendário Fiscal completo", description: "Alertas personalizados", included: true },
+      { name: "Relatórios personalizados", description: "Análises detalhadas", included: true },
+      { name: "Gestor de conta dedicado", description: "Suporte VIP", included: true },
+      { name: "API de acesso", description: "Integração avançada", included: true },
     ],
-    icon: Crown,
-    popular: false,
+    icon: <Crown className="w-6 h-6" />,
+    highlight: false,
   },
 ];
 
@@ -106,7 +115,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handlePlanSelect = (planId: SubscriptionPlan) => {
+  const handlePlanSelect = (tier: PricingTier, isYearly: boolean) => {
+    const planId = tier.name.toLowerCase() as SubscriptionPlan;
     setSelectedPlan(planId);
     setStep("profile");
   };
@@ -151,7 +161,7 @@ export default function Auth() {
   const handleFinalSignup = async () => {
     setIsLoading(true);
     try {
-      await signup(email, password, name, selectedPlan || "free");
+      await signup(email, password, name, selectedPlan || "basic");
       toast({
         title: "Conta criada com sucesso!",
         description: "Pode agora aceder à plataforma.",
@@ -265,7 +275,7 @@ export default function Auth() {
   if (step === "plan") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-        <div className="w-full max-w-5xl space-y-8">
+        <div className="w-full max-w-6xl space-y-8">
           <div className="text-center space-y-2">
             <Button
               variant="ghost"
@@ -289,61 +299,10 @@ export default function Auth() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {plans.map((plan) => {
-              const Icon = plan.icon;
-              
-              return (
-                <Card
-                  key={plan.id}
-                  className={`relative cursor-pointer transition-all hover:shadow-lg ${
-                    plan.popular ? "border-primary shadow-md scale-105" : ""
-                  }`}
-                  onClick={() => handlePlanSelect(plan.id)}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground">
-                        Mais Popular
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  <CardHeader className="text-center pb-4">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                      <Icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription className="mt-2">{plan.description}</CardDescription>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold">€{plan.price}</span>
-                      <span className="text-muted-foreground">/mês</span>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
-                          <Check className="mr-2 h-5 w-5 text-primary shrink-0 mt-0.5" />
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      variant={plan.popular ? "default" : "outline"}
-                    >
-                      Escolher {plan.name}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
+          <PricingSection 
+            tiers={pricingTiers} 
+            onSelectPlan={handlePlanSelect}
+          />
         </div>
       </div>
     );
@@ -351,7 +310,7 @@ export default function Auth() {
 
   // Profile step
   if (step === "profile") {
-    const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+    const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
     
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
@@ -461,7 +420,7 @@ export default function Auth() {
 
   // Payment step (now comes BEFORE property)
   if (step === "payment") {
-    const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+    const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
@@ -485,7 +444,7 @@ export default function Auth() {
             </div>
             <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
             <CardDescription className="text-center">
-              Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{selectedPlanData?.price}/mês
+              Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{selectedPlanData?.price.monthly}/mês
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -598,7 +557,7 @@ export default function Auth() {
               variant="ghost"
               size="sm"
               className="w-fit -ml-2 mb-2"
-              onClick={() => selectedPlan === "free" ? setStep("profile") : setStep("payment")}
+              onClick={() => setStep("payment")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
@@ -727,7 +686,7 @@ export default function Auth() {
               </div>
 
               <Button type="submit" className="w-full">
-                {selectedPlan === "free" ? "Criar Conta" : "Continuar para Pagamento"}
+                Continuar para Pagamento
               </Button>
             </form>
           </CardContent>
@@ -737,7 +696,7 @@ export default function Auth() {
   }
 
   // Payment step
-  const selectedPlanData = plans.find((p) => p.id === selectedPlan);
+  const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
   
   const paymentMethods = [
     { id: "card" as PaymentMethod, name: "Cartão de Crédito", icon: CreditCard },
@@ -768,7 +727,7 @@ export default function Auth() {
             </div>
           <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
           <CardDescription className="text-center">
-            Plano {selectedPlanData?.name} - €{selectedPlanData?.price}/mês
+            Plano {selectedPlanData?.name} - €{selectedPlanData?.price.monthly}/mês
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -893,11 +852,11 @@ export default function Auth() {
             <div className="bg-muted p-4 rounded-lg">
               <div className="flex justify-between text-sm mb-2">
                 <span>Plano {selectedPlanData?.name}</span>
-                <span className="font-semibold">€{selectedPlanData?.price}/mês</span>
+                <span className="font-semibold">€{selectedPlanData?.price.monthly}/mês</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t">
                 <span>Total</span>
-                <span>€{selectedPlanData?.price}/mês</span>
+                <span>€{selectedPlanData?.price.monthly}/mês</span>
               </div>
             </div>
             

@@ -106,7 +106,7 @@ export default function Subscriptions() {
         description="Escolha o plano ideal para o seu negócio"
       />
 
-      {user?.subscriptionPlan && user.subscriptionPlan !== "free" && (
+      {user?.subscriptionPlan && (
         <Card className="border-primary max-w-4xl mx-auto">
           <CardHeader>
             <CardTitle>Plano Atual</CardTitle>

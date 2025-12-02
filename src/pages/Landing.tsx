@@ -340,7 +340,11 @@ const Landing = () => {
       <footer className="border-t mt-20 bg-background/90 py-8">
         <div className="container mx-auto px-4 grid md:grid-cols-4 gap-4 text-center md:text-left">
           <div>
-            <h5 className="font-bold mb-2">Monumental Atlantic</h5>
+            <img 
+              src="/logos/monumenta-logo.svg" 
+              alt="Monumenta Logo" 
+              className="h-12 mb-2"
+            />
             <p>Gestão profissional de Alojamento Local na Madeira.</p>
           </div>
           <div>

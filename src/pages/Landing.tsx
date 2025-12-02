@@ -169,6 +169,19 @@ const Landing = () => {
               <img src="/logos/monumenta-logo.svg" alt="Monumental Atlantic" className="h-10 w-auto" />
             </div>
 
+            {/* Navigation Links - Desktop */}
+            <nav className="hidden lg:flex items-center gap-6">
+              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                Funcionalidades
+              </a>
+              <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                Planos
+              </a>
+              <Button variant="ghost" onClick={() => navigate("/simulador")} className="text-sm font-medium text-muted-foreground hover:text-primary">
+                Gestão de AL
+              </Button>
+            </nav>
+
             {/* Menu / Buttons */}
             <div className="flex items-center gap-3">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -182,23 +195,51 @@ const Landing = () => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-4 mt-8">
+                    <a 
+                      href="#features" 
+                      className="text-sm font-medium hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Funcionalidades
+                    </a>
+                    <a 
+                      href="#pricing" 
+                      className="text-sm font-medium hover:text-primary transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Planos
+                    </a>
                     <Button
                       variant="ghost"
+                      className="justify-start p-0 h-auto"
                       onClick={() => {
-                        navigate("/auth?mode=login");
+                        navigate("/simulador");
                         setMobileMenuOpen(false);
                       }}
                     >
-                      Entrar
+                      Gestão de AL
                     </Button>
-                    <Button
-                      onClick={() => {
-                        navigate("/auth?showPlans=true");
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      Começar Agora
-                    </Button>
+                    <div className="border-t pt-4 mt-2">
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        onClick={() => {
+                          navigate("/auth?mode=login");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Entrar
+                      </Button>
+                      <Button
+                        className="w-full mt-2"
+                        onClick={() => {
+                          navigate("/auth?showPlans=true");
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        Começar Agora
+                      </Button>
+                    </div>
                   </nav>
                 </SheetContent>
               </Sheet>

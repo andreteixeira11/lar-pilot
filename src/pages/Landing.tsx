@@ -98,7 +98,7 @@ const Landing = () => {
       name: "Pro",
       price: {
         monthly: 19,
-        yearly: 190,
+        yearly: 199,
       },
       description: "Para quem está a crescer",
       features: [
@@ -116,7 +116,7 @@ const Landing = () => {
       name: "Premium",
       price: {
         monthly: 49,
-        yearly: 490,
+        yearly: 499,
       },
       description: "Para gestores profissionais",
       features: [

@@ -275,29 +275,29 @@ export default function Auth() {
   if (step === "plan") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-        <div className="w-full max-w-6xl space-y-8">
-          <div className="text-center space-y-2">
+        <div className="w-full max-w-6xl space-y-4">
+          <div className="flex justify-center">
+            <img 
+              src="/logos/monumenta-logo.svg" 
+              alt="Monumenta Atlantic" 
+              className="h-20 w-auto"
+            />
+          </div>
+          <div className="flex justify-start max-w-5xl mx-auto px-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setStep("auth")}
-              className="mb-4"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
-            <div className="flex justify-center mb-4">
-              <img 
-                src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
-                className="h-20 w-auto"
-              />
-            </div>
           </div>
 
           <PricingSection 
             tiers={pricingTiers} 
             onSelectPlan={handlePlanSelect}
+            className="py-4"
           />
         </div>
       </div>

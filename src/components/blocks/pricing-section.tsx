@@ -65,7 +65,7 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
     <section
       className={cn(
         "relative bg-background text-foreground",
-        "py-12 px-4 md:py-24 lg:py-32",
+        "py-8 px-4",
         "overflow-hidden",
         className,
       )}

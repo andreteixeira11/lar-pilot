@@ -67,20 +67,27 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
         <div className="flex flex-col items-center gap-4 mb-12">
           <h2 className="text-3xl font-bold text-foreground">Planos e Preços</h2>
           <p className="text-muted-foreground text-lg">Planos para todos os tamanhos</p>
+
           <div className="inline-flex items-center p-1.5 bg-card rounded-full border border-border shadow-sm">
             {["Mensal", "Anual"].map((period) => (
-              <button
-                key={period}
-                onClick={() => setIsYearly(period === "Anual")}
-                className={cn(
-                  "px-8 py-2.5 text-sm font-medium rounded-full transition-all duration-300",
-                  (period === "Anual") === isYearly
-                    ? "bg-primary text-primary-foreground shadow-lg"
-                    : "text-muted-foreground hover:text-foreground",
+              <div key={period} className="relative inline-block">
+                <button
+                  onClick={() => setIsYearly(period === "Anual")}
+                  className={cn(
+                    "px-8 py-2.5 text-sm font-medium rounded-full transition-all duration-300",
+                    (period === "Anual") === isYearly
+                      ? "bg-primary text-primary-foreground shadow-lg"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {period}
+                </button>
+                {period === "Anual" && (
+                  <span className="absolute -top-2 right-0 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg">
+                    -10%
+                  </span>
                 )}
-              >
-                {period}
-              </button>
+              </div>
             ))}
           </div>
         </div>

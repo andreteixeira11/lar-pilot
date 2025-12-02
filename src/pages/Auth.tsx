@@ -293,10 +293,6 @@ export default function Auth() {
                 className="h-20 w-auto"
               />
             </div>
-            <h1 className="text-4xl font-bold">Escolha o Seu Plano</h1>
-            <p className="text-muted-foreground text-lg">
-              Selecione o plano ideal para o seu negócio
-            </p>
           </div>
 
           <PricingSection 

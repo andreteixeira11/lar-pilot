@@ -75,6 +75,9 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
           <h2 className="text-3xl font-bold text-foreground">
             Planos e Preços
           </h2>
+          <p className="text-muted-foreground text-lg">
+            Selecione o plano ideal para o seu negócio
+          </p>
           <div className="inline-flex items-center p-1.5 bg-card rounded-full border border-border shadow-sm">
             {["Mensal", "Anual"].map((period) => (
               <button

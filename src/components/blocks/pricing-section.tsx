@@ -1,38 +1,38 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowRightIcon, CheckIcon } from "@radix-ui/react-icons"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRightIcon, CheckIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
 
 interface Feature {
-  name: string
-  description: string
-  included: boolean
+  name: string;
+  description: string;
+  included: boolean;
 }
 
 interface PricingTier {
-  name: string
+  name: string;
   price: {
-    monthly: number
-    yearly: number
-  }
-  description: string
-  features: Feature[]
-  highlight?: boolean
-  badge?: string
-  icon: React.ReactNode
+    monthly: number;
+    yearly: number;
+  };
+  description: string;
+  features: Feature[];
+  highlight?: boolean;
+  badge?: string;
+  icon: React.ReactNode;
 }
 
 interface PricingSectionProps {
-  tiers: PricingTier[]
-  className?: string
-  onSelectPlan?: (tier: PricingTier, isYearly: boolean) => void
+  tiers: PricingTier[];
+  className?: string;
+  onSelectPlan?: (tier: PricingTier, isYearly: boolean) => void;
 }
 
 function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps) {
-  const [isYearly, setIsYearly] = useState(false)
+  const [isYearly, setIsYearly] = useState(false);
 
   const buttonStyles = {
     default: cn(
@@ -52,32 +52,21 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
       "hover:shadow-[0_1px_20px_rgba(0,0,0,0.15)]",
       "font-semibold text-base",
     ),
-  }
+  };
 
   const badgeStyles = cn(
     "px-4 py-1.5 text-sm font-medium",
     "bg-primary dark:bg-primary",
     "text-primary-foreground dark:text-primary-foreground",
     "border-none shadow-lg",
-  )
+  );
 
   return (
-    <section
-      className={cn(
-        "relative bg-background text-foreground",
-        "py-8 px-4",
-        "overflow-hidden",
-        className,
-      )}
-    >
+    <section className={cn("relative bg-background text-foreground", "py-8 px-4", "overflow-hidden", className)}>
       <div className="w-full max-w-5xl mx-auto">
         <div className="flex flex-col items-center gap-4 mb-12">
-          <h2 className="text-3xl font-bold text-foreground">
-            Planos e Preços
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Selecione o plano ideal para o seu negócio
-          </p>
+          <h2 className="text-3xl font-bold text-foreground">Planos e Preços</h2>
+          <p className="text-muted-foreground text-lg">Planos para todos os tamanhos</p>
           <div className="inline-flex items-center p-1.5 bg-card rounded-full border border-border shadow-sm">
             {["Mensal", "Anual"].map((period) => (
               <button
@@ -104,13 +93,9 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
                 "relative group backdrop-blur-sm",
                 "rounded-3xl transition-all duration-300",
                 "flex flex-col",
-                tier.highlight
-                  ? "bg-gradient-to-b from-primary/10 to-transparent"
-                  : "bg-card",
+                tier.highlight ? "bg-gradient-to-b from-primary/10 to-transparent" : "bg-card",
                 "border",
-                tier.highlight
-                  ? "border-primary/50 shadow-xl"
-                  : "border-border shadow-md",
+                tier.highlight ? "border-primary/50 shadow-xl" : "border-border shadow-md",
                 "hover:translate-y-0 hover:shadow-lg",
               )}
             >
@@ -125,16 +110,12 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
                   <div
                     className={cn(
                       "p-3 rounded-xl",
-                      tier.highlight
-                        ? "bg-primary/10 text-primary"
-                        : "bg-muted text-muted-foreground",
+                      tier.highlight ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground",
                     )}
                   >
                     {tier.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground">
-                    {tier.name}
-                  </h3>
+                  <h3 className="text-xl font-semibold text-foreground">{tier.name}</h3>
                 </div>
 
                 <div className="mb-6">
@@ -142,13 +123,9 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
                     <span className="text-4xl font-bold text-foreground">
                       €{isYearly ? tier.price.yearly : tier.price.monthly}
                     </span>
-                    <span className="text-sm text-muted-foreground">
-                      /{isYearly ? "ano" : "mês"}
-                    </span>
+                    <span className="text-sm text-muted-foreground">/{isYearly ? "ano" : "mês"}</span>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {tier.description}
-                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">{tier.description}</p>
                 </div>
 
                 <div className="space-y-4">
@@ -157,20 +134,14 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
                       <div
                         className={cn(
                           "mt-1 p-0.5 rounded-full transition-colors duration-200",
-                          feature.included
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-muted-foreground",
+                          feature.included ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
                         )}
                       >
                         <CheckIcon className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-foreground">
-                          {feature.name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {feature.description}
-                        </div>
+                        <div className="text-sm font-medium text-foreground">{feature.name}</div>
+                        <div className="text-sm text-muted-foreground">{feature.description}</div>
                       </div>
                     </div>
                   ))}
@@ -182,9 +153,7 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
                   onClick={() => onSelectPlan?.(tier, isYearly)}
                   className={cn(
                     "w-full relative transition-all duration-300",
-                    tier.highlight
-                      ? buttonStyles.highlight
-                      : buttonStyles.default,
+                    tier.highlight ? buttonStyles.highlight : buttonStyles.default,
                   )}
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -207,8 +176,8 @@ function PricingSection({ tiers, className, onSelectPlan }: PricingSectionProps)
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-export { PricingSection }
-export type { PricingTier, Feature }
+export { PricingSection };
+export type { PricingTier, Feature };

@@ -82,7 +82,7 @@ const Landing = () => {
       name: "Basic",
       price: {
         monthly: 7,
-        yearly: 70,
+        yearly: 79,
       },
       description: "Para começar",
       features: [

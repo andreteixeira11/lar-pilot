@@ -171,15 +171,19 @@ const Landing = () => {
 
             {/* Navigation Links - Desktop */}
             <nav className="hidden lg:flex items-center gap-6">
-              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+              <a href="#features" className="text-base font-medium text-muted-foreground hover:text-primary transition-colors">
                 Funcionalidades
               </a>
-              <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+              <a href="#pricing" className="text-base font-medium text-muted-foreground hover:text-primary transition-colors">
                 Planos
               </a>
-              <Button variant="ghost" onClick={() => navigate("/simulador")} className="text-sm font-medium text-muted-foreground hover:text-primary">
+              <a 
+                href="/simulador" 
+                onClick={(e) => { e.preventDefault(); navigate("/simulador"); }}
+                className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 Gestão de AL
-              </Button>
+              </a>
             </nav>
 
             {/* Menu / Buttons */}

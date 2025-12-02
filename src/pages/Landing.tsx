@@ -343,7 +343,7 @@ const Landing = () => {
             <img 
               src="/logos/monumenta-logo.svg" 
               alt="Monumenta Logo" 
-              className="h-12 mb-2"
+              className="h-20 mb-2"
             />
             <p>Gestão profissional de Alojamento Local na Madeira.</p>
           </div>

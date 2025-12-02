@@ -184,10 +184,10 @@ const Landing = () => {
                 Planos
               </a>
               <a
-                href="/simulador"
+                href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("/simulador");
+                  navigate("#");
                 }}
                 className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
               >
@@ -226,7 +226,7 @@ const Landing = () => {
                       variant="ghost"
                       className="justify-start p-0 h-auto"
                       onClick={() => {
-                        navigate("/simulador");
+                        navigate("#");
                         setMobileMenuOpen(false);
                       }}
                     >

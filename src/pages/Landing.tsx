@@ -171,15 +171,24 @@ const Landing = () => {
 
             {/* Navigation Links - Desktop */}
             <nav className="hidden lg:flex items-center gap-6">
-              <a href="#features" className="text-base font-medium text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#features"
+                className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 Funcionalidades
               </a>
-              <a href="#pricing" className="text-base font-medium text-muted-foreground hover:text-primary transition-colors">
+              <a
+                href="#pricing"
+                className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 Planos
               </a>
-              <a 
-                href="/simulador" 
-                onClick={(e) => { e.preventDefault(); navigate("/simulador"); }}
+              <a
+                href="/simulador"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/simulador");
+                }}
                 className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
               >
                 Gestão de AL
@@ -199,15 +208,15 @@ const Landing = () => {
                     <SheetTitle>Menu</SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-4 mt-8">
-                    <a 
-                      href="#features" 
+                    <a
+                      href="#features"
                       className="text-sm font-medium hover:text-primary transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       Funcionalidades
                     </a>
-                    <a 
-                      href="#pricing" 
+                    <a
+                      href="#pricing"
                       className="text-sm font-medium hover:text-primary transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -263,7 +272,7 @@ const Landing = () => {
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[60vh] pt-[80px]">
         <div className="absolute inset-0 z-0">
-          <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-20" />
+          <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-40" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
         </div>
         <div className="container relative z-10 mx-auto px-4 pt-20 pb-32 text-center">
@@ -385,11 +394,7 @@ const Landing = () => {
       <footer className="border-t mt-20 bg-background/90 py-8">
         <div className="container mx-auto px-4 grid md:grid-cols-4 gap-4 text-center md:text-left">
           <div>
-            <img 
-              src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Logo" 
-              className="h-20 mb-2"
-            />
+            <img src="/logos/monumenta-logo.svg" alt="Monumenta Logo" className="h-20 mb-2" />
             <p>Gestão profissional de Alojamento Local na Madeira.</p>
           </div>
           <div>

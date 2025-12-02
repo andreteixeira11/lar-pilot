@@ -338,8 +338,6 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">Planos para todos os tamanhos</h2>
         <PricingSection
           tiers={pricingTiers}
           onSelectPlan={(tier, isYearly) => navigate(`/auth?showPlans=true&plan=${tier.name.toLowerCase()}`)}

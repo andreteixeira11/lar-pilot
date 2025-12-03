@@ -10,7 +10,7 @@ import AnimatedTabs from "@/components/simulador/AnimatedTabs";
 import HeroSectionWithGradient from "@/components/simulador/HeroSectionWithGradient";
 import luxuryVillaImage from "@/assets/luxury-villa-hero.jpg";
 
-// IMPORT DO LOGOTIPO
+// Logo
 import monumentaLogo from "/logos/monumenta-logo.svg";
 
 import {
@@ -170,17 +170,19 @@ const Simulador = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* LOGO NO TOPO */}
-      <div className="w-full flex justify-center py-6">
-        <img src={monumentaLogo} alt="Monumenta Logo" className="h-14 w-auto" />
-      </div>
+      {/* HERO + LOGO DENTRO DO HERO */}
+      <div className="relative">
+        <HeroSectionWithGradient
+          title="PACOTES ANFITRIÃO"
+          subtitle="Os melhores pacotes de serviços para os melhores clientes!"
+          backgroundImage={luxuryVillaImage}
+        />
 
-      {/* Hero Section */}
-      <HeroSectionWithGradient
-        title="PACOTES ANFITRIÃO"
-        subtitle="Os melhores pacotes de serviços para os melhores clientes!"
-        backgroundImage={luxuryVillaImage}
-      />
+        {/* Logo centrado no topo do hero */}
+        <div className="absolute top-6 w-full flex justify-center z-20">
+          <img src={monumentaLogo} alt="Monumenta Logo" className="h-16 w-auto drop-shadow-lg" />
+        </div>
+      </div>
 
       <div className="container mx-auto px-4 py-12">
         <ProgressIndicator

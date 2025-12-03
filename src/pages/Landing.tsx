@@ -187,7 +187,7 @@ const Landing = () => {
                 href="/simulador"
                 onClick={(e) => {
                   e.preventDefault();
-                  navigate("#");
+                  navigate("/simulador");
                 }}
                 className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
               >

@@ -9,6 +9,10 @@ import { ConfirmationPage } from "@/components/simulador/ConfirmationPage";
 import AnimatedTabs from "@/components/simulador/AnimatedTabs";
 import HeroSectionWithGradient from "@/components/simulador/HeroSectionWithGradient";
 import luxuryVillaImage from "@/assets/luxury-villa-hero.jpg";
+
+// IMPORT DO LOGOTIPO
+import monumentaLogo from "/logos/monumenta-logo.svg";
+
 import {
   Calendar,
   BookOpen,
@@ -166,6 +170,11 @@ const Simulador = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* LOGO NO TOPO */}
+      <div className="w-full flex justify-center py-6">
+        <img src={monumentaLogo} alt="Monumenta Logo" className="h-14 w-auto" />
+      </div>
+
       {/* Hero Section */}
       <HeroSectionWithGradient
         title="PACOTES ANFITRIÃO"
@@ -174,7 +183,6 @@ const Simulador = () => {
       />
 
       <div className="container mx-auto px-4 py-12">
-        {/* Progress Indicator */}
         <ProgressIndicator
           currentStep={currentStep}
           steps={steps}
@@ -184,18 +192,12 @@ const Simulador = () => {
           }}
         />
 
-        {/* Step 1: Escolha de Pacote */}
         {currentStep === 1 && (
           <div className="animate-fade-in">
-            <AnimatedTabs
-              tabs={tabs}
-              defaultTab={selectedPackage}
-              onTabChange={setSelectedPackage}
-            />
+            <AnimatedTabs tabs={tabs} defaultTab={selectedPackage} onTabChange={setSelectedPackage} />
           </div>
         )}
 
-        {/* Step 2: Personalização com Serviços Adicionais */}
         {currentStep === 2 && currentPackage && (
           <div className="animate-fade-in max-w-2xl mx-auto">
             <SimulatorSection
@@ -207,7 +209,6 @@ const Simulador = () => {
           </div>
         )}
 
-        {/* Step 3: Informações do Alojamento */}
         {currentStep === 3 && currentPackage && (
           <div className="animate-fade-in max-w-2xl mx-auto">
             <AccommodationInfo
@@ -220,7 +221,6 @@ const Simulador = () => {
           </div>
         )}
 
-        {/* Step 4: Confirmação */}
         {currentStep === 4 && currentPackage && (
           <div className="animate-fade-in">
             <ConfirmationPage
@@ -232,7 +232,6 @@ const Simulador = () => {
         )}
       </div>
 
-      {/* Proposal Modal */}
       <ProposalModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -242,7 +241,6 @@ const Simulador = () => {
         onSuccess={handleProposalSuccess}
       />
 
-      {/* Cookie Banner */}
       <CookieBanner />
     </div>
   );

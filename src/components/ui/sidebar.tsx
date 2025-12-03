@@ -421,9 +421,9 @@ const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
-        default: "sm:h-9 sm:px-3 sm:rounded-md lg:h-11 lg:px-8 lg:rounded-lg",
-        sm: "h-7 text-xs rounded-md hover:rounded-lg",
-        lg: "h-12 text-sm rounded-lg group-data-[collapsible=icon]:!p-0 hover:rounded-xl",
+        default: "sm:h-9 sm:px-3 sm:rounded-md lg:h-11 lg:px-8 lg:rounded-full hover:rounded-full",
+        sm: "h-7 text-xs rounded-md hover:rounded-full",
+        lg: "h-12 text-sm rounded-lg group-data-[collapsible=icon]:!p-0 hover:rounded-full",
       },
     },
     defaultVariants: {

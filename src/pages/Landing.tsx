@@ -184,7 +184,7 @@ const Landing = () => {
                 Planos
               </a>
               <a
-                href="#"
+                href="/simulador"
                 onClick={(e) => {
                   e.preventDefault();
                   navigate("#");

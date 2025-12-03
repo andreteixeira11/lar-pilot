@@ -1,18 +1,24 @@
 import { CheckCircle, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface ConfirmationPageProps {
   packageName: string;
   totalCommission: number;
-  onBackToHome: () => void;
+  onBackToHome?: () => void;
 }
 
 export const ConfirmationPage = ({
   packageName,
   totalCommission,
-  onBackToHome,
 }: ConfirmationPageProps) => {
+  const navigate = useNavigate();
+
+  const handleBackToHome = () => {
+    navigate("/");
+  };
+
   return (
     <div className="max-w-xl mx-auto text-center">
       <Card className="border-primary/20 shadow-lg">
@@ -74,7 +80,7 @@ export const ConfirmationPage = ({
             </ul>
           </div>
 
-          <Button onClick={onBackToHome} size="lg" className="gap-2">
+          <Button onClick={handleBackToHome} size="lg" className="gap-2">
             <Home className="w-4 h-4" />
             Voltar ao Início
           </Button>

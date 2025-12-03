@@ -12,6 +12,7 @@ import { PropertySelectorCommand } from "@/components/PropertySelectorCommand";
 import { NotificationMenu } from "@/components/NotificationMenu";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
+import Simulador from "./pages/Simulador";
 import CheckIn from "./pages/CheckIn";
 import CheckIns from "./pages/CheckIns";
 import Reservas from "./pages/Reservas";
@@ -40,6 +41,7 @@ const App = () => (
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/simulador" element={<Simulador />} />
         <Route path="/checkin/:token" element={<CheckIn />} />
               <Route
                 path="/*"

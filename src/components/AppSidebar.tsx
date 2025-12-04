@@ -1,13 +1,14 @@
 import { NavLink } from "react-router-dom";
 import {
   Calendar as CalendarIcon,
-  Home,
   Key,
   DollarSign,
   BarChart3,
   FileText,
   CalendarDays,
   ClipboardCheck,
+  LayoutDashboard,
+  Building2,
 } from "lucide-react";
 import {
   Sidebar,
@@ -23,7 +24,8 @@ import {
 
 
 const menuItems = [
-  { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dados do Alojamento", url: "/alojamento", icon: Building2 },
   { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
   { title: "Acessos", url: "/acessos", icon: Key },
@@ -61,8 +63,8 @@ export function AppSidebar() {
                       end
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "hover:bg-sidebar-accent/50"
+                          ? "bg-primary/10 text-primary font-medium rounded-xl"
+                          : "hover:bg-primary/10 hover:text-primary rounded-xl transition-colors"
                       }
                     >
                       <item.icon className="h-4 w-4" />

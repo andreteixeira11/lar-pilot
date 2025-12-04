@@ -17,6 +17,8 @@ import {
   CreditCard,
   LogOut,
   User,
+  LayoutDashboard,
+  Building2,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -86,7 +88,8 @@ const AnimatedMenuToggle = ({
 );
 
 const menuItems = [
-  { title: "Dados do Alojamento", url: "/alojamento", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Dados do Alojamento", url: "/alojamento", icon: Building2 },
   { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
   { title: "Acessos", url: "/acessos", icon: Key },
@@ -168,10 +171,10 @@ export const AnimatedSidebar = () => {
                           end
                           onClick={toggleSidebar}
                           className={({ isActive }) =>
-                            `flex gap-3 items-center w-full py-3 px-4 rounded-lg transition-colors ${
+                            `flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors ${
                               isActive
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "hover:bg-accent text-foreground"
+                                ? "bg-primary/10 text-primary font-medium shadow-sm"
+                                : "hover:bg-primary/10 hover:text-primary text-foreground"
                             }`
                           }
                         >
@@ -255,10 +258,10 @@ export const AnimatedSidebar = () => {
                   to={item.url}
                   end
                   className={({ isActive }) =>
-                    `flex gap-3 items-center w-full py-3 px-4 rounded-lg transition-colors ${
+                    `flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors ${
                       isActive
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "hover:bg-accent text-foreground"
+                        ? "bg-primary/10 text-primary font-medium shadow-sm"
+                        : "hover:bg-primary/10 hover:text-primary text-foreground"
                     }`
                   }
                 >

@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Send, CheckCircle, Clock, Calendar, User, Mail, FileText, Plus, Pencil, Trash2 } from "lucide-react";
+import { Send, CheckCircle, Clock, Calendar, User, Mail, FileText, Plus, Pencil, Trash2, Copy } from "lucide-react";
 import { AddCheckinTemplateDialog } from "@/components/AddCheckinTemplateDialog";
 import {
   AlertDialog,
@@ -97,6 +97,24 @@ export default function CheckIns() {
     } finally {
       setSendingId(null);
     }
+  };
+
+  const handleCopyLink = (reservationId: string, checkinToken: string | null) => {
+    if (!checkinToken) {
+      toast({
+        title: "Link não disponível",
+        description: "Envie o link primeiro para gerar o token de check-in",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const checkinUrl = `${window.location.origin}/checkin/${checkinToken}`;
+    navigator.clipboard.writeText(checkinUrl);
+    toast({
+      title: "Link copiado!",
+      description: "O link de check-in foi copiado para a área de transferência",
+    });
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
@@ -225,7 +243,16 @@ export default function CheckIns() {
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      <Button
+                        onClick={() => handleCopyLink(reservation.id, reservation.checkin_token)}
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        disabled={!reservation.checkin_token}
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Link
+                      </Button>
                       <Button
                         onClick={() => handleSendCheckin(reservation.id, reservation.guest_email)}
                         disabled={isSending}
@@ -233,7 +260,7 @@ export default function CheckIns() {
                         variant={checkinStatus.status === "completo" ? "outline" : "default"}
                       >
                         <Send className="h-4 w-4 mr-2" />
-                        {isSending ? "A enviar..." : checkinStatus.status === "completo" ? "Reenviar" : "Enviar Link"}
+                        {isSending ? "A enviar..." : checkinStatus.status === "completo" ? "Reenviar" : "Enviar Email"}
                       </Button>
                     </div>
                   </div>

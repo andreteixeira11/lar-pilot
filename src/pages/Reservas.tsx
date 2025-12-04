@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User } from "lucide-react";
+import { Calendar, User, List, CalendarDays } from "lucide-react";
 import { AddReservaDialog } from "@/components/AddReservaDialog";
 import { EditReservaDialog } from "@/components/EditReservaDialog";
 import { ReservaDetailsDialog } from "@/components/ReservaDetailsDialog";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,20 @@ import {
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
+import {
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  format,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  isWithinInterval,
+  parseISO,
+} from "date-fns";
+import { pt } from "date-fns/locale";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Reservas = () => {
   const { selectedPropertyId } = useProperty();
@@ -27,6 +42,8 @@ const Reservas = () => {
   const [selectedReserva, setSelectedReserva] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   // Listen for property changes
   useEffect(() => {
@@ -69,143 +86,283 @@ const Reservas = () => {
     return matchesProperty && matchesPlatform && matchesYear && matchesMonth;
   });
 
+  // Calendar helpers
+  const monthStart = startOfMonth(calendarMonth);
+  const monthEnd = endOfMonth(calendarMonth);
+  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+
+  const getReservationsForDay = (day: Date) => {
+    return reservas.filter((reserva) => {
+      if (reserva.propertyId !== selectedPropertyId) return false;
+      const checkIn = parseISO(reserva.checkIn);
+      const checkOut = parseISO(reserva.checkOut);
+      return isWithinInterval(day, { start: checkIn, end: checkOut }) || isSameDay(day, checkIn) || isSameDay(day, checkOut);
+    });
+  };
+
+  const getReservationStyle = (reserva: any, day: Date) => {
+    const checkIn = parseISO(reserva.checkIn);
+    const checkOut = parseISO(reserva.checkOut);
+    const isStart = isSameDay(day, checkIn);
+    const isEnd = isSameDay(day, checkOut);
+    
+    let bgColor = "bg-primary/20 text-primary";
+    if (reserva.plataforma === "Airbnb") bgColor = "bg-rose-500/20 text-rose-600";
+    if (reserva.plataforma === "Booking") bgColor = "bg-blue-500/20 text-blue-600";
+    
+    return {
+      className: `${bgColor} ${isStart ? "rounded-l-lg" : ""} ${isEnd ? "rounded-r-lg" : ""} px-1 py-0.5 text-xs truncate cursor-pointer hover:opacity-80`,
+      isStart,
+      isEnd,
+    };
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Controlo de Reservas"
         description="Gerir todas as reservas da propriedade"
-        actions={<AddReservaDialog onAdd={handleAddReserva} />}
+        actions={
+          <div className="flex gap-2">
+            <div className="flex rounded-xl border border-border overflow-hidden">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "calendar" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("calendar")}
+                className="rounded-none"
+              >
+                <CalendarDays className="h-4 w-4" />
+              </Button>
+            </div>
+            <AddReservaDialog onAdd={handleAddReserva} />
+          </div>
+        }
       />
 
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <label className="text-sm font-medium mb-2 block">Plataforma</label>
-          <Select value={filterPlatform} onValueChange={setFilterPlatform}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="Airbnb">Airbnb</SelectItem>
-              <SelectItem value="Booking">Booking</SelectItem>
-              <SelectItem value="Direto">Direto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {viewMode === "list" && (
+        <>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Plataforma</label>
+              <Select value={filterPlatform} onValueChange={setFilterPlatform}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="Airbnb">Airbnb</SelectItem>
+                  <SelectItem value="Booking">Booking</SelectItem>
+                  <SelectItem value="Direto">Direto</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div>
-          <label className="text-sm font-medium mb-2 block">Ano</label>
-          <Select value={filterYear} onValueChange={setFilterYear}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Ano</label>
+              <Select value={filterYear} onValueChange={setFilterYear}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="2025">2025</SelectItem>
+                  <SelectItem value="2024">2024</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div>
-          <label className="text-sm font-medium mb-2 block">Mês</label>
-          <Select value={filterMonth} onValueChange={setFilterMonth}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="1">Janeiro</SelectItem>
-              <SelectItem value="2">Fevereiro</SelectItem>
-              <SelectItem value="3">Março</SelectItem>
-              <SelectItem value="4">Abril</SelectItem>
-              <SelectItem value="5">Maio</SelectItem>
-              <SelectItem value="6">Junho</SelectItem>
-              <SelectItem value="7">Julho</SelectItem>
-              <SelectItem value="8">Agosto</SelectItem>
-              <SelectItem value="9">Setembro</SelectItem>
-              <SelectItem value="10">Outubro</SelectItem>
-              <SelectItem value="11">Novembro</SelectItem>
-              <SelectItem value="12">Dezembro</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Mês</label>
+              <Select value={filterMonth} onValueChange={setFilterMonth}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="1">Janeiro</SelectItem>
+                  <SelectItem value="2">Fevereiro</SelectItem>
+                  <SelectItem value="3">Março</SelectItem>
+                  <SelectItem value="4">Abril</SelectItem>
+                  <SelectItem value="5">Maio</SelectItem>
+                  <SelectItem value="6">Junho</SelectItem>
+                  <SelectItem value="7">Julho</SelectItem>
+                  <SelectItem value="8">Agosto</SelectItem>
+                  <SelectItem value="9">Setembro</SelectItem>
+                  <SelectItem value="10">Outubro</SelectItem>
+                  <SelectItem value="11">Novembro</SelectItem>
+                  <SelectItem value="12">Dezembro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      <div className="grid gap-4 mt-6">
-        {filteredReservas.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              Nenhuma reserva encontrada com os filtros selecionados
-            </CardContent>
-          </Card>
-        ) : (
-          filteredReservas.map((reserva) => (
-            <Card 
-              key={reserva.id} 
-              className="hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer"
-              onClick={() => handleReservaClick(reserva)}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <User className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-base md:text-lg truncate">{reserva.hospede}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {reserva.plataforma === "Airbnb" && (
-                          <img src="/logos/airbnb.svg" alt="Airbnb" className="h-5 w-auto" />
-                        )}
-                        {reserva.plataforma === "Booking" && (
-                          <img src="/logos/booking.svg" alt="Booking.com" className="h-5 w-auto" />
-                        )}
-                        {reserva.plataforma === "Direto" && (
-                          <Badge variant="outline">Direto</Badge>
-                        )}
-                        <Badge
-                          variant={
-                            reserva.status === "confirmada" ? "default" : "secondary"
-                          }
-                        >
-                          {reserva.status}
-                        </Badge>
+          <div className="grid gap-4 mt-6">
+            {filteredReservas.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  Nenhuma reserva encontrada com os filtros selecionados
+                </CardContent>
+              </Card>
+            ) : (
+              filteredReservas.map((reserva) => (
+                <Card 
+                  key={reserva.id} 
+                  className="hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer"
+                  onClick={() => handleReservaClick(reserva)}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="text-base md:text-lg truncate">{reserva.hospede}</CardTitle>
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            {reserva.plataforma === "Airbnb" && (
+                              <img src="/logos/airbnb.svg" alt="Airbnb" className="h-5 w-auto" />
+                            )}
+                            {reserva.plataforma === "Booking" && (
+                              <img src="/logos/booking.svg" alt="Booking.com" className="h-5 w-auto" />
+                            )}
+                            {reserva.plataforma === "Direto" && (
+                              <Badge variant="outline">Direto</Badge>
+                            )}
+                            <Badge
+                              variant={
+                                reserva.status === "confirmada" ? "default" : "secondary"
+                              }
+                            >
+                              {reserva.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-left sm:text-right w-full sm:w-auto">
+                        <p className="text-xl md:text-2xl font-bold text-foreground">
+                          €{reserva.valor}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {reserva.noites} noites
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-left sm:text-right w-full sm:w-auto">
-                    <p className="text-xl md:text-2xl font-bold text-foreground">
-                      €{reserva.valor}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {reserva.noites} noites
-                    </p>
-                  </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">Check-in:</span>
+                        <span className="font-medium">
+                          {new Date(reserva.checkIn).toLocaleDateString("pt-PT")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground">Check-out:</span>
+                        <span className="font-medium">
+                          {new Date(reserva.checkOut).toLocaleDateString("pt-PT")}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {viewMode === "calendar" && (
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <CardTitle className="text-lg">
+                {format(calendarMonth, "MMMM yyyy", { locale: pt })}
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-7 gap-1">
+              {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-muted-foreground py-2"
+                >
+                  {day}
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">Check-in:</span>
-                    <span className="font-medium">
-                      {new Date(reserva.checkIn).toLocaleDateString("pt-PT")}
-                    </span>
+              ))}
+              {/* Empty cells for days before month start */}
+              {Array.from({ length: (monthStart.getDay() + 6) % 7 }).map((_, i) => (
+                <div key={`empty-${i}`} className="h-24 bg-muted/30 rounded-lg" />
+              ))}
+              {days.map((day) => {
+                const dayReservations = getReservationsForDay(day);
+                const isToday = isSameDay(day, new Date());
+                
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={`h-24 border rounded-lg p-1 overflow-hidden ${
+                      isToday ? "border-primary bg-primary/5" : "border-border"
+                    }`}
+                  >
+                    <div
+                      className={`text-xs font-medium mb-1 ${
+                        isToday ? "text-primary" : "text-foreground"
+                      }`}
+                    >
+                      {format(day, "d")}
+                    </div>
+                    <div className="space-y-0.5 overflow-hidden">
+                      {dayReservations.slice(0, 2).map((reserva) => {
+                        const style = getReservationStyle(reserva, day);
+                        return (
+                          <div
+                            key={reserva.id}
+                            className={style.className}
+                            onClick={() => handleReservaClick(reserva)}
+                            title={reserva.hospede}
+                          >
+                            {style.isStart ? reserva.hospede : ""}
+                          </div>
+                        );
+                      })}
+                      {dayReservations.length > 2 && (
+                        <div className="text-xs text-muted-foreground">
+                          +{dayReservations.length - 2}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">Check-out:</span>
-                    <span className="font-medium">
-                      {new Date(reserva.checkOut).toLocaleDateString("pt-PT")}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <ReservaDetailsDialog
         reserva={selectedReserva}

@@ -64,9 +64,9 @@ const TaxaTuristica = () => {
       dataByMonth[mesKey].totalNoites += reserva.noites;
     });
 
-    // Calcular total taxa
+    // Calcular total taxa: hóspedes × noites × taxa por noite
     Object.keys(dataByMonth).forEach((mes) => {
-      dataByMonth[mes].totalTaxa = dataByMonth[mes].totalNoites * dataByMonth[mes].taxaPorNoite;
+      dataByMonth[mes].totalTaxa = dataByMonth[mes].totalHospedes * dataByMonth[mes].totalNoites * dataByMonth[mes].taxaPorNoite;
     });
 
     return Object.entries(dataByMonth).map(([mes, data]) => ({

@@ -25,6 +25,7 @@ import Acessos from "./pages/Acessos";
 import CalendarioFiscal from "./pages/CalendarioFiscal";
 import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
+import Equipa from "./pages/Equipa";
 
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +70,7 @@ const App = () => (
                         <Route path="/ine" element={<INE />} />
                         <Route path="/perfil" element={<Perfil />} />
                         <Route path="/subscriptions" element={<Subscriptions />} />
+                        <Route path="/equipa" element={<Equipa />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

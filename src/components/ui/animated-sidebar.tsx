@@ -102,7 +102,7 @@ const menuItems = [
 export const AnimatedSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
 
   const mobileSidebarVariants = {
@@ -112,19 +112,21 @@ export const AnimatedSidebar = () => {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/auth");
   };
 
-  const initials = user?.name
-    ? user.name
+  const initials = profile?.name
+    ? profile.name
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : "?";
+    : user?.email?.charAt(0).toUpperCase() || "?";
+
+  const displayName = profile?.name || "Utilizador";
 
   return (
     <>
@@ -197,7 +199,7 @@ export const AnimatedSidebar = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0 text-left">
-                          <p className="text-sm font-medium truncate">{user?.name}</p>
+                          <p className="text-sm font-medium truncate">{displayName}</p>
                           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                         </div>
                       </button>
@@ -284,7 +286,7 @@ export const AnimatedSidebar = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium truncate">{user?.name}</p>
+                  <p className="text-sm font-medium truncate">{displayName}</p>
                   <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                 </div>
               </button>

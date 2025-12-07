@@ -19,6 +19,7 @@ import {
   User,
   LayoutDashboard,
   Building2,
+  Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -97,6 +98,7 @@ const menuItems = [
   { title: "INE", url: "/ine", icon: BarChart3 },
   { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },
+  { title: "Equipa", url: "/equipa", icon: Users },
 ];
 
 export const AnimatedSidebar = () => {

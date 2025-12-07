@@ -125,22 +125,26 @@ export default function Auth() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      await login(email, password);
+    const { error } = await login(email, password);
+    
+    if (error) {
       toast({
-        title: "Login efetuado com sucesso!",
-        description: "Bem-vindo de volta.",
-      });
-      navigate("/reservas");
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro. Tente novamente.",
+        title: "Erro de autenticação",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou palavra-passe incorretos." 
+          : error.message,
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
+      return;
     }
+    
+    toast({
+      title: "Login efetuado com sucesso!",
+      description: "Bem-vindo de volta.",
+    });
+    setIsLoading(false);
+    navigate("/dashboard");
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -160,22 +164,27 @@ export default function Auth() {
 
   const handleFinalSignup = async () => {
     setIsLoading(true);
-    try {
-      await signup(email, password, name, selectedPlan || "basic");
+    
+    const { error } = await signup(email, password, name, phone, nif, selectedPlan || "basic");
+    
+    if (error) {
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Pode agora aceder à plataforma.",
-      });
-      navigate("/reservas");
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro. Tente novamente.",
+        title: "Erro no registo",
+        description: error.message === "User already registered" 
+          ? "Este email já está registado. Faça login." 
+          : error.message,
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
+      return;
     }
+    
+    toast({
+      title: "Conta criada com sucesso!",
+      description: "Pode agora aceder à plataforma.",
+    });
+    setIsLoading(false);
+    navigate("/dashboard");
   };
 
   // Auth page (login/signup tabs)

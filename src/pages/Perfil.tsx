@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,23 +6,87 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Perfil() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [nif, setNif] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || "");
+      setPhone(profile.phone || "");
+      setNif(profile.nif || "");
+    }
+    if (user) {
+      setEmail(user.email || "");
+    }
+  }, [profile, user]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     
-    toast({
-      title: "Perfil atualizado",
-      description: "As suas informações foram atualizadas com sucesso.",
-    });
+    setIsLoading(true);
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({ name, phone, nif })
+      .eq("id", user.id);
+    
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o perfil.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Perfil atualizado",
+        description: "As suas informações foram atualizadas com sucesso.",
+      });
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const currentPassword = (form.elements.namedItem("current-password") as HTMLInputElement).value;
+    const newPassword = (form.elements.namedItem("new-password") as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem("confirm-password") as HTMLInputElement).value;
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As palavras-passe não coincidem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Palavra-passe alterada",
+        description: "A sua palavra-passe foi alterada com sucesso.",
+      });
+      form.reset();
+    }
   };
 
   return (
@@ -55,9 +119,10 @@ export default function Perfil() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  disabled
+                  className="bg-muted"
                 />
+                <p className="text-xs text-muted-foreground">O email não pode ser alterado.</p>
               </div>
 
               <div className="space-y-2">
@@ -82,8 +147,8 @@ export default function Perfil() {
                 />
               </div>
 
-              <Button type="submit" className="w-full">
-                Guardar Alterações
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "A guardar..." : "Guardar Alterações"}
               </Button>
             </form>
           </CardContent>
@@ -94,11 +159,12 @@ export default function Perfil() {
             <CardTitle>Alterar Palavra-passe</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
+            <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="current-password">Palavra-passe Atual</Label>
                 <Input
                   id="current-password"
+                  name="current-password"
                   type="password"
                   placeholder="••••••••"
                 />
@@ -108,8 +174,10 @@ export default function Perfil() {
                 <Label htmlFor="new-password">Nova Palavra-passe</Label>
                 <Input
                   id="new-password"
+                  name="new-password"
                   type="password"
                   placeholder="••••••••"
+                  minLength={6}
                 />
               </div>
 
@@ -117,6 +185,7 @@ export default function Perfil() {
                 <Label htmlFor="confirm-password">Confirmar Palavra-passe</Label>
                 <Input
                   id="confirm-password"
+                  name="confirm-password"
                   type="password"
                   placeholder="••••••••"
                 />

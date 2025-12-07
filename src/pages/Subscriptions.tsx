@@ -66,7 +66,7 @@ const pricingTiers: PricingTier[] = [
 ];
 
 export default function Subscriptions() {
-  const { user, updateSubscription } = useAuth();
+  const { user, profile, updateSubscription } = useAuth();
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -82,8 +82,8 @@ export default function Subscriptions() {
   const handlePaymentSuccess = async () => {
     if (!selectedPlan) return;
     
-    const planId = selectedPlan.name.toLowerCase() as "basic" | "premium";
-    updateSubscription(planId);
+    const planId = selectedPlan.name.toLowerCase();
+    await updateSubscription(planId);
     
     // Send welcome/confirmation email
     if (user?.email) {
@@ -106,16 +106,16 @@ export default function Subscriptions() {
         description="Escolha o plano ideal para o seu negócio"
       />
 
-      {user?.subscriptionPlan && (
+      {profile?.subscription_plan && (
         <Card className="border-primary max-w-4xl mx-auto">
           <CardHeader>
             <CardTitle>Plano Atual</CardTitle>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-sm text-muted-foreground">
-                Subscrição {user.subscriptionPlan.charAt(0).toUpperCase() + user.subscriptionPlan.slice(1)} -
+                Subscrição {profile.subscription_plan.charAt(0).toUpperCase() + profile.subscription_plan.slice(1)} -
               </span>
-              <Badge variant={user.subscriptionStatus === "active" ? "default" : "secondary"}>
-                {user.subscriptionStatus === "active" ? "Ativo" : "Inativo"}
+              <Badge variant={profile.subscription_status === "active" ? "default" : "secondary"}>
+                {profile.subscription_status === "active" ? "Ativo" : "Inativo"}
               </Badge>
             </div>
           </CardHeader>
@@ -150,7 +150,7 @@ export default function Subscriptions() {
             name: selectedPlan.name, 
             price: selectedPlan.price.toString() 
           }}
-          userEmail={user.email}
+          userEmail={user.email || ""}
           onSuccess={handlePaymentSuccess}
         />
       )}

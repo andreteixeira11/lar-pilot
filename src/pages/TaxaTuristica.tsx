@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
+import { format, parseISO } from "date-fns";
+import { pt } from "date-fns/locale";
 
 const TaxaTuristica = () => {
   const { selectedPropertyId, selectedProperty } = useProperty();
@@ -43,15 +45,17 @@ const TaxaTuristica = () => {
       (r) => r.propertyId === selectedPropertyId && r.status === "confirmada"
     );
 
-    const dataByMonth: { [key: string]: { totalHospedes: number; totalNoites: number; taxaPorNoite: number; totalTaxa: number; pago: boolean } } = {};
+    const dataByMonth: { [key: string]: { monthKey: string; totalHospedes: number; totalNoites: number; taxaPorNoite: number; totalTaxa: number; pago: boolean } } = {};
 
     propertyReservas.forEach((reserva) => {
-      const date = new Date(reserva.checkIn);
-      const mesAno = `${date.toLocaleString("pt-PT", { month: "long" })} ${date.getFullYear()}`;
-      const mesKey = mesAno.charAt(0).toUpperCase() + mesAno.slice(1);
+      const date = parseISO(reserva.checkIn);
+      const monthKey = format(date, "yyyy-MM");
+      const mesLabel = format(date, "MMMM yyyy", { locale: pt });
+      const mesCapitalized = mesLabel.charAt(0).toUpperCase() + mesLabel.slice(1);
 
-      if (!dataByMonth[mesKey]) {
-        dataByMonth[mesKey] = {
+      if (!dataByMonth[mesCapitalized]) {
+        dataByMonth[mesCapitalized] = {
+          monthKey,
           totalHospedes: 0,
           totalNoites: 0,
           taxaPorNoite: 2,
@@ -60,8 +64,8 @@ const TaxaTuristica = () => {
         };
       }
 
-      dataByMonth[mesKey].totalHospedes += reserva.nrHospedes;
-      dataByMonth[mesKey].totalNoites += reserva.noites;
+      dataByMonth[mesCapitalized].totalHospedes += reserva.nrHospedes;
+      dataByMonth[mesCapitalized].totalNoites += reserva.noites;
     });
 
     // Calcular total taxa: hóspedes × noites × taxa por noite
@@ -69,10 +73,10 @@ const TaxaTuristica = () => {
       dataByMonth[mes].totalTaxa = dataByMonth[mes].totalHospedes * dataByMonth[mes].totalNoites * dataByMonth[mes].taxaPorNoite;
     });
 
-    return Object.entries(dataByMonth).map(([mes, data]) => ({
-      mes,
-      ...data,
-    }));
+    // Sort by monthKey (newest first)
+    return Object.entries(dataByMonth)
+      .map(([mes, data]) => ({ mes, ...data }))
+      .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
   }, [reservas, selectedPropertyId]);
 
   const filteredData = selectedMonth === "all" 
@@ -87,7 +91,7 @@ const TaxaTuristica = () => {
         actions={
           <Button className="gap-2 w-full sm:w-auto" onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4" />
-            <span className="sm:inline">Adicionar Formulário</span>
+            <span>Adicionar Formulário</span>
           </Button>
         }
       />
@@ -98,10 +102,10 @@ const TaxaTuristica = () => {
         propertyId={selectedPropertyId}
       />
 
-      <div className="mt-6 flex items-center gap-4">
+      <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <label className="text-sm font-medium">Filtrar por Mês:</label>
         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-48">
+          <SelectTrigger className="w-full sm:w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -116,49 +120,49 @@ const TaxaTuristica = () => {
       </div>
 
       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Resumo por Mês</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base md:text-lg">Resumo por Mês</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[120px]">Mês</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Total Hóspedes</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Total Noites</TableHead>
-                  <TableHead className="text-right min-w-[90px]">Taxa/Noite</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Total Taxa</TableHead>
-                  <TableHead className="text-right min-w-[90px]">Estado</TableHead>
+                  <TableHead className="min-w-[100px]">Mês</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Hóspedes</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Noites</TableHead>
+                  <TableHead className="text-right min-w-[70px]">Taxa/Noite</TableHead>
+                  <TableHead className="text-right min-w-[90px]">Total</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Estado</TableHead>
                 </TableRow>
               </TableHeader>
-            <TableBody>
-              {filteredData.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    Nenhum dado encontrado para esta propriedade
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredData.map((row) => (
-                  <TableRow key={row.mes}>
-                    <TableCell className="font-medium">{row.mes}</TableCell>
-                    <TableCell className="text-right">{row.totalHospedes}</TableCell>
-                    <TableCell className="text-right">{row.totalNoites}</TableCell>
-                    <TableCell className="text-right">€{row.taxaPorNoite}</TableCell>
-                    <TableCell className="text-right font-semibold">
-                      €{row.totalTaxa}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant={row.pago ? "default" : "secondary"}>
-                        {row.pago ? "Pago" : "Pendente"}
-                      </Badge>
+              <TableBody>
+                {filteredData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      Nenhum dado encontrado para esta propriedade
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredData.map((row) => (
+                    <TableRow key={row.mes}>
+                      <TableCell className="font-medium text-sm">{row.mes}</TableCell>
+                      <TableCell className="text-right text-sm">{row.totalHospedes}</TableCell>
+                      <TableCell className="text-right text-sm">{row.totalNoites}</TableCell>
+                      <TableCell className="text-right text-sm">€{row.taxaPorNoite}</TableCell>
+                      <TableCell className="text-right font-semibold text-sm">
+                        €{row.totalTaxa.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant={row.pago ? "default" : "secondary"} className="text-xs">
+                          {row.pago ? "Pago" : "Pendente"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

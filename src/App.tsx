@@ -26,6 +26,7 @@ import CalendarioFiscal from "./pages/CalendarioFiscal";
 import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import Equipa from "./pages/Equipa";
+import AcceptInvite from "./pages/AcceptInvite";
 
 import NotFound from "./pages/NotFound";
 
@@ -45,6 +46,7 @@ const App = () => (
         <Route path="/auth" element={<Auth />} />
         <Route path="/simulador" element={<Simulador />} />
         <Route path="/checkin/:token" element={<CheckIn />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
               <Route
                 path="/*"
                 element={

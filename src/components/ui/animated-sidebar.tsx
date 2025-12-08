@@ -90,7 +90,6 @@ const AnimatedMenuToggle = ({
 
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Dados do Alojamento", url: "/alojamento", icon: Building2 },
   { title: "Reservas", url: "/reservas", icon: CalendarIcon },
   { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
   { title: "Acessos", url: "/acessos", icon: Key },
@@ -98,7 +97,6 @@ const menuItems = [
   { title: "INE", url: "/ine", icon: BarChart3 },
   { title: "Calendário Fiscal", url: "/calendario-fiscal", icon: CalendarDays },
   { title: "Resumo Mensal", url: "/resumo-mensal", icon: FileText },
-  { title: "Equipa", url: "/equipa", icon: Users },
 ];
 
 export const AnimatedSidebar = () => {
@@ -225,6 +223,15 @@ export const AnimatedSidebar = () => {
                         <CreditCard className="mr-2 h-4 w-4" />
                         <span>Subscrições</span>
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          navigate("/equipa");
+                          toggleSidebar();
+                        }}
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        <span>Equipa</span>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
@@ -301,6 +308,10 @@ export const AnimatedSidebar = () => {
               <DropdownMenuItem onClick={() => navigate("/subscriptions")}>
                 <CreditCard className="mr-2 h-4 w-4" />
                 <span>Subscrições</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/equipa")}>
+                <Users className="mr-2 h-4 w-4" />
+                <span>Equipa</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

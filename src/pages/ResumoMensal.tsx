@@ -34,6 +34,21 @@ interface Despesa {
   valor: number;
 }
 
+const MONTHS = [
+  { value: "01", label: "Janeiro" },
+  { value: "02", label: "Fevereiro" },
+  { value: "03", label: "Março" },
+  { value: "04", label: "Abril" },
+  { value: "05", label: "Maio" },
+  { value: "06", label: "Junho" },
+  { value: "07", label: "Julho" },
+  { value: "08", label: "Agosto" },
+  { value: "09", label: "Setembro" },
+  { value: "10", label: "Outubro" },
+  { value: "11", label: "Novembro" },
+  { value: "12", label: "Dezembro" },
+];
+
 const ResumoMensal = () => {
   const { selectedPropertyId, selectedProperty } = useProperty();
   const { reservas } = useReserva();
@@ -41,34 +56,53 @@ const ResumoMensal = () => {
   const [novaDespesa, setNovaDespesa] = useState({ descricao: "", valor: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Get available months from reservations
-  const availableMonths = useMemo(() => {
-    const months = new Set<string>();
+  // Get available months and years from reservations
+  const { availableYears, availableMonthsByYear } = useMemo(() => {
+    const yearsSet = new Set<string>();
+    const monthsByYear: { [year: string]: Set<string> } = {};
+    
     reservas
       .filter((r) => r.propertyId === selectedPropertyId && r.status === "confirmada")
       .forEach((r) => {
         const date = parseISO(r.checkIn);
-        const monthKey = format(date, "MM-yyyy");
-        months.add(monthKey);
+        const year = format(date, "yyyy");
+        const month = format(date, "MM");
+        
+        yearsSet.add(year);
+        if (!monthsByYear[year]) monthsByYear[year] = new Set();
+        monthsByYear[year].add(month);
       });
     
-    // Sort months from newest to oldest
-    return Array.from(months).sort((a, b) => {
-      const [monthA, yearA] = a.split("-").map(Number);
-      const [monthB, yearB] = b.split("-").map(Number);
-      if (yearB !== yearA) return yearB - yearA;
-      return monthB - monthA;
+    const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
+    const monthsMap: { [year: string]: string[] } = {};
+    Object.entries(monthsByYear).forEach(([year, months]) => {
+      monthsMap[year] = Array.from(months).sort((a, b) => b.localeCompare(a));
     });
+    
+    return { availableYears: years, availableMonthsByYear: monthsMap };
   }, [reservas, selectedPropertyId]);
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
-    return availableMonths[0] || format(new Date(), "MM-yyyy");
+  const [selectedYear, setSelectedYear] = useState<string>(() => {
+    return availableYears[0] || format(new Date(), "yyyy");
   });
 
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const months = availableMonthsByYear[selectedYear] || [];
+    return months[0] || format(new Date(), "MM");
+  });
+
+  // Update month when year changes
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    const months = availableMonthsByYear[year] || [];
+    if (months.length > 0 && !months.includes(selectedMonth)) {
+      setSelectedMonth(months[0]);
+    }
+  };
+
   // Parse selected month
-  const [month, year] = selectedMonth.split("-").map(Number);
-  const monthStart = startOfMonth(new Date(year, month - 1));
-  const monthEnd = endOfMonth(new Date(year, month - 1));
+  const monthStart = startOfMonth(new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1));
+  const monthEnd = endOfMonth(new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1));
 
   // Calculate data from reservations
   const resumoData = useMemo(() => {
@@ -152,17 +186,16 @@ const ResumoMensal = () => {
     toast.success("Despesa removida");
   };
 
-  const getMonthLabel = (monthKey: string) => {
-    const [m, y] = monthKey.split("-").map(Number);
-    const date = new Date(y, m - 1);
-    return format(date, "MMMM yyyy", { locale: pt });
+  const getMonthLabel = () => {
+    const monthName = MONTHS.find(m => m.value === selectedMonth)?.label || "";
+    return `${monthName} ${selectedYear}`;
   };
 
   const exportarPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text(`Resumo Mensal - ${getMonthLabel(selectedMonth)}`, 14, 20);
+    doc.text(`Resumo Mensal - ${getMonthLabel()}`, 14, 20);
 
     doc.setFontSize(12);
     doc.text(selectedProperty?.name || "Propriedade", 14, 30);
@@ -229,9 +262,11 @@ const ResumoMensal = () => {
       styles: { fontStyle: "bold" },
     });
 
-    doc.save(`resumo-mensal-${selectedMonth}.pdf`);
+    doc.save(`resumo-mensal-${selectedMonth}-${selectedYear}.pdf`);
     toast.success("PDF exportado com sucesso!");
   };
+
+  const currentMonths = availableMonthsByYear[selectedYear] || [];
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -240,24 +275,49 @@ const ResumoMensal = () => {
         description={`Análise financeira detalhada - ${selectedProperty?.name || ""}`}
         actions={
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Selecione o mês" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableMonths.length > 0 ? (
-                  availableMonths.map((monthKey) => (
-                    <SelectItem key={monthKey} value={monthKey}>
-                      {getMonthLabel(monthKey)}
+            <div className="flex gap-2">
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-full sm:w-[130px]">
+                  <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  {currentMonths.length > 0 ? (
+                    currentMonths.map((monthValue) => {
+                      const month = MONTHS.find(m => m.value === monthValue);
+                      return month ? (
+                        <SelectItem key={monthValue} value={monthValue}>
+                          {month.label}
+                        </SelectItem>
+                      ) : null;
+                    })
+                  ) : (
+                    MONTHS.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <Select value={selectedYear} onValueChange={handleYearChange}>
+                <SelectTrigger className="w-full sm:w-[100px]">
+                  <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableYears.length > 0 ? (
+                    availableYears.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value={format(new Date(), "yyyy")}>
+                      {format(new Date(), "yyyy")}
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value={format(new Date(), "MM-yyyy")} disabled>
-                    Sem dados disponíveis
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={exportarPDF} variant="outline" className="gap-2 w-full sm:w-auto">
               <FileDown className="h-4 w-4" />
               <span className="sm:inline">Exportar PDF</span>
@@ -271,7 +331,7 @@ const ResumoMensal = () => {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-primary" />
               Receitas
             </CardTitle>
           </CardHeader>
@@ -291,7 +351,7 @@ const ResumoMensal = () => {
             <Separator />
             <div className="flex justify-between text-base md:text-lg">
               <span className="font-semibold">Total Faturado</span>
-              <span className="font-bold text-green-500">€{totalReceitas.toFixed(2)}</span>
+              <span className="font-bold text-primary">€{totalReceitas.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>

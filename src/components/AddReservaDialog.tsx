@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Copy, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -74,6 +74,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       paisEmissor: "",
     },
   ]);
+  const [createdReservationToken, setCreatedReservationToken] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const calculateNoites = () => {
     if (checkInDate && checkOutDate) {
@@ -180,8 +182,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       nrHospedes: formData.numHospedes,
     };
 
+    // Generate a token for check-in link
+    const token = crypto.randomUUID();
+    (novaReserva as any).checkin_token = token;
+
     onAdd(novaReserva);
-    setOpen(false);
+    setCreatedReservationToken(token);
     setCheckInDate(undefined);
     setCheckOutDate(undefined);
     setFormData({
@@ -588,11 +594,42 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               ))}
             </div>
 
+            {createdReservationToken && (
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium">Link de Check-in:</span>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      readOnly
+                      value={`${window.location.origin}/checkin?token=${createdReservationToken}`}
+                      className="text-xs bg-muted"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/checkin?token=${createdReservationToken}`);
+                        setLinkCopied(true);
+                        toast.success("Link copiado!");
+                        setTimeout(() => setLinkCopied(false), 2000);
+                      }}
+                    >
+                      {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancelar
+              <Button type="button" variant="outline" onClick={() => {
+                setOpen(false);
+                setCreatedReservationToken(null);
+              }}>
+                {createdReservationToken ? "Fechar" : "Cancelar"}
               </Button>
-              <Button type="submit">Adicionar Reserva</Button>
+              {!createdReservationToken && <Button type="submit">Adicionar Reserva</Button>}
             </div>
           </form>
         </ScrollArea>

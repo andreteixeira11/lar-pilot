@@ -23,7 +23,21 @@ import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
-import { pt } from "date-fns/locale";
+
+const MONTHS = [
+  { value: "01", label: "Janeiro" },
+  { value: "02", label: "Fevereiro" },
+  { value: "03", label: "Março" },
+  { value: "04", label: "Abril" },
+  { value: "05", label: "Maio" },
+  { value: "06", label: "Junho" },
+  { value: "07", label: "Julho" },
+  { value: "08", label: "Agosto" },
+  { value: "09", label: "Setembro" },
+  { value: "10", label: "Outubro" },
+  { value: "11", label: "Novembro" },
+  { value: "12", label: "Dezembro" },
+];
 
 const INE = () => {
   const { selectedPropertyId } = useProperty();
@@ -32,24 +46,49 @@ const INE = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [ineData, setIneData] = useState<Array<{ pais: string; nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number }>>([]);
 
-  // Get available months from reservations
-  const availableMonths = useMemo(() => {
-    const months = new Set<string>();
+  // Get available months and years from reservations
+  const { availableYears, availableMonthsByYear } = useMemo(() => {
+    const yearsSet = new Set<string>();
+    const monthsByYear: { [year: string]: Set<string> } = {};
+    
     reservas
       .filter((r) => r.propertyId === selectedPropertyId && r.status === "confirmada")
       .forEach((r) => {
         const date = parseISO(r.checkIn);
-        const monthKey = format(date, "yyyy-MM");
-        months.add(monthKey);
+        const year = format(date, "yyyy");
+        const month = format(date, "MM");
+        
+        yearsSet.add(year);
+        if (!monthsByYear[year]) monthsByYear[year] = new Set();
+        monthsByYear[year].add(month);
       });
     
-    // Sort months from newest to oldest
-    return Array.from(months).sort((a, b) => b.localeCompare(a));
+    const years = Array.from(yearsSet).sort((a, b) => b.localeCompare(a));
+    const monthsMap: { [year: string]: string[] } = {};
+    Object.entries(monthsByYear).forEach(([year, months]) => {
+      monthsMap[year] = Array.from(months).sort((a, b) => b.localeCompare(a));
+    });
+    
+    return { availableYears: years, availableMonthsByYear: monthsMap };
   }, [reservas, selectedPropertyId]);
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
-    return availableMonths[0] || format(new Date(), "yyyy-MM");
+  const [selectedYear, setSelectedYear] = useState<string>(() => {
+    return availableYears[0] || format(new Date(), "yyyy");
   });
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const months = availableMonthsByYear[selectedYear] || [];
+    return months[0] || format(new Date(), "MM");
+  });
+
+  // Update month when year changes
+  const handleYearChange = (year: string) => {
+    setSelectedYear(year);
+    const months = availableMonthsByYear[year] || [];
+    if (months.length > 0 && !months.includes(selectedMonth)) {
+      setSelectedMonth(months[0]);
+    }
+  };
 
   // Listen for property changes
   useEffect(() => {
@@ -60,22 +99,21 @@ const INE = () => {
 
   // Update selected month when available months change
   useEffect(() => {
-    if (availableMonths.length > 0 && !availableMonths.includes(selectedMonth)) {
-      setSelectedMonth(availableMonths[0]);
+    if (availableYears.length > 0 && !availableYears.includes(selectedYear)) {
+      setSelectedYear(availableYears[0]);
     }
-  }, [availableMonths, selectedMonth]);
+  }, [availableYears, selectedYear]);
 
   // Carregar dados INE dos hóspedes
   useEffect(() => {
     const loadINEData = async () => {
-      const [year, month] = selectedMonth.split("-");
       const propertyReservas = reservas.filter((r) => {
         if (r.propertyId !== selectedPropertyId || r.status !== "confirmada") return false;
         
         const checkInDate = new Date(r.checkIn);
         return (
-          checkInDate.getFullYear() === parseInt(year) &&
-          checkInDate.getMonth() + 1 === parseInt(month)
+          checkInDate.getFullYear() === parseInt(selectedYear) &&
+          checkInDate.getMonth() + 1 === parseInt(selectedMonth)
         );
       });
 
@@ -122,7 +160,7 @@ const INE = () => {
     };
 
     loadINEData();
-  }, [reservas, selectedPropertyId, selectedMonth]);
+  }, [reservas, selectedPropertyId, selectedMonth, selectedYear]);
 
   const totais = ineData.reduce(
     (acc, row) => ({
@@ -134,10 +172,12 @@ const INE = () => {
     { hospedes: 0, noites: 0, dormidas: 0, transitadas: 0 }
   );
 
-  const getMonthLabel = (monthKey: string) => {
-    const date = new Date(monthKey + "-01");
-    return format(date, "MMMM yyyy", { locale: pt });
+  const getMonthLabel = () => {
+    const monthName = MONTHS.find(m => m.value === selectedMonth)?.label || "";
+    return `${monthName} ${selectedYear}`;
   };
+
+  const currentMonths = availableMonthsByYear[selectedYear] || [];
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -156,35 +196,60 @@ const INE = () => {
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
         propertyId={selectedPropertyId}
-        selectedMonth={selectedMonth}
+        selectedMonth={`${selectedYear}-${selectedMonth}`}
       />
 
       <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-        <label className="text-sm font-medium">Selecionar Mês:</label>
-        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Selecione o mês" />
-          </SelectTrigger>
-          <SelectContent>
-            {availableMonths.length > 0 ? (
-              availableMonths.map((monthKey) => (
-                <SelectItem key={monthKey} value={monthKey}>
-                  {getMonthLabel(monthKey)}
+        <label className="text-sm font-medium">Filtrar:</label>
+        <div className="flex gap-2">
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-full sm:w-[130px]">
+              <SelectValue placeholder="Mês" />
+            </SelectTrigger>
+            <SelectContent>
+              {currentMonths.length > 0 ? (
+                currentMonths.map((monthValue) => {
+                  const month = MONTHS.find(m => m.value === monthValue);
+                  return month ? (
+                    <SelectItem key={monthValue} value={monthValue}>
+                      {month.label}
+                    </SelectItem>
+                  ) : null;
+                })
+              ) : (
+                MONTHS.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
+          <Select value={selectedYear} onValueChange={handleYearChange}>
+            <SelectTrigger className="w-full sm:w-[100px]">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.length > 0 ? (
+                availableYears.map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value={format(new Date(), "yyyy")}>
+                  {format(new Date(), "yyyy")}
                 </SelectItem>
-              ))
-            ) : (
-              <SelectItem value={format(new Date(), "yyyy-MM")} disabled>
-                Sem dados disponíveis
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Card className="mt-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-base md:text-lg">
-            Estatísticas por País - {getMonthLabel(selectedMonth)}
+            Estatísticas por País - {getMonthLabel()}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
+import { Building2, Check, ChevronsUpDown, Plus, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export function PropertySelectorCommand() {
   const [open, setOpen] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const { properties, selectedPropertyId, setSelectedPropertyId, selectedProperty } = useProperty();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -105,6 +107,18 @@ export function PropertySelectorCommand() {
                                 {property.address}
                               </span>
                             </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPropertyId(property.id);
+                                setOpen(false);
+                                navigate("/alojamento");
+                              }}
+                              className="ml-2 p-1.5 rounded-md hover:bg-primary/10 transition-colors"
+                              title="Dados do Alojamento"
+                            >
+                              <Settings className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                            </button>
                           </CommandItem>
                         </motion.div>
                       ))}

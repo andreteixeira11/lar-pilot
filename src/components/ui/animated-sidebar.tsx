@@ -315,9 +315,38 @@ export const AnimatedSidebar = () => {
         </div>
       </div>
 
-      {/* Mobile Toggle Button */}
-      <div className="md:hidden">
-        <AnimatedMenuToggle toggle={toggleSidebar} isOpen={isOpen} />
+      {/* Mobile Toggle Button - Fixed Position */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={toggleSidebar}
+          aria-label="Toggle menu"
+          className="p-2 rounded-lg bg-card border border-border shadow-md"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-foreground"
+          >
+            {isOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
       </div>
     </>
   );

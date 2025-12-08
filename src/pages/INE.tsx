@@ -22,14 +22,34 @@ import {
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
 import { supabase } from "@/integrations/supabase/client";
+import { format, parseISO } from "date-fns";
+import { pt } from "date-fns/locale";
 
 const INE = () => {
   const { selectedPropertyId } = useProperty();
   const { reservas } = useReserva();
-  const [selectedMonth, setSelectedMonth] = useState("2025-03");
   const [refresh, setRefresh] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [ineData, setIneData] = useState<Array<{ pais: string; nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number }>>([]);
+
+  // Get available months from reservations
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    reservas
+      .filter((r) => r.propertyId === selectedPropertyId && r.status === "confirmada")
+      .forEach((r) => {
+        const date = parseISO(r.checkIn);
+        const monthKey = format(date, "yyyy-MM");
+        months.add(monthKey);
+      });
+    
+    // Sort months from newest to oldest
+    return Array.from(months).sort((a, b) => b.localeCompare(a));
+  }, [reservas, selectedPropertyId]);
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    return availableMonths[0] || format(new Date(), "yyyy-MM");
+  });
 
   // Listen for property changes
   useEffect(() => {
@@ -37,6 +57,13 @@ const INE = () => {
     window.addEventListener('propertyChanged', handlePropertyChange);
     return () => window.removeEventListener('propertyChanged', handlePropertyChange);
   }, []);
+
+  // Update selected month when available months change
+  useEffect(() => {
+    if (availableMonths.length > 0 && !availableMonths.includes(selectedMonth)) {
+      setSelectedMonth(availableMonths[0]);
+    }
+  }, [availableMonths, selectedMonth]);
 
   // Carregar dados INE dos hóspedes
   useEffect(() => {
@@ -107,6 +134,11 @@ const INE = () => {
     { hospedes: 0, noites: 0, dormidas: 0, transitadas: 0 }
   );
 
+  const getMonthLabel = (monthKey: string) => {
+    const date = new Date(monthKey + "-01");
+    return format(date, "MMMM yyyy", { locale: pt });
+  };
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
@@ -115,7 +147,7 @@ const INE = () => {
         actions={
           <Button className="gap-2 w-full sm:w-auto" onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4" />
-            <span className="sm:inline">Adicionar Registo</span>
+            <span>Adicionar Registo</span>
           </Button>
         }
       />
@@ -127,57 +159,75 @@ const INE = () => {
         selectedMonth={selectedMonth}
       />
 
-      <div className="mt-6 flex items-center gap-4">
+      <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <label className="text-sm font-medium">Selecionar Mês:</label>
         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-          <SelectTrigger className="w-48">
-            <SelectValue />
+          <SelectTrigger className="w-full sm:w-48">
+            <SelectValue placeholder="Selecione o mês" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="2025-01">Janeiro 2025</SelectItem>
-            <SelectItem value="2025-02">Fevereiro 2025</SelectItem>
-            <SelectItem value="2025-03">Março 2025</SelectItem>
+            {availableMonths.length > 0 ? (
+              availableMonths.map((monthKey) => (
+                <SelectItem key={monthKey} value={monthKey}>
+                  {getMonthLabel(monthKey)}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value={format(new Date(), "yyyy-MM")} disabled>
+                Sem dados disponíveis
+              </SelectItem>
+            )}
           </SelectContent>
         </Select>
       </div>
 
       <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Estatísticas por País - {new Date(selectedMonth + "-01").toLocaleDateString("pt-PT", { month: "long", year: "numeric" })}</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base md:text-lg">
+            Estatísticas por País - {getMonthLabel(selectedMonth)}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[120px]">País</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Nº Hóspedes</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Nº Noites</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Dormidas</TableHead>
-                  <TableHead className="text-right min-w-[120px]">Noites Transitadas</TableHead>
+                  <TableHead className="min-w-[100px]">País</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Hóspedes</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Noites</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Dormidas</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Transitadas</TableHead>
                 </TableRow>
               </TableHeader>
-            <TableBody>
-              {ineData.map((row) => (
-                <TableRow key={row.pais}>
-                  <TableCell className="font-medium">{row.pais}</TableCell>
-                  <TableCell className="text-right">{row.nrHospedes}</TableCell>
-                  <TableCell className="text-right">{row.nrNoites}</TableCell>
-                  <TableCell className="text-right">{row.dormidas}</TableCell>
-                  <TableCell className="text-right">
-                    {row.noitesTransitadas}
-                  </TableCell>
-                </TableRow>
-              ))}
-              <TableRow className="bg-muted/50 font-semibold">
-                <TableCell>Total</TableCell>
-                <TableCell className="text-right">{totais.hospedes}</TableCell>
-                <TableCell className="text-right">{totais.noites}</TableCell>
-                <TableCell className="text-right">{totais.dormidas}</TableCell>
-                <TableCell className="text-right">{totais.transitadas}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
+              <TableBody>
+                {ineData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      Nenhum dado encontrado para este mês
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <>
+                    {ineData.map((row) => (
+                      <TableRow key={row.pais}>
+                        <TableCell className="font-medium text-sm">{row.pais}</TableCell>
+                        <TableCell className="text-right text-sm">{row.nrHospedes}</TableCell>
+                        <TableCell className="text-right text-sm">{row.nrNoites}</TableCell>
+                        <TableCell className="text-right text-sm">{row.dormidas}</TableCell>
+                        <TableCell className="text-right text-sm">{row.noitesTransitadas}</TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="bg-muted/50 font-semibold">
+                      <TableCell className="text-sm">Total</TableCell>
+                      <TableCell className="text-right text-sm">{totais.hospedes}</TableCell>
+                      <TableCell className="text-right text-sm">{totais.noites}</TableCell>
+                      <TableCell className="text-right text-sm">{totais.dormidas}</TableCell>
+                      <TableCell className="text-right text-sm">{totais.transitadas}</TableCell>
+                    </TableRow>
+                  </>
+                )}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>

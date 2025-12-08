@@ -25,7 +25,8 @@ import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
-import { startOfMonth, endOfMonth, isWithinInterval, parseISO } from "date-fns";
+import { startOfMonth, endOfMonth, isWithinInterval, parseISO, format } from "date-fns";
+import { pt } from "date-fns/locale";
 
 interface Despesa {
   id: string;
@@ -36,10 +37,33 @@ interface Despesa {
 const ResumoMensal = () => {
   const { selectedPropertyId, selectedProperty } = useProperty();
   const { reservas } = useReserva();
-  const [selectedMonth, setSelectedMonth] = useState("12-2024");
   const [despesas, setDespesas] = useState<Despesa[]>([]);
   const [novaDespesa, setNovaDespesa] = useState({ descricao: "", valor: "" });
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Get available months from reservations
+  const availableMonths = useMemo(() => {
+    const months = new Set<string>();
+    reservas
+      .filter((r) => r.propertyId === selectedPropertyId && r.status === "confirmada")
+      .forEach((r) => {
+        const date = parseISO(r.checkIn);
+        const monthKey = format(date, "MM-yyyy");
+        months.add(monthKey);
+      });
+    
+    // Sort months from newest to oldest
+    return Array.from(months).sort((a, b) => {
+      const [monthA, yearA] = a.split("-").map(Number);
+      const [monthB, yearB] = b.split("-").map(Number);
+      if (yearB !== yearA) return yearB - yearA;
+      return monthB - monthA;
+    });
+  }, [reservas, selectedPropertyId]);
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    return availableMonths[0] || format(new Date(), "MM-yyyy");
+  });
 
   // Parse selected month
   const [month, year] = selectedMonth.split("-").map(Number);
@@ -70,8 +94,6 @@ const ResumoMensal = () => {
     const totalFaturado = booking + airbnb + direto;
 
     // Calculate platform commissions
-    // Booking: 15% on stay + 1.4% on cleaning and tax
-    // Airbnb: 15% on stay and cleaning
     const bookingCommission = booking * 0.15;
     const airbnbCommission = airbnb * 0.15;
     const comissaoPlataforma = bookingCommission + airbnbCommission;
@@ -130,11 +152,17 @@ const ResumoMensal = () => {
     toast.success("Despesa removida");
   };
 
+  const getMonthLabel = (monthKey: string) => {
+    const [m, y] = monthKey.split("-").map(Number);
+    const date = new Date(y, m - 1);
+    return format(date, "MMMM yyyy", { locale: pt });
+  };
+
   const exportarPDF = () => {
     const doc = new jsPDF();
 
     doc.setFontSize(18);
-    doc.text(`Resumo Mensal - ${selectedMonth.split("-").reverse().join("/")}`, 14, 20);
+    doc.text(`Resumo Mensal - ${getMonthLabel(selectedMonth)}`, 14, 20);
 
     doc.setFontSize(12);
     doc.text(selectedProperty?.name || "Propriedade", 14, 30);
@@ -217,11 +245,17 @@ const ResumoMensal = () => {
                 <SelectValue placeholder="Selecione o mês" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="12-2024">Dezembro 2024</SelectItem>
-                <SelectItem value="11-2024">Novembro 2024</SelectItem>
-                <SelectItem value="10-2024">Outubro 2024</SelectItem>
-                <SelectItem value="01-2025">Janeiro 2025</SelectItem>
-                <SelectItem value="02-2025">Fevereiro 2025</SelectItem>
+                {availableMonths.length > 0 ? (
+                  availableMonths.map((monthKey) => (
+                    <SelectItem key={monthKey} value={monthKey}>
+                      {getMonthLabel(monthKey)}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value={format(new Date(), "MM-yyyy")} disabled>
+                    Sem dados disponíveis
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             <Button onClick={exportarPDF} variant="outline" className="gap-2 w-full sm:w-auto">
@@ -232,56 +266,56 @@ const ResumoMensal = () => {
         }
       />
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:gap-6">
         {/* Receitas */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-success" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <TrendingUp className="h-5 w-5 text-green-500" />
               Receitas
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">Booking</span>
               <span className="font-semibold">€{resumoData.receitas.booking.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">Airbnb</span>
               <span className="font-semibold">€{resumoData.receitas.airbnb.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">Direto</span>
               <span className="font-semibold">€{resumoData.receitas.direto.toFixed(2)}</span>
             </div>
             <Separator />
-            <div className="flex justify-between text-lg">
+            <div className="flex justify-between text-base md:text-lg">
               <span className="font-semibold">Total Faturado</span>
-              <span className="font-bold text-success">€{totalReceitas.toFixed(2)}</span>
+              <span className="font-bold text-green-500">€{totalReceitas.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Comissões e Pagamentos */}
         <Card>
-          <CardHeader>
-            <CardTitle>Valores a Pagar</CardTitle>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Valores a Pagar</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">Comissão por Gestão (15%)</span>
               <span className="font-semibold text-destructive">
                 -€{resumoData.comissoes.gestao.toFixed(2)}
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">Comissão da Plataforma</span>
               <span className="font-semibold text-destructive">
                 -€{resumoData.comissoes.plataforma.toFixed(2)}
               </span>
             </div>
             <Separator />
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="font-semibold">Total Comissões</span>
               <span className="font-bold text-destructive">-€{totalComissoes.toFixed(2)}</span>
             </div>
@@ -290,10 +324,10 @@ const ResumoMensal = () => {
 
         {/* Despesas */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingDown className="h-5 w-5 text-warning" />
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <TrendingDown className="h-5 w-5 text-orange-500" />
                 Despesas
               </CardTitle>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -342,13 +376,13 @@ const ResumoMensal = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {despesas.length === 0 ? (
-              <p className="text-muted-foreground text-center py-4">
+              <p className="text-muted-foreground text-center py-4 text-sm">
                 Nenhuma despesa adicionada
               </p>
             ) : (
               <>
                 {despesas.map((despesa) => (
-                  <div key={despesa.id} className="flex justify-between items-center">
+                  <div key={despesa.id} className="flex justify-between items-center text-sm md:text-base">
                     <span className="text-muted-foreground">{despesa.descricao}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">€{despesa.valor.toFixed(2)}</span>
@@ -364,9 +398,9 @@ const ResumoMensal = () => {
                   </div>
                 ))}
                 <Separator />
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm md:text-base">
                   <span className="font-semibold">Total Despesas</span>
-                  <span className="font-bold text-warning">-€{totalDespesas.toFixed(2)}</span>
+                  <span className="font-bold text-orange-500">-€{totalDespesas.toFixed(2)}</span>
                 </div>
               </>
             )}
@@ -376,18 +410,18 @@ const ResumoMensal = () => {
         {/* Resumo Final */}
         <Card className="border-2 border-primary/20 bg-primary/5">
           <CardContent className="pt-6 space-y-4">
-            <div className="flex justify-between text-lg">
+            <div className="flex justify-between text-base md:text-lg">
               <span className="font-semibold">Valor ANTES DE IMPOSTO</span>
               <span className="font-bold">€{valorAntesImposto.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">IRS (10%)</span>
               <span className="font-semibold text-destructive">
                 -€{irs.toFixed(2)}
               </span>
             </div>
             <Separator />
-            <div className="flex justify-between text-2xl">
+            <div className="flex justify-between text-xl md:text-2xl">
               <span className="font-bold">Valor Líquido</span>
               <span className="font-bold text-primary">
                 €{valorLiquido.toFixed(2)}

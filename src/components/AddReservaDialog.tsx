@@ -47,6 +47,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const [checkOutDate, setCheckOutDate] = useState<Date>();
   const [formData, setFormData] = useState({
     hospede: "",
+    email: "",
     checkIn: "",
     checkOut: "",
     plataforma: "Airbnb",
@@ -175,11 +176,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       noites,
       valor: valorTotal,
       comissaoPlataforma,
-      hospedes: guests, // Salvar todos os dados dos hóspedes
+      hospedes: guests,
       propertyId: "1",
       paisOrigem,
       status: "confirmada",
       nrHospedes: formData.numHospedes,
+      guest_email: formData.email,
     };
 
     // Generate a token for check-in link
@@ -192,6 +194,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
     setCheckOutDate(undefined);
     setFormData({
       hospede: "",
+      email: "",
       checkIn: "",
       checkOut: "",
       plataforma: "Airbnb",
@@ -234,16 +237,31 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">Informações da Reserva</h3>
-              <div>
-                <Label htmlFor="hospede">Nome do Hóspede Principal *</Label>
-                <Input
-                  id="hospede"
-                  value={formData.hospede}
-                  onChange={(e) =>
-                    setFormData({ ...formData, hospede: e.target.value })
-                  }
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="hospede">Nome do Hóspede Principal *</Label>
+                  <Input
+                    id="hospede"
+                    value={formData.hospede}
+                    onChange={(e) =>
+                      setFormData({ ...formData, hospede: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email do Hóspede *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    placeholder="email@exemplo.com"
+                    required
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -601,7 +619,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   <div className="flex items-center gap-2">
                     <Input
                       readOnly
-                      value={`${window.location.origin}/checkin?token=${createdReservationToken}`}
+                      value={`${window.location.origin}/checkin/${createdReservationToken}`}
                       className="text-xs bg-muted"
                     />
                     <Button
@@ -609,7 +627,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/checkin?token=${createdReservationToken}`);
+                        navigator.clipboard.writeText(`${window.location.origin}/checkin/${createdReservationToken}`);
                         setLinkCopied(true);
                         toast.success("Link copiado!");
                         setTimeout(() => setLinkCopied(false), 2000);

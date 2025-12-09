@@ -99,17 +99,33 @@ export default function CheckIns() {
     }
   };
 
-  const handleCopyLink = (reservationId: string, checkinToken: string | null) => {
-    if (!checkinToken) {
-      toast({
-        title: "Link não disponível",
-        description: "Envie o link primeiro para gerar o token de check-in",
-        variant: "destructive",
-      });
-      return;
+  const handleCopyLink = async (reservationId: string, checkinToken: string | null) => {
+    let tokenToUse = checkinToken;
+    
+    if (!tokenToUse) {
+      // Generate and save a new token
+      try {
+        const newToken = crypto.randomUUID();
+        const { error } = await supabase
+          .from("reservations")
+          .update({ checkin_token: newToken })
+          .eq("id", reservationId);
+        
+        if (error) throw error;
+        
+        tokenToUse = newToken;
+        refetch();
+      } catch (error: any) {
+        toast({
+          title: "Erro ao gerar link",
+          description: error.message || "Não foi possível gerar o link de check-in",
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
-    const checkinUrl = `${window.location.origin}/checkin/${checkinToken}`;
+    const checkinUrl = `${window.location.origin}/checkin/${tokenToUse}`;
     navigator.clipboard.writeText(checkinUrl);
     toast({
       title: "Link copiado!",
@@ -248,7 +264,6 @@ export default function CheckIns() {
                         onClick={() => handleCopyLink(reservation.id, reservation.checkin_token)}
                         variant="outline"
                         className="w-full sm:w-auto"
-                        disabled={!reservation.checkin_token}
                       >
                         <Copy className="h-4 w-4 mr-2" />
                         Copiar Link

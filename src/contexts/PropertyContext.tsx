@@ -40,71 +40,91 @@ export const PropertyProvider = ({ children }: { children: ReactNode }) => {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
-  // Load properties from Supabase
-  useEffect(() => {
-    const loadProperties = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
+  const loadProperties = async (userId: string) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("properties")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const mappedProperties: Property[] = data.map((p) => ({
+          id: p.id,
+          name: p.name,
+          address: p.address,
+          description: p.description || "",
+          capacity: p.capacity || 4,
+          bedrooms: p.bedrooms || 2,
+          bathrooms: p.bathrooms || 1,
+          checkInTime: p.check_in_time || "15:00",
+          checkOutTime: p.check_out_time || "11:00",
+          wifiPassword: p.wifi_password || "",
+          parkingInfo: p.parking_info || "",
+          region: (p.region as 'madeira' | 'continental') || "continental",
+          rnal: p.rnal || undefined,
+          insuranceValidity: p.insurance_validity || undefined,
+          insuranceFileUrl: p.insurance_file_url || undefined,
+          platformStatus: (p.platform_status as 'nao_submetido' | 'submetido' | 'aprovado') || "nao_submetido",
+        }));
+
+        setProperties(mappedProperties);
+
+        // Set selected property from localStorage or use first property
+        const savedId = localStorage.getItem("selectedPropertyId");
+        const validSavedId = mappedProperties.find((p) => p.id === savedId);
         
-        if (!user) {
+        if (validSavedId) {
+          setSelectedPropertyId(savedId!);
+        } else {
+          setSelectedPropertyId(mappedProperties[0].id);
+          localStorage.setItem("selectedPropertyId", mappedProperties[0].id);
+        }
+      } else {
+        setProperties([]);
+        setSelectedPropertyId("");
+      }
+    } catch (error: any) {
+      console.error("Error loading properties:", error);
+      toast({
+        title: "Erro ao carregar propriedades",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Listen to auth state changes to reload properties
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session?.user) {
+          setTimeout(() => {
+            loadProperties(session.user.id);
+          }, 0);
+        } else {
+          setProperties([]);
+          setSelectedPropertyId("");
           setLoading(false);
-          return;
         }
+      }
+    );
 
-        const { data, error } = await supabase
-          .from("properties")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const mappedProperties: Property[] = data.map((p) => ({
-            id: p.id,
-            name: p.name,
-            address: p.address,
-            description: p.description || "",
-            capacity: p.capacity || 4,
-            bedrooms: p.bedrooms || 2,
-            bathrooms: p.bathrooms || 1,
-            checkInTime: p.check_in_time || "15:00",
-            checkOutTime: p.check_out_time || "11:00",
-            wifiPassword: p.wifi_password || "",
-            parkingInfo: p.parking_info || "",
-            region: (p.region as 'madeira' | 'continental') || "continental",
-            rnal: p.rnal || undefined,
-            insuranceValidity: p.insurance_validity || undefined,
-            insuranceFileUrl: p.insurance_file_url || undefined,
-            platformStatus: (p.platform_status as 'nao_submetido' | 'submetido' | 'aprovado') || "nao_submetido",
-          }));
-
-          setProperties(mappedProperties);
-
-          // Set selected property from localStorage or use first property
-          const savedId = localStorage.getItem("selectedPropertyId");
-          const validSavedId = mappedProperties.find((p) => p.id === savedId);
-          
-          if (validSavedId) {
-            setSelectedPropertyId(savedId!);
-          } else {
-            setSelectedPropertyId(mappedProperties[0].id);
-            localStorage.setItem("selectedPropertyId", mappedProperties[0].id);
-          }
-        }
-      } catch (error: any) {
-        console.error("Error loading properties:", error);
-        toast({
-          title: "Erro ao carregar propriedades",
-          description: error.message,
-          variant: "destructive",
-        });
-      } finally {
+    // Initial load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadProperties(session.user.id);
+      } else {
         setLoading(false);
       }
-    };
+    });
 
-    loadProperties();
+    return () => subscription.unsubscribe();
   }, [toast]);
 
   const selectedProperty = properties.find((p) => p.id === selectedPropertyId);

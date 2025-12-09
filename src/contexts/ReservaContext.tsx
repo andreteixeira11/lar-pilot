@@ -34,10 +34,13 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carregar reservas do Supabase
+  // Carregar reservas do Supabase quando user muda
   useEffect(() => {
     if (user) {
       loadReservas();
+    } else {
+      setReservas([]);
+      setLoading(false);
     }
   }, [user]);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,15 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
-import { Save, Upload, FileText, AlertTriangle } from "lucide-react";
+import { Save, Upload, FileText, AlertTriangle, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 
 const DadosAlojamento = () => {
-  const { selectedProperty, updateProperty } = useProperty();
+  const navigate = useNavigate();
+  const { selectedProperty, updateProperty, deleteProperty, properties } = useProperty();
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [insuranceAlert, setInsuranceAlert] = useState<{ type: 'warning' | 'error'; message: string } | null>(null);
@@ -99,6 +112,13 @@ const DadosAlojamento = () => {
     toast.success("Dados atualizados com sucesso!");
   };
 
+  const handleDelete = () => {
+    if (!selectedProperty) return;
+    deleteProperty(selectedProperty.id);
+    toast.success("Propriedade eliminada com sucesso!");
+    navigate("/dashboard");
+  };
+
   if (!selectedProperty) {
     return (
       <div className="p-8">
@@ -114,19 +134,46 @@ const DadosAlojamento = () => {
         title="Dados do Alojamento"
         description={selectedProperty.name}
         actions={
-          isEditing ? (
-            <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
-              <Button variant="outline" onClick={() => setIsEditing(false)} className="w-full sm:w-auto">
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} className="gap-2 w-full sm:w-auto">
-                <Save className="h-4 w-4" />
-                Guardar
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto">Editar</Button>
-          )
+          <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={() => setIsEditing(false)} className="w-full sm:w-auto">
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} className="gap-2 w-full sm:w-auto">
+                  <Save className="h-4 w-4" />
+                  Guardar
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto">Editar</Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="gap-2 w-full sm:w-auto">
+                      <Trash2 className="h-4 w-4" />
+                      Eliminar
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Eliminar Propriedade</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem a certeza que pretende eliminar a propriedade "{selectedProperty.name}"? 
+                        Esta ação é irreversível e irá apagar todas as reservas, check-ins e dados associados.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                        Eliminar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            )}
+          </div>
         }
       />
 

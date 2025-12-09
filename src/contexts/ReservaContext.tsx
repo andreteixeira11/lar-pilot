@@ -85,14 +85,17 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addReserva = async (reserva: Reserva & { hospedes?: any[] }) => {
+  const addReserva = async (reserva: Reserva & { hospedes?: any[]; guest_email?: string; checkin_token?: string }) => {
     try {
+      // Generate token if not provided
+      const checkinToken = reserva.checkin_token || crypto.randomUUID();
+      
       const { data, error } = await supabase
         .from('reservations')
         .insert({
           property_id: reserva.propertyId,
           guest_name: reserva.hospede,
-          guest_email: 'email@example.com',
+          guest_email: reserva.guest_email || 'email@example.com',
           check_in: reserva.checkIn,
           check_out: reserva.checkOut,
           num_nights: reserva.noites,
@@ -101,6 +104,7 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
           country_origin: reserva.paisOrigem,
           total_price: reserva.valor,
           status: reserva.status,
+          checkin_token: checkinToken,
         })
         .select()
         .single();

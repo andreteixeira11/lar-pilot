@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { countries } from "@/lib/countries";
 import { Plus, Trash2, Check } from "lucide-react";
 
@@ -24,6 +23,7 @@ interface Guest {
 }
 
 export function CheckInForm({ reservation }: { reservation: any }) {
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -106,15 +106,36 @@ export function CheckInForm({ reservation }: { reservation: any }) {
     setLoading(true);
 
     try {
-      // Insert all guests
-      const guestsToInsert = guests.map((guest) => ({
-        ...guest,
-        reservation_id: reservation.id,
-      }));
+      // Use secure edge function to submit guests
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/secure-checkin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token,
+            guests: guests.map((guest) => ({
+              nome_completo: guest.nome_completo,
+              data_nascimento: guest.data_nascimento || null,
+              local_nascimento: guest.local_nascimento || null,
+              nacionalidade: guest.nacionalidade || null,
+              local_residencia: guest.local_residencia || null,
+              pais_residencia: guest.pais_residencia,
+              tipo_documento: guest.tipo_documento || null,
+              numero_documento: guest.numero_documento || null,
+              pais_emissor: guest.pais_emissor || null,
+            })),
+          }),
+        }
+      );
 
-      const { error } = await supabase.from("reservation_guests").insert(guestsToInsert);
+      const data = await response.json();
 
-      if (error) throw error;
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Erro ao submeter check-in");
+      }
 
       toast({
         title: "Check-in completo!",

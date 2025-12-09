@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { CheckInForm } from "@/components/CheckInForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Building2, Calendar, Users } from "lucide-react";
@@ -22,28 +21,25 @@ export default function CheckIn() {
       }
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from("reservations")
-          .select(`
-            *,
-            properties (
-              name,
-              address,
-              check_in_time,
-              check_out_time,
-              wifi_password
-            )
-          `)
-          .eq("checkin_token", token)
-          .single();
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/secure-checkin?token=${encodeURIComponent(token)}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        if (fetchError || !data) {
-          setError("Reserva não encontrada. Verifique se o link está correto.");
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          setError(data.error || "Reserva não encontrada. Verifique se o link está correto.");
           setLoading(false);
           return;
         }
 
-        setReservation(data);
+        setReservation(data.reservation);
       } catch (err) {
         console.error("Error fetching reservation:", err);
         setError("Erro ao carregar os dados da reserva");

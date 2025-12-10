@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,10 +19,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 const MONTHS = [
   { value: "01", label: "Janeiro" },
@@ -39,12 +50,24 @@ const MONTHS = [
   { value: "12", label: "Dezembro" },
 ];
 
+interface INERow {
+  id?: string;
+  pais: string;
+  nrHospedes: number;
+  nrNoites: number;
+  dormidas: number;
+  noitesTransitadas: number;
+  isFromReservation?: boolean;
+}
+
 const INE = () => {
   const { selectedPropertyId } = useProperty();
   const { reservas } = useReserva();
+  const { toast } = useToast();
   const [refresh, setRefresh] = useState(0);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [ineData, setIneData] = useState<Array<{ pais: string; nrHospedes: number; nrNoites: number; dormidas: number; noitesTransitadas: number }>>([]);
+  const [ineData, setIneData] = useState<INERow[]>([]);
+  const [deletingRow, setDeletingRow] = useState<INERow | null>(null);
 
   // Get available months and years from reservations
   const { availableYears, availableMonthsByYear } = useMemo(() => {
@@ -149,9 +172,10 @@ const INE = () => {
           countryData[pais].dormidas += noites; // 1 hóspede × noites
         });
 
-        const data = Object.entries(countryData).map(([pais, data]) => ({
+        const data: INERow[] = Object.entries(countryData).map(([pais, data]) => ({
           pais,
           ...data,
+          isFromReservation: true,
         }));
         setIneData(data);
       } else {
@@ -160,7 +184,40 @@ const INE = () => {
     };
 
     loadINEData();
-  }, [reservas, selectedPropertyId, selectedMonth, selectedYear]);
+  }, [reservas, selectedPropertyId, selectedMonth, selectedYear, refresh]);
+
+  const handleDeleteRow = async (row: INERow) => {
+    if (row.isFromReservation) {
+      // For reservation-based data, we would need to delete the guest from reservation
+      // For now, just show a message
+      toast({
+        title: "Dados de reserva",
+        description: "Este registo foi gerado automaticamente a partir das reservas. Para remover, edite a reserva correspondente.",
+        variant: "destructive",
+      });
+    } else if (row.id) {
+      // Delete from ine_statistics table
+      const { error } = await supabase
+        .from('ine_statistics')
+        .delete()
+        .eq('id', row.id);
+
+      if (error) {
+        toast({
+          title: "Erro",
+          description: "Não foi possível remover o registo",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sucesso",
+          description: "Registo removido com sucesso",
+        });
+        setRefresh(prev => prev + 1);
+      }
+    }
+    setDeletingRow(null);
+  };
 
   const totais = ineData.reduce(
     (acc, row) => ({
@@ -262,24 +319,35 @@ const INE = () => {
                   <TableHead className="text-right min-w-[80px]">Noites</TableHead>
                   <TableHead className="text-right min-w-[80px]">Dormidas</TableHead>
                   <TableHead className="text-right min-w-[100px]">Transitadas</TableHead>
+                  <TableHead className="w-[60px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {ineData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                       Nenhum dado encontrado para este mês
                     </TableCell>
                   </TableRow>
                 ) : (
                   <>
-                    {ineData.map((row) => (
-                      <TableRow key={row.pais}>
+                    {ineData.map((row, index) => (
+                      <TableRow key={row.id || `${row.pais}-${index}`}>
                         <TableCell className="font-medium text-sm">{row.pais}</TableCell>
                         <TableCell className="text-right text-sm">{row.nrHospedes}</TableCell>
                         <TableCell className="text-right text-sm">{row.nrNoites}</TableCell>
                         <TableCell className="text-right text-sm">{row.dormidas}</TableCell>
                         <TableCell className="text-right text-sm">{row.noitesTransitadas}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeletingRow(row)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                     <TableRow className="bg-muted/50 font-semibold">
@@ -288,6 +356,7 @@ const INE = () => {
                       <TableCell className="text-right text-sm">{totais.noites}</TableCell>
                       <TableCell className="text-right text-sm">{totais.dormidas}</TableCell>
                       <TableCell className="text-right text-sm">{totais.transitadas}</TableCell>
+                      <TableCell></TableCell>
                     </TableRow>
                   </>
                 )}
@@ -296,6 +365,31 @@ const INE = () => {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deletingRow} onOpenChange={() => setDeletingRow(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover Registo</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deletingRow?.isFromReservation 
+                ? "Este registo foi gerado automaticamente a partir das reservas. Para remover, edite a reserva correspondente."
+                : "Tem a certeza que pretende remover este registo? Esta ação não pode ser revertida."
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            {!deletingRow?.isFromReservation && (
+              <AlertDialogAction
+                onClick={() => deletingRow && handleDeleteRow(deletingRow)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Remover
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -9,8 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Send, CheckCircle, Clock, Calendar, User, Mail, FileText, Plus, Pencil, Trash2, Copy } from "lucide-react";
+import { Send, CheckCircle, Clock, Calendar, User, Mail, FileText, Plus, Pencil, Trash2, Copy, Eye } from "lucide-react";
 import { AddCheckinTemplateDialog } from "@/components/AddCheckinTemplateDialog";
+import { GuestDetailsDialog } from "@/components/GuestDetailsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,8 @@ export default function CheckIns() {
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<any>(null);
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
+  const [selectedReservation, setSelectedReservation] = useState<any>(null);
+  const [guestDetailsOpen, setGuestDetailsOpen] = useState(false);
 
   const { data: reservations, refetch } = useQuery({
     queryKey: ["reservations-checkins", selectedProperty?.id],
@@ -42,7 +45,15 @@ export default function CheckIns() {
           *,
           reservation_guests (
             id,
-            nome_completo
+            nome_completo,
+            data_nascimento,
+            local_nascimento,
+            nacionalidade,
+            local_residencia,
+            pais_residencia,
+            tipo_documento,
+            numero_documento,
+            pais_emissor
           )
         `)
         .eq("property_id", selectedProperty.id)
@@ -103,7 +114,6 @@ export default function CheckIns() {
     let tokenToUse = checkinToken;
     
     if (!tokenToUse) {
-      // Generate and save a new token
       try {
         const newToken = crypto.randomUUID();
         const { error } = await supabase
@@ -131,6 +141,11 @@ export default function CheckIns() {
       title: "Link copiado!",
       description: "O link de check-in foi copiado para a área de transferência",
     });
+  };
+
+  const handleViewDetails = (reservation: any) => {
+    setSelectedReservation(reservation);
+    setGuestDetailsOpen(true);
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
@@ -212,9 +227,14 @@ export default function CheckIns() {
           reservations?.map((reservation) => {
             const checkinStatus = getCheckinStatus(reservation);
             const isSending = sendingId === reservation.id;
+            const hasGuestDetails = (reservation.reservation_guests?.length || 0) > 0;
 
             return (
-              <Card key={reservation.id} className="overflow-hidden">
+              <Card 
+                key={reservation.id} 
+                className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleViewDetails(reservation)}
+              >
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex-1 space-y-3">
@@ -251,7 +271,7 @@ export default function CheckIns() {
                         </Badge>
                       </div>
 
-                      {reservation.reservation_guests?.length > 0 && (
+                      {hasGuestDetails && (
                         <div className="text-sm text-muted-foreground">
                           <span className="font-medium">Hóspedes registados:</span>{" "}
                           {reservation.reservation_guests.map((g: any) => g.nome_completo).join(", ")}
@@ -259,7 +279,17 @@ export default function CheckIns() {
                       )}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
+                      {hasGuestDetails && (
+                        <Button
+                          onClick={() => handleViewDetails(reservation)}
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          Ver Detalhes
+                        </Button>
+                      )}
                       <Button
                         onClick={() => handleCopyLink(reservation.id, reservation.checkin_token)}
                         variant="outline"
@@ -372,6 +402,12 @@ export default function CheckIns() {
         }}
         onSuccess={refetchTemplates}
         template={editingTemplate}
+      />
+
+      <GuestDetailsDialog
+        reservation={selectedReservation}
+        open={guestDetailsOpen}
+        onOpenChange={setGuestDetailsOpen}
       />
 
       <AlertDialog open={!!deletingTemplateId} onOpenChange={() => setDeletingTemplateId(null)}>

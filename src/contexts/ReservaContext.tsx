@@ -15,6 +15,13 @@ export interface Reserva {
   propertyId: string;
   nrHospedes: number;
   paisOrigem: string;
+  valorBaseEstadia?: number;
+  ivaEstadia?: number;
+  valorBaseLimpeza?: number;
+  ivaLimpeza?: number;
+  taxaTuristica?: number;
+  comissaoPlataforma?: number;
+  hospedes?: any[];
 }
 
 interface ReservaContextType {

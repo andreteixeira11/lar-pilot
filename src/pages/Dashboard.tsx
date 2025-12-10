@@ -5,11 +5,26 @@ import { Button } from "@/components/ui/button";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
 import { useNavigate } from "react-router-dom";
-import { format, isAfter, isBefore, startOfMonth, endOfMonth } from "date-fns";
+import { format, isAfter, isBefore, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Calendar, TrendingUp, AlertTriangle, Euro, User, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+
+const COLORS = ["hsl(var(--primary))", "#FF5A5F", "#003580", "#10B981"];
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -59,6 +74,52 @@ const Dashboard = () => {
   const monthlyRevenue = currentMonthReservations.reduce((total, r) => total + (r.valor || 0), 0);
   const monthlyNights = currentMonthReservations.reduce((total, r) => total + (r.noites || 0), 0);
   const monthlyGuests = currentMonthReservations.reduce((total, r) => total + (r.nrHospedes || 0), 0);
+
+  // Calculate revenue data for the last 6 months
+  const revenueChartData = Array.from({ length: 6 }, (_, i) => {
+    const month = subMonths(today, 5 - i);
+    const monthStartDate = startOfMonth(month);
+    const monthEndDate = endOfMonth(month);
+
+    const monthReservations = reservas.filter((r) => {
+      const checkIn = new Date(r.checkIn);
+      return (
+        r.propertyId === selectedPropertyId &&
+        r.status === "confirmada" &&
+        isAfter(checkIn, monthStartDate) &&
+        isBefore(checkIn, monthEndDate)
+      );
+    });
+
+    const revenue = monthReservations.reduce((total, r) => total + (r.valor || 0), 0);
+
+    return {
+      name: format(month, "MMM", { locale: pt }),
+      faturacao: revenue,
+    };
+  });
+
+  // Calculate revenue by platform for pie chart
+  const revenueByPlatform = reservas
+    .filter((r) => {
+      const checkIn = new Date(r.checkIn);
+      return (
+        r.propertyId === selectedPropertyId &&
+        r.status === "confirmada" &&
+        isAfter(checkIn, subMonths(today, 6))
+      );
+    })
+    .reduce((acc, r) => {
+      const platform = r.plataforma || "Direto";
+      acc[platform] = (acc[platform] || 0) + (r.valor || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+  const pieChartData = Object.entries(revenueByPlatform).map(([name, value], index) => ({
+    name,
+    value,
+    color: COLORS[index % COLORS.length],
+  }));
 
   if (!selectedProperty) {
     return (
@@ -115,13 +176,107 @@ const Dashboard = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-success/10 flex items-center justify-center">
-                  <User className="h-6 w-6 text-success" />
+                <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <User className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Hóspedes do Mês</p>
                   <p className="text-2xl font-bold">{monthlyGuests}</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Faturação Mensal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueChartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="name" 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `€${value}`}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`€${value.toFixed(2)}`, "Faturação"]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar 
+                      dataKey="faturacao" 
+                      fill="hsl(var(--primary))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Platform Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Euro className="h-5 w-5 text-primary" />
+                Receita por Plataforma
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                {pieChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieChartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value: number) => [`€${value.toFixed(2)}`, "Receita"]}
+                        contentStyle={{
+                          backgroundColor: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Sem dados de reservas
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -181,7 +336,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-warning" />
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
                 Obrigações Fiscais Pendentes
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate("/calendario-fiscal")}>

@@ -19,7 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { TrendingUp, TrendingDown, FileDown, Plus } from "lucide-react";
+import { TrendingUp, TrendingDown, FileDown, Plus, Pencil, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
@@ -32,6 +32,13 @@ interface Despesa {
   id: string;
   descricao: string;
   valor: number;
+}
+
+interface ValorAPagar {
+  id: string;
+  descricao: string;
+  valor: number;
+  tipo: "euro" | "percentagem";
 }
 
 const MONTHS = [
@@ -49,12 +56,21 @@ const MONTHS = [
   { value: "12", label: "Dezembro" },
 ];
 
+const defaultValoresAPagar: ValorAPagar[] = [
+  { id: "1", descricao: "Comissão por Gestão", valor: 15, tipo: "percentagem" },
+  { id: "2", descricao: "Comissão da Plataforma", valor: 15, tipo: "percentagem" },
+];
+
 const ResumoMensal = () => {
   const { selectedPropertyId, selectedProperty } = useProperty();
   const { reservas } = useReserva();
   const [despesas, setDespesas] = useState<Despesa[]>([]);
+  const [valoresAPagar, setValoresAPagar] = useState<ValorAPagar[]>(defaultValoresAPagar);
   const [novaDespesa, setNovaDespesa] = useState({ descricao: "", valor: "" });
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [novoValorAPagar, setNovoValorAPagar] = useState({ descricao: "", valor: "", tipo: "euro" as "euro" | "percentagem" });
+  const [despesaDialogOpen, setDespesaDialogOpen] = useState(false);
+  const [valorAPagarDialogOpen, setValorAPagarDialogOpen] = useState(false);
+  const [editingValorAPagar, setEditingValorAPagar] = useState<ValorAPagar | null>(null);
 
   // Get available months and years from reservations
   const { availableYears, availableMonthsByYear } = useMemo(() => {
@@ -127,14 +143,6 @@ const ResumoMensal = () => {
 
     const totalFaturado = booking + airbnb + direto;
 
-    // Calculate platform commissions
-    const bookingCommission = booking * 0.15;
-    const airbnbCommission = airbnb * 0.15;
-    const comissaoPlataforma = bookingCommission + airbnbCommission;
-
-    // Management commission: 15% of total
-    const comissaoGestao = totalFaturado * 0.15;
-
     return {
       receitas: {
         booking,
@@ -142,15 +150,18 @@ const ResumoMensal = () => {
         direto,
         total: totalFaturado,
       },
-      comissoes: {
-        gestao: comissaoGestao,
-        plataforma: comissaoPlataforma,
-      },
     };
   }, [reservas, selectedPropertyId, monthStart, monthEnd]);
 
   const totalReceitas = resumoData.receitas.total;
-  const totalComissoes = resumoData.comissoes.gestao + resumoData.comissoes.plataforma;
+
+  // Calculate valores a pagar based on type
+  const calculatedValoresAPagar = valoresAPagar.map(v => ({
+    ...v,
+    valorCalculado: v.tipo === "percentagem" ? (totalReceitas * v.valor / 100) : v.valor,
+  }));
+
+  const totalComissoes = calculatedValoresAPagar.reduce((sum, v) => sum + v.valorCalculado, 0);
   const totalDespesas = despesas.reduce((sum, d) => sum + d.valor, 0);
   const valorAntesImposto = totalReceitas - totalComissoes - totalDespesas;
   const irs = valorAntesImposto > 0 ? valorAntesImposto * 0.1 : 0;
@@ -177,13 +188,65 @@ const ResumoMensal = () => {
       },
     ]);
     setNovaDespesa({ descricao: "", valor: "" });
-    setDialogOpen(false);
+    setDespesaDialogOpen(false);
     toast.success("Despesa adicionada");
   };
 
   const handleRemoveDespesa = (id: string) => {
     setDespesas(despesas.filter((d) => d.id !== id));
     toast.success("Despesa removida");
+  };
+
+  const handleAddValorAPagar = () => {
+    if (!novoValorAPagar.descricao || !novoValorAPagar.valor) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    const valor = parseFloat(novoValorAPagar.valor);
+    if (isNaN(valor) || valor <= 0) {
+      toast.error("Valor inválido");
+      return;
+    }
+
+    if (editingValorAPagar) {
+      setValoresAPagar(valoresAPagar.map(v => 
+        v.id === editingValorAPagar.id 
+          ? { ...v, descricao: novoValorAPagar.descricao, valor, tipo: novoValorAPagar.tipo }
+          : v
+      ));
+      toast.success("Valor atualizado");
+    } else {
+      setValoresAPagar([
+        ...valoresAPagar,
+        {
+          id: Date.now().toString(),
+          descricao: novoValorAPagar.descricao,
+          valor,
+          tipo: novoValorAPagar.tipo,
+        },
+      ]);
+      toast.success("Valor adicionado");
+    }
+    
+    setNovoValorAPagar({ descricao: "", valor: "", tipo: "euro" });
+    setEditingValorAPagar(null);
+    setValorAPagarDialogOpen(false);
+  };
+
+  const handleEditValorAPagar = (valor: ValorAPagar) => {
+    setEditingValorAPagar(valor);
+    setNovoValorAPagar({
+      descricao: valor.descricao,
+      valor: valor.valor.toString(),
+      tipo: valor.tipo,
+    });
+    setValorAPagarDialogOpen(true);
+  };
+
+  const handleRemoveValorAPagar = (id: string) => {
+    setValoresAPagar(valoresAPagar.filter((v) => v.id !== id));
+    toast.success("Valor removido");
   };
 
   const getMonthLabel = () => {
@@ -215,7 +278,7 @@ const ResumoMensal = () => {
       theme: "grid",
     });
 
-    // Comissões
+    // Valores a Pagar
     const finalY1 = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(14);
     doc.text("Valores a Pagar", 14, finalY1);
@@ -223,9 +286,11 @@ const ResumoMensal = () => {
       startY: finalY1 + 5,
       head: [["Descrição", "Valor"]],
       body: [
-        ["Comissão por Gestão (15%)", `-€${resumoData.comissoes.gestao.toFixed(2)}`],
-        ["Comissão da Plataforma", `-€${resumoData.comissoes.plataforma.toFixed(2)}`],
-        ["Total Comissões", `-€${totalComissoes.toFixed(2)}`],
+        ...calculatedValoresAPagar.map(v => [
+          `${v.descricao}${v.tipo === "percentagem" ? ` (${v.valor}%)` : ""}`,
+          `-€${v.valorCalculado.toFixed(2)}`
+        ]),
+        ["Total", `-€${totalComissoes.toFixed(2)}`],
       ],
       theme: "grid",
     });
@@ -356,27 +421,115 @@ const ResumoMensal = () => {
           </CardContent>
         </Card>
 
-        {/* Comissões e Pagamentos */}
+        {/* Valores a Pagar - Editable */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Valores a Pagar</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base md:text-lg">Valores a Pagar</CardTitle>
+              <Dialog open={valorAPagarDialogOpen} onOpenChange={(open) => {
+                setValorAPagarDialogOpen(open);
+                if (!open) {
+                  setEditingValorAPagar(null);
+                  setNovoValorAPagar({ descricao: "", valor: "", tipo: "euro" });
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{editingValorAPagar ? "Editar Valor" : "Adicionar Valor a Pagar"}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="descricao">Descrição</Label>
+                      <Input
+                        id="descricao"
+                        value={novoValorAPagar.descricao}
+                        onChange={(e) =>
+                          setNovoValorAPagar({ ...novoValorAPagar, descricao: e.target.value })
+                        }
+                        placeholder="Ex: Comissão por Gestão, IVA..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="valor">Valor</Label>
+                        <Input
+                          id="valor"
+                          type="number"
+                          step="0.01"
+                          value={novoValorAPagar.valor}
+                          onChange={(e) =>
+                            setNovoValorAPagar({ ...novoValorAPagar, valor: e.target.value })
+                          }
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tipo">Tipo</Label>
+                        <Select 
+                          value={novoValorAPagar.tipo} 
+                          onValueChange={(value: "euro" | "percentagem") =>
+                            setNovoValorAPagar({ ...novoValorAPagar, tipo: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="euro">Euros (€)</SelectItem>
+                            <SelectItem value="percentagem">Percentagem (%)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Button onClick={handleAddValorAPagar} className="w-full">
+                      {editingValorAPagar ? "Guardar Alterações" : "Adicionar"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex justify-between text-sm md:text-base">
-              <span className="text-muted-foreground">Comissão por Gestão (15%)</span>
-              <span className="font-semibold text-destructive">
-                -€{resumoData.comissoes.gestao.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm md:text-base">
-              <span className="text-muted-foreground">Comissão da Plataforma</span>
-              <span className="font-semibold text-destructive">
-                -€{resumoData.comissoes.plataforma.toFixed(2)}
-              </span>
-            </div>
+            {calculatedValoresAPagar.map((valor) => (
+              <div key={valor.id} className="flex justify-between items-center text-sm md:text-base">
+                <span className="text-muted-foreground">
+                  {valor.descricao}
+                  {valor.tipo === "percentagem" && (
+                    <span className="text-xs ml-1">({valor.valor}%)</span>
+                  )}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-destructive">
+                    -€{valor.valorCalculado.toFixed(2)}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => handleEditValorAPagar(valor)}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveValorAPagar(valor.id)}
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
             <Separator />
             <div className="flex justify-between text-sm md:text-base">
-              <span className="font-semibold">Total Comissões</span>
+              <span className="font-semibold">Total</span>
               <span className="font-bold text-destructive">-€{totalComissoes.toFixed(2)}</span>
             </div>
           </CardContent>
@@ -390,7 +543,7 @@ const ResumoMensal = () => {
                 <TrendingDown className="h-5 w-5 text-orange-500" />
                 Despesas
               </CardTitle>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <Dialog open={despesaDialogOpen} onOpenChange={setDespesaDialogOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
@@ -468,24 +621,23 @@ const ResumoMensal = () => {
         </Card>
 
         {/* Resumo Final */}
-        <Card className="border-2 border-primary/20 bg-primary/5">
-          <CardContent className="pt-6 space-y-4">
-            <div className="flex justify-between text-base md:text-lg">
-              <span className="font-semibold">Valor ANTES DE IMPOSTO</span>
-              <span className="font-bold">€{valorAntesImposto.toFixed(2)}</span>
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Resumo Final</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between text-sm md:text-base">
+              <span className="text-muted-foreground">Valor ANTES DE IMPOSTO</span>
+              <span className="font-semibold">€{valorAntesImposto.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm md:text-base">
               <span className="text-muted-foreground">IRS (10%)</span>
-              <span className="font-semibold text-destructive">
-                -€{irs.toFixed(2)}
-              </span>
+              <span className="font-semibold text-destructive">-€{irs.toFixed(2)}</span>
             </div>
             <Separator />
-            <div className="flex justify-between text-xl md:text-2xl">
+            <div className="flex justify-between text-lg md:text-xl">
               <span className="font-bold">Valor Líquido</span>
-              <span className="font-bold text-primary">
-                €{valorLiquido.toFixed(2)}
-              </span>
+              <span className="font-bold text-primary">€{valorLiquido.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>

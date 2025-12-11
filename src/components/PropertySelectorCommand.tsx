@@ -35,7 +35,7 @@ export function PropertySelectorCommand() {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between bg-background hover:bg-accent border-border transition-all duration-200 h-10 sm:h-11"
+            className="w-full justify-between bg-background hover:bg-primary/10 border-border transition-all duration-200 h-10 sm:h-11"
           >
             {selectedProperty ? (
               <motion.div 

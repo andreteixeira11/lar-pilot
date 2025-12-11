@@ -210,51 +210,56 @@ export const ReservaDetailsDialog = ({
     doc.save(`reserva-${reserva.hospede}-${reserva.checkIn}.pdf`);
   };
 
+  // Calculate values from total if not provided
+  const valorTotalEstadia = reserva.valorBaseEstadia && reserva.ivaEstadia 
+    ? (reserva.valorBaseEstadia + reserva.ivaEstadia) 
+    : reserva.valor - (reserva.taxaTuristica || 0) - ((reserva.valorBaseLimpeza || 0) + (reserva.ivaLimpeza || 0));
+  
+  const valorTotalLimpeza = (reserva.valorBaseLimpeza || 0) + (reserva.ivaLimpeza || 0);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>Detalhes da Reserva</DialogTitle>
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleSendCheckin}
-                disabled={isSendingCheckin}
-                className="gap-2"
-              >
-                <Send className="h-4 w-4" />
-                {isSendingCheckin ? "A enviar..." : "Check-in"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadPDF}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                PDF
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEdit}
-                className="gap-2"
-              >
-                <Pencil className="h-4 w-4" />
-                Editar
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setDeleteDialogOpen(true)}
-                className="gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                Excluir
-              </Button>
-            </div>
+        <DialogHeader className="pr-8">
+          <DialogTitle>Detalhes da Reserva</DialogTitle>
+          <div className="flex flex-wrap gap-1.5 pt-2">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSendCheckin}
+              disabled={isSendingCheckin}
+              className="h-7 text-xs px-2"
+            >
+              <Send className="h-3 w-3 mr-1" />
+              {isSendingCheckin ? "..." : "Check-in"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadPDF}
+              className="h-7 text-xs px-2"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              className="h-7 text-xs px-2"
+            >
+              <Pencil className="h-3 w-3 mr-1" />
+              Editar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="h-7 text-xs px-2"
+            >
+              <Trash2 className="h-3 w-3 mr-1" />
+              Excluir
+            </Button>
           </div>
         </DialogHeader>
 
@@ -343,38 +348,48 @@ export const ReservaDetailsDialog = ({
               {/* Estadia */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">Estadia</p>
-                <div className="flex justify-between text-sm pl-2">
-                  <span className="text-muted-foreground">Valor Base:</span>
-                  <span className="font-medium">€{(reserva.valorBaseEstadia || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm pl-2">
-                  <span className="text-muted-foreground">IVA:</span>
-                  <span className="font-medium">€{(reserva.ivaEstadia || 0).toFixed(2)}</span>
-                </div>
+                {reserva.valorBaseEstadia ? (
+                  <>
+                    <div className="flex justify-between text-sm pl-2">
+                      <span className="text-muted-foreground">Valor Base:</span>
+                      <span className="font-medium">€{reserva.valorBaseEstadia.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm pl-2">
+                      <span className="text-muted-foreground">IVA:</span>
+                      <span className="font-medium">€{(reserva.ivaEstadia || 0).toFixed(2)}</span>
+                    </div>
+                  </>
+                ) : null}
                 <div className="flex justify-between text-sm pl-2 font-semibold border-t pt-1">
                   <span>Total Estadia:</span>
-                  <span>€{((reserva.valorBaseEstadia || 0) + (reserva.ivaEstadia || 0)).toFixed(2)}</span>
+                  <span>€{valorTotalEstadia.toFixed(2)}</span>
                 </div>
               </div>
 
               <Separator />
 
               {/* Limpeza */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Limpeza</p>
-                <div className="flex justify-between text-sm pl-2">
-                  <span className="text-muted-foreground">Valor Base:</span>
-                  <span className="font-medium">€{(reserva.valorBaseLimpeza || 0).toFixed(2)}</span>
+              {valorTotalLimpeza > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-muted-foreground">Limpeza</p>
+                  {reserva.valorBaseLimpeza ? (
+                    <>
+                      <div className="flex justify-between text-sm pl-2">
+                        <span className="text-muted-foreground">Valor Base:</span>
+                        <span className="font-medium">€{reserva.valorBaseLimpeza.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm pl-2">
+                        <span className="text-muted-foreground">IVA:</span>
+                        <span className="font-medium">€{(reserva.ivaLimpeza || 0).toFixed(2)}</span>
+                      </div>
+                    </>
+                  ) : null}
+                  <div className="flex justify-between text-sm pl-2 font-semibold border-t pt-1">
+                    <span>Total Limpeza:</span>
+                    <span>€{valorTotalLimpeza.toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm pl-2">
-                  <span className="text-muted-foreground">IVA:</span>
-                  <span className="font-medium">€{(reserva.ivaLimpeza || 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm pl-2 font-semibold border-t pt-1">
-                  <span>Total Limpeza:</span>
-                  <span>€{((reserva.valorBaseLimpeza || 0) + (reserva.ivaLimpeza || 0)).toFixed(2)}</span>
-                </div>
-              </div>
+              )}
 
               <Separator />
 

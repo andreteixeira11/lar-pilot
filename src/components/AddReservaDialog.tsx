@@ -19,9 +19,9 @@ import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProperty } from "@/contexts/PropertyContext";
-import { countries } from "@/lib/countries";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
+import { CountryCombobox } from "@/components/reserva/CountryCombobox";
 
 interface Guest {
   id: string;
@@ -496,28 +496,13 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label>Nacionalidade</Label>
-                        <Select
+                        <CountryCombobox
                           value={guest.nacionalidade}
                           onValueChange={(value) =>
                             updateGuest(guest.id, "nacionalidade", value)
                           }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o país" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <ScrollArea className="h-[200px]">
-                              {countries.map((country) => (
-                                <SelectItem key={country.code} value={country.name}>
-                                  <span className="flex items-center gap-2">
-                                    <span>{country.flag}</span>
-                                    <span>{country.name}</span>
-                                  </span>
-                                </SelectItem>
-                              ))}
-                            </ScrollArea>
-                          </SelectContent>
-                        </Select>
+                          placeholder="Pesquisar país..."
+                        />
                       </div>
                       <div>
                         <Label>Local de Residência</Label>
@@ -532,28 +517,13 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                     </div>
                     <div>
                       <Label>País de Residência</Label>
-                      <Select
+                      <CountryCombobox
                         value={guest.paisResidencia}
                         onValueChange={(value) =>
                           updateGuest(guest.id, "paisResidencia", value)
                         }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o país" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <ScrollArea className="h-[200px]">
-                            {countries.map((country) => (
-                              <SelectItem key={country.code} value={country.name}>
-                                <span className="flex items-center gap-2">
-                                  <span>{country.flag}</span>
-                                  <span>{country.name}</span>
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </ScrollArea>
-                        </SelectContent>
-                      </Select>
+                        placeholder="Pesquisar país..."
+                      />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                       <div>
@@ -583,28 +553,13 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                       </div>
                       <div>
                         <Label>País Emissor</Label>
-                        <Select
+                        <CountryCombobox
                           value={guest.paisEmissor}
                           onValueChange={(value) =>
                             updateGuest(guest.id, "paisEmissor", value)
                           }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o país" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <ScrollArea className="h-[200px]">
-                              {countries.map((country) => (
-                                <SelectItem key={country.code} value={country.name}>
-                                  <span className="flex items-center gap-2">
-                                    <span>{country.flag}</span>
-                                    <span>{country.name}</span>
-                                  </span>
-                                </SelectItem>
-                              ))}
-                            </ScrollArea>
-                          </SelectContent>
-                        </Select>
+                          placeholder="Pesquisar país..."
+                        />
                       </div>
                     </div>
                   </CardContent>

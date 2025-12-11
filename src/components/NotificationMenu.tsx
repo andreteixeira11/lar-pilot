@@ -113,7 +113,7 @@ export function NotificationMenu() {
               {tarefasPendentes.map((tarefa) => (
                 <div
                   key={tarefa.id}
-                  className="border rounded-lg p-3 hover:bg-accent/50 transition-colors cursor-pointer"
+                  className="border rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer"
                   onClick={() => navigate("/calendario-fiscal")}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">

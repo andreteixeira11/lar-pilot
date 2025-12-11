@@ -8,8 +8,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { PropertySelectorCommand } from "@/components/PropertySelectorCommand";
 import { NotificationMenu } from "@/components/NotificationMenu";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/AdminSidebar";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Simulador from "./pages/Simulador";
@@ -27,6 +30,10 @@ import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import Equipa from "./pages/Equipa";
 import AcceptInvite from "./pages/AcceptInvite";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminProperties from "./pages/admin/AdminProperties";
+import AdminReports from "./pages/admin/AdminReports";
 
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +54,32 @@ const App = () => (
         <Route path="/simulador" element={<Simulador />} />
         <Route path="/checkin/:token" element={<CheckIn />} />
         <Route path="/accept-invite" element={<AcceptInvite />} />
+              
+              {/* Admin Routes */}
+              <Route
+                path="/admin/*"
+                element={
+                  <ProtectedRoute>
+                    <AdminRoute>
+                      <SidebarProvider>
+                        <div className="flex min-h-screen w-full">
+                          <AdminSidebar />
+                          <main className="flex-1 md:ml-64 bg-background">
+                            <Routes>
+                              <Route path="/" element={<AdminDashboard />} />
+                              <Route path="/users" element={<AdminUsers />} />
+                              <Route path="/properties" element={<AdminProperties />} />
+                              <Route path="/reports" element={<AdminReports />} />
+                            </Routes>
+                          </main>
+                        </div>
+                      </SidebarProvider>
+                    </AdminRoute>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Regular Backoffice Routes */}
               <Route
                 path="/*"
                 element={

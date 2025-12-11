@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import {
   Calendar as CalendarIcon,
   Home,
@@ -20,6 +21,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
+  Shield,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -103,6 +105,7 @@ export const AnimatedSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, profile, logout } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
 
   const mobileSidebarVariants = {
@@ -188,11 +191,25 @@ export const AnimatedSidebar = () => {
                   </ul>
                 </nav>
 
+                {/* Admin Link */}
+                {isAdmin && (
+                  <div className="px-4 pb-2">
+                    <NavLink
+                      to="/admin"
+                      onClick={toggleSidebar}
+                      className="flex gap-3 items-center w-full py-3 px-4 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
+                    >
+                      <Shield className="h-5 w-5" />
+                      <span>Painel Admin</span>
+                    </NavLink>
+                  </div>
+                )}
+
                 {/* User Profile Section */}
                 <div className="p-4 border-t border-border">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-accent transition-colors">
+                      <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-primary/10 transition-colors">
                         <Avatar className="h-10 w-10">
                           <AvatarFallback className="bg-primary/10 text-primary">
                             {initials}
@@ -284,11 +301,24 @@ export const AnimatedSidebar = () => {
           </ul>
         </nav>
 
+        {/* Admin Link */}
+        {isAdmin && (
+          <div className="px-4 pb-2">
+            <NavLink
+              to="/admin"
+              className="flex gap-3 items-center w-full py-3 px-4 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
+            >
+              <Shield className="h-5 w-5" />
+              <span>Painel Admin</span>
+            </NavLink>
+          </div>
+        )}
+
         {/* User Profile Section */}
         <div className="p-4 border-t border-border">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-accent transition-colors">
+              <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-primary/10 transition-colors">
                 <Avatar className="h-10 w-10">
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {initials}

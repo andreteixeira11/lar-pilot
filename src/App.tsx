@@ -30,6 +30,7 @@ import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import Equipa from "./pages/Equipa";
 import AcceptInvite from "./pages/AcceptInvite";
+import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProperties from "./pages/admin/AdminProperties";
@@ -55,27 +56,28 @@ const App = () => (
         <Route path="/checkin/:token" element={<CheckIn />} />
         <Route path="/accept-invite" element={<AcceptInvite />} />
               
-              {/* Admin Routes */}
+              {/* Admin Login Page */}
+              <Route path="/admin" element={<AdminAuth />} />
+              
+              {/* Admin Protected Routes */}
               <Route
                 path="/admin/*"
                 element={
-                  <ProtectedRoute>
-                    <AdminRoute>
-                      <SidebarProvider>
-                        <div className="flex min-h-screen w-full">
-                          <AdminSidebar />
-                          <main className="flex-1 md:ml-64 bg-background">
-                            <Routes>
-                              <Route path="/" element={<AdminDashboard />} />
-                              <Route path="/users" element={<AdminUsers />} />
-                              <Route path="/properties" element={<AdminProperties />} />
-                              <Route path="/reports" element={<AdminReports />} />
-                            </Routes>
-                          </main>
-                        </div>
-                      </SidebarProvider>
-                    </AdminRoute>
-                  </ProtectedRoute>
+                  <AdminRoute>
+                    <SidebarProvider>
+                      <div className="flex min-h-screen w-full">
+                        <AdminSidebar />
+                        <main className="flex-1 md:ml-64 bg-background">
+                          <Routes>
+                            <Route path="/dashboard" element={<AdminDashboard />} />
+                            <Route path="/users" element={<AdminUsers />} />
+                            <Route path="/properties" element={<AdminProperties />} />
+                            <Route path="/reports" element={<AdminReports />} />
+                          </Routes>
+                        </main>
+                      </div>
+                    </SidebarProvider>
+                  </AdminRoute>
                 }
               />
 

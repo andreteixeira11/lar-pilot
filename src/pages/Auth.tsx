@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,7 +113,11 @@ export default function Auth() {
   
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  // Get return path from state (set by AdminRoute or ProtectedRoute)
+  const from = (location.state as { from?: string })?.from || "/dashboard";
 
   const handlePlanSelect = (tier: PricingTier, isYearly: boolean) => {
     const planId = tier.name.toLowerCase() as SubscriptionPlan;
@@ -144,7 +148,7 @@ export default function Auth() {
       description: "Bem-vindo de volta.",
     });
     setIsLoading(false);
-    navigate("/dashboard");
+    navigate(from);
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {

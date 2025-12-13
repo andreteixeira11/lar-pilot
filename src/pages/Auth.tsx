@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,12 +81,13 @@ export default function Auth() {
   const showPlans = searchParams.get("showPlans") === "true";
   
   const [isLogin, setIsLogin] = useState(initialMode);
-  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property">(
+  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property" | "reset-password">(
     showPlans ? "plan" : "auth"
   );
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(initialPlan);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [name, setName] = useState("");
@@ -119,10 +121,64 @@ export default function Auth() {
   // Get return path from state (set by AdminRoute or ProtectedRoute)
   const from = (location.state as { from?: string })?.from || "/dashboard";
 
+  // Check for password recovery event
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setStep("reset-password");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handlePlanSelect = (tier: PricingTier, isYearly: boolean) => {
     const planId = tier.name.toLowerCase() as SubscriptionPlan;
     setSelectedPlan(planId);
     setStep("profile");
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erro",
+        description: "As palavras-passe não coincidem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Erro",
+        description: "A palavra-passe deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    toast({
+      title: "Palavra-passe atualizada!",
+      description: "A sua palavra-passe foi alterada com sucesso.",
+    });
+    setIsLoading(false);
+    navigate("/dashboard");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -190,6 +246,69 @@ export default function Auth() {
     setIsLoading(false);
     navigate("/dashboard");
   };
+
+  // Password reset page
+  if (step === "reset-password") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-20 w-auto"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Redefinir Palavra-passe</CardTitle>
+            <CardDescription className="text-center">
+              Introduza a sua nova palavra-passe
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">Nova Palavra-passe</Label>
+                <div className="relative">
+                  <Input
+                    id="new-password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mínimo 6 caracteres"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirmar Palavra-passe</Label>
+                <Input
+                  id="confirm-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Repita a palavra-passe"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "A guardar..." : "Guardar Nova Palavra-passe"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Auth page (login/signup tabs)
   if (step === "auth") {

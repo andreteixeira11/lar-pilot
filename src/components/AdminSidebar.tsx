@@ -1,11 +1,5 @@
 import { NavLink } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  Building2,
-  FileBarChart,
-  ArrowLeft,
-} from "lucide-react";
+import { LayoutDashboard, Users, Building2, FileBarChart, ArrowLeft } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const menuItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
   { title: "Utilizadores", url: "/admin/users", icon: Users },
   { title: "Propriedades", url: "/admin/properties", icon: Building2 },
   { title: "Relatórios", url: "/admin/reports", icon: FileBarChart },

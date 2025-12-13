@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,12 +13,15 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Search, User, Mail, Phone, Calendar, CreditCard } from "lucide-react";
+import { Search, User, Phone, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { UserDetailsDialog } from "@/components/admin/UserDetailsDialog";
 
 const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-all-users"],
@@ -51,6 +53,11 @@ const AdminUsers = () => {
       default:
         return "outline";
     }
+  };
+
+  const handleRowClick = (user: any) => {
+    setSelectedUser(user);
+    setDetailsOpen(true);
   };
 
   return (
@@ -104,7 +111,11 @@ const AdminUsers = () => {
                     </TableRow>
                   ) : (
                     filteredUsers?.map((user) => (
-                      <TableRow key={user.id} className="hover:bg-primary/10 transition-colors cursor-pointer">
+                      <TableRow 
+                        key={user.id} 
+                        className="hover:bg-primary/10 transition-colors cursor-pointer"
+                        onClick={() => handleRowClick(user)}
+                      >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -144,6 +155,12 @@ const AdminUsers = () => {
           )}
         </CardContent>
       </Card>
+
+      <UserDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        user={selectedUser}
+      />
     </div>
   );
 };

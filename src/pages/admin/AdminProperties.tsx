@@ -13,12 +13,15 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Building2, MapPin, Users, Calendar, Euro } from "lucide-react";
+import { Search, Building2, MapPin, Calendar, Euro } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { PropertyDetailsDialog } from "@/components/admin/PropertyDetailsDialog";
 
 const AdminProperties = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const { data: properties, isLoading } = useQuery({
     queryKey: ["admin-all-properties"],
@@ -61,12 +64,16 @@ const AdminProperties = () => {
       property.rnal?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Sort by revenue
   const sortedProperties = filteredProperties?.sort((a, b) => {
     const revenueA = reservationsStats?.[a.id]?.revenue || 0;
     const revenueB = reservationsStats?.[b.id]?.revenue || 0;
     return revenueB - revenueA;
   });
+
+  const handleRowClick = (property: any) => {
+    setSelectedProperty(property);
+    setDetailsOpen(true);
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -122,7 +129,11 @@ const AdminProperties = () => {
                     sortedProperties?.map((property) => {
                       const stats = reservationsStats?.[property.id];
                       return (
-                        <TableRow key={property.id} className="hover:bg-primary/10 transition-colors cursor-pointer">
+                        <TableRow 
+                          key={property.id} 
+                          className="hover:bg-primary/10 transition-colors cursor-pointer"
+                          onClick={() => handleRowClick(property)}
+                        >
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-3">
                               <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -167,6 +178,13 @@ const AdminProperties = () => {
           )}
         </CardContent>
       </Card>
+
+      <PropertyDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        property={selectedProperty}
+        stats={selectedProperty ? reservationsStats?.[selectedProperty.id] : null}
+      />
     </div>
   );
 };

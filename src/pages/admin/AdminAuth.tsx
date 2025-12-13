@@ -21,7 +21,7 @@ export default function AdminAuth() {
     setIsLoading(true);
 
     // Temporary hardcoded credentials for testing
-    if (email === "admin" && password === "12345678") {
+    if (email === "admin@admin.pt" && password === "12345678") {
       // Store admin session in localStorage
       localStorage.setItem("adminAuthenticated", "true");
       

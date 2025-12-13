@@ -20,59 +20,27 @@ export default function AdminAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      // First, sign in with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        toast({
-          title: "Erro de autenticação",
-          description: authError.message === "Invalid login credentials" 
-            ? "Email ou palavra-passe incorretos." 
-            : authError.message,
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Check if the user is an admin
-      const { data: adminData, error: adminError } = await supabase
-        .from("admin_users")
-        .select("id")
-        .eq("email", email)
-        .single();
-
-      if (adminError || !adminData) {
-        // Sign out if not an admin
-        await supabase.auth.signOut();
-        toast({
-          title: "Acesso negado",
-          description: "Esta conta não tem permissões de administrador.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
+    // Temporary hardcoded credentials for testing
+    if (email === "admin" && password === "12345678") {
+      // Store admin session in localStorage
+      localStorage.setItem("adminAuthenticated", "true");
+      
       toast({
         title: "Login de administrador efetuado!",
         description: "Bem-vindo ao painel de administração.",
       });
       
-      navigate("/admin/dashboard");
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao tentar fazer login.",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
+      navigate("/admin/dashboard");
+      return;
     }
+
+    toast({
+      title: "Acesso negado",
+      description: "Credenciais de administrador incorretas.",
+      variant: "destructive",
+    });
+    setIsLoading(false);
   };
 
   return (

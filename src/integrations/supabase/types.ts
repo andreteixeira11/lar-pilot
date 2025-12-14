@@ -76,6 +76,142 @@ export type Database = {
           },
         ]
       }
+      direct_booking_pages: {
+        Row: {
+          amenities: Json | null
+          cancellation_policy: string | null
+          check_in_time: string | null
+          check_out_time: string | null
+          cleaning_fee: number | null
+          contact_form_enabled: boolean | null
+          created_at: string
+          description: string | null
+          gallery_images: Json | null
+          hero_image_url: string | null
+          house_rules: string | null
+          id: string
+          is_published: boolean
+          max_nights: number | null
+          min_nights: number | null
+          payment_enabled: boolean | null
+          price_per_night: number | null
+          property_id: string
+          slug: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          amenities?: Json | null
+          cancellation_policy?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          cleaning_fee?: number | null
+          contact_form_enabled?: boolean | null
+          created_at?: string
+          description?: string | null
+          gallery_images?: Json | null
+          hero_image_url?: string | null
+          house_rules?: string | null
+          id?: string
+          is_published?: boolean
+          max_nights?: number | null
+          min_nights?: number | null
+          payment_enabled?: boolean | null
+          price_per_night?: number | null
+          property_id: string
+          slug: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amenities?: Json | null
+          cancellation_policy?: string | null
+          check_in_time?: string | null
+          check_out_time?: string | null
+          cleaning_fee?: number | null
+          contact_form_enabled?: boolean | null
+          created_at?: string
+          description?: string | null
+          gallery_images?: Json | null
+          hero_image_url?: string | null
+          house_rules?: string | null
+          id?: string
+          is_published?: boolean
+          max_nights?: number | null
+          min_nights?: number | null
+          payment_enabled?: boolean | null
+          price_per_night?: number | null
+          property_id?: string
+          slug?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_booking_pages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_booking_requests: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          message: string | null
+          num_guests: number
+          page_id: string
+          status: string
+          total_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          message?: string | null
+          num_guests?: number
+          page_id: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          message?: string | null
+          num_guests?: number
+          page_id?: string
+          status?: string
+          total_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_booking_requests_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "direct_booking_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fiscal_tasks: {
         Row: {
           categoria: string

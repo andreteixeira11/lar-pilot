@@ -30,6 +30,8 @@ import Subscriptions from "./pages/Subscriptions";
 import Perfil from "./pages/Perfil";
 import Equipa from "./pages/Equipa";
 import AcceptInvite from "./pages/AcceptInvite";
+import PublicBookingPage from "./pages/PublicBookingPage";
+import ReservasDiretas from "./pages/ReservasDiretas";
 import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -55,6 +57,7 @@ const App = () => (
         <Route path="/simulador" element={<Simulador />} />
         <Route path="/checkin/:token" element={<CheckIn />} />
         <Route path="/accept-invite" element={<AcceptInvite />} />
+        <Route path="/p/:slug" element={<PublicBookingPage />} />
               
               {/* Admin Login Page */}
               <Route path="/admin" element={<AdminAuth />} />
@@ -108,6 +111,7 @@ const App = () => (
                         <Route path="/perfil" element={<Perfil />} />
                         <Route path="/subscriptions" element={<Subscriptions />} />
                         <Route path="/equipa" element={<Equipa />} />
+                        <Route path="/reservas-diretas" element={<ReservasDiretas />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

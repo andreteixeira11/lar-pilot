@@ -2,3 +2,9 @@ project_id = "wwqowftunxlqdfravppr"
 
 [functions.secure-checkin]
 verify_jwt = false
+
+[functions.validate-slug]
+verify_jwt = true
+
+[functions.get-public-page]
+verify_jwt = false

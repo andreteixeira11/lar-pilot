@@ -79,69 +79,108 @@ export type Database = {
       direct_booking_pages: {
         Row: {
           amenities: Json | null
+          book_button_text: string | null
+          button_color: string | null
+          button_hover_color: string | null
           cancellation_policy: string | null
           check_in_time: string | null
           check_out_time: string | null
           cleaning_fee: number | null
+          contact_button_text: string | null
           contact_form_enabled: boolean | null
           created_at: string
           description: string | null
+          font_family: string | null
           gallery_images: Json | null
           hero_image_url: string | null
           house_rules: string | null
           id: string
           is_published: boolean
+          logo_url: string | null
           max_nights: number | null
           min_nights: number | null
           payment_enabled: boolean | null
           price_per_night: number | null
+          primary_color: string | null
           property_id: string
+          secondary_color: string | null
+          short_description: string | null
+          show_amenities: boolean | null
+          show_cancellation_policy: boolean | null
+          show_gallery: boolean | null
+          show_rules: boolean | null
           slug: string
           title: string | null
           updated_at: string
         }
         Insert: {
           amenities?: Json | null
+          book_button_text?: string | null
+          button_color?: string | null
+          button_hover_color?: string | null
           cancellation_policy?: string | null
           check_in_time?: string | null
           check_out_time?: string | null
           cleaning_fee?: number | null
+          contact_button_text?: string | null
           contact_form_enabled?: boolean | null
           created_at?: string
           description?: string | null
+          font_family?: string | null
           gallery_images?: Json | null
           hero_image_url?: string | null
           house_rules?: string | null
           id?: string
           is_published?: boolean
+          logo_url?: string | null
           max_nights?: number | null
           min_nights?: number | null
           payment_enabled?: boolean | null
           price_per_night?: number | null
+          primary_color?: string | null
           property_id: string
+          secondary_color?: string | null
+          short_description?: string | null
+          show_amenities?: boolean | null
+          show_cancellation_policy?: boolean | null
+          show_gallery?: boolean | null
+          show_rules?: boolean | null
           slug: string
           title?: string | null
           updated_at?: string
         }
         Update: {
           amenities?: Json | null
+          book_button_text?: string | null
+          button_color?: string | null
+          button_hover_color?: string | null
           cancellation_policy?: string | null
           check_in_time?: string | null
           check_out_time?: string | null
           cleaning_fee?: number | null
+          contact_button_text?: string | null
           contact_form_enabled?: boolean | null
           created_at?: string
           description?: string | null
+          font_family?: string | null
           gallery_images?: Json | null
           hero_image_url?: string | null
           house_rules?: string | null
           id?: string
           is_published?: boolean
+          logo_url?: string | null
           max_nights?: number | null
           min_nights?: number | null
           payment_enabled?: boolean | null
           price_per_night?: number | null
+          primary_color?: string | null
           property_id?: string
+          secondary_color?: string | null
+          short_description?: string | null
+          show_amenities?: boolean | null
+          show_cancellation_policy?: boolean | null
+          show_gallery?: boolean | null
+          show_rules?: boolean | null
           slug?: string
           title?: string | null
           updated_at?: string

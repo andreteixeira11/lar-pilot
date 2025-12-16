@@ -726,18 +726,28 @@ export default function ReservasDiretas() {
               {/* Preview Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Pré-visualização</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    Pré-visualização
+                  </CardTitle>
                   <CardDescription>
                     Veja como a sua página ficará
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div 
-                    className="aspect-video rounded-lg border overflow-hidden"
+                    className="aspect-video rounded-lg border overflow-hidden relative"
                     style={{ 
                       background: `linear-gradient(135deg, ${formData.primary_color || "#247d7f"}20, ${formData.secondary_color || "#1e293b"}20)` 
                     }}
                   >
+                    {formData.logo_url && (
+                      <img 
+                        src={formData.logo_url}
+                        alt="Logo"
+                        className="absolute top-2 left-2 h-6 w-auto object-contain z-10"
+                      />
+                    )}
                     {formData.hero_image_url ? (
                       <img 
                         src={formData.hero_image_url} 
@@ -751,19 +761,38 @@ export default function ReservasDiretas() {
                     )}
                   </div>
                   
-                  <div className="p-3 rounded-lg border">
+                  <div className="p-3 rounded-lg border space-y-2">
                     <h4 
-                      className="font-semibold mb-1"
+                      className="font-semibold"
                       style={{ fontFamily: formData.font_family || "Lato" }}
                     >
                       {formData.title || "Nome do Alojamento"}
                     </h4>
-                    <p className="text-xs text-muted-foreground mb-3">
+                    <p className="text-xs text-muted-foreground">
                       {formData.short_description || "Descrição curta..."}
                     </p>
+                    {(formData.amenities || []).length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {(formData.amenities || []).slice(0, 3).map((amenity, i) => (
+                          <Badge 
+                            key={i} 
+                            variant="secondary" 
+                            className="text-[10px] px-1.5 py-0"
+                            style={{ backgroundColor: `${formData.primary_color || "#247d7f"}15`, color: formData.primary_color || "#247d7f" }}
+                          >
+                            {amenity}
+                          </Badge>
+                        ))}
+                        {(formData.amenities || []).length > 3 && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                            +{(formData.amenities || []).length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                     <Button 
                       size="sm" 
-                      className="w-full rounded-full text-xs"
+                      className="w-full rounded-full text-xs text-white"
                       style={{ 
                         backgroundColor: formData.button_color || "#247d7f",
                       }}
@@ -771,6 +800,31 @@ export default function ReservasDiretas() {
                       {formData.book_button_text || "Reservar Agora"}
                     </Button>
                   </div>
+
+                  {/* Preview in New Tab Button */}
+                  {slug && slugStatus === "valid" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full rounded-full"
+                      onClick={() => {
+                        // Save first, then open preview
+                        saveMutation.mutate(false, {
+                          onSuccess: () => {
+                            window.open(`${baseUrl}/p/${slug}`, "_blank");
+                          }
+                        });
+                      }}
+                      disabled={saveMutation.isPending}
+                    >
+                      {saveMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                      )}
+                      Pré-visualizar em Nova Aba
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 

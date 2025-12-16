@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,21 +18,34 @@ import {
   Bed, 
   Bath, 
   Clock, 
-  Calendar as CalendarIcon,
   Send,
   AlertTriangle,
   Home,
-  Check
+  Check,
+  Wifi,
+  Tv,
+  Car,
+  ChefHat,
+  Waves,
+  Snowflake,
+  Flame,
+  PawPrint,
+  Eye,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format, differenceInDays, addDays, isWithinInterval, parseISO } from "date-fns";
 import { pt } from "date-fns/locale";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface BookingPageData {
   id: string;
   slug: string;
   title: string;
   description: string;
+  short_description: string | null;
   price_per_night: number;
   min_nights: number;
   max_nights: number;
@@ -43,6 +56,20 @@ interface BookingPageData {
   cancellation_policy: string;
   contact_form_enabled: boolean;
   hero_image_url: string;
+  logo_url: string | null;
+  gallery_images: string[];
+  amenities: string[];
+  primary_color: string;
+  secondary_color: string;
+  button_color: string;
+  button_hover_color: string;
+  font_family: string;
+  show_gallery: boolean;
+  show_amenities: boolean;
+  show_rules: boolean;
+  show_cancellation_policy: boolean;
+  book_button_text: string;
+  contact_button_text: string;
   property: {
     name: string;
     address: string;
@@ -57,6 +84,18 @@ interface BookedDate {
   check_out: string;
 }
 
+// Map amenities to icons
+const amenityIcons: Record<string, React.ReactNode> = {
+  "Wi-Fi": <Wifi className="h-4 w-4" />,
+  "TV": <Tv className="h-4 w-4" />,
+  "Estacionamento": <Car className="h-4 w-4" />,
+  "Cozinha": <ChefHat className="h-4 w-4" />,
+  "Piscina": <Waves className="h-4 w-4" />,
+  "Ar Condicionado": <Snowflake className="h-4 w-4" />,
+  "Aquecimento": <Flame className="h-4 w-4" />,
+  "Pet Friendly": <PawPrint className="h-4 w-4" />,
+};
+
 export default function PublicBookingPage() {
   const { slug } = useParams<{ slug: string }>();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -68,18 +107,14 @@ export default function PublicBookingPage() {
     message: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [buttonHovered, setButtonHovered] = useState(false);
 
   // Fetch page data
   const { data, isLoading, error } = useQuery({
     queryKey: ["public-booking-page", slug],
     queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("get-public-page", {
-        body: null,
-        method: "GET",
-        headers: {},
-      });
-
-      // Since we can't pass query params to invoke, we need to call directly
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-page?slug=${slug}`,
         {
@@ -101,6 +136,21 @@ export default function PublicBookingPage() {
     enabled: !!slug,
     retry: false,
   });
+
+  // Load custom font
+  useEffect(() => {
+    if (data?.page?.font_family && data.page.font_family !== "Lato") {
+      const fontName = data.page.font_family.replace(/ /g, "+");
+      const link = document.createElement("link");
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;500;600;700&display=swap`;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+      
+      return () => {
+        document.head.removeChild(link);
+      };
+    }
+  }, [data?.page?.font_family]);
 
   // Check if date is booked
   const isDateBooked = (date: Date) => {
@@ -154,7 +204,7 @@ export default function PublicBookingPage() {
       setSubmitted(true);
       toast.success("Pedido enviado com sucesso!");
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Erro ao enviar pedido. Tente novamente.");
     },
   });
@@ -265,23 +315,34 @@ export default function PublicBookingPage() {
   const page = data?.page;
   if (!page) return null;
 
+  // Custom styles based on page customization
+  const customStyles = {
+    fontFamily: page.font_family || "Lato",
+    "--page-primary": page.primary_color || "#247d7f",
+    "--page-secondary": page.secondary_color || "#1e293b",
+    "--page-button": page.button_color || "#247d7f",
+    "--page-button-hover": page.button_hover_color || "#1d6466",
+  } as React.CSSProperties;
+
+  const galleryImages = page.gallery_images || [];
+
   // Success state
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4" style={customStyles}>
         <Card className="max-w-md w-full text-center">
           <CardHeader>
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <Check className="h-8 w-8 text-green-600" />
+            <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: `${page.primary_color}20` }}>
+              <Check className="h-8 w-8" style={{ color: page.primary_color }} />
             </div>
-            <CardTitle>Pedido Enviado!</CardTitle>
+            <CardTitle style={{ fontFamily: customStyles.fontFamily }}>Pedido Enviado!</CardTitle>
             <CardDescription>
               O seu pedido de reserva foi enviado com sucesso. O proprietário irá contactá-lo em breve.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-muted rounded-lg p-4 text-left">
-              <p className="text-sm"><strong>Alojamento:</strong> {page.title}</p>
+              <p className="text-sm"><strong>Alojamento:</strong> {page.title || page.property.name}</p>
               <p className="text-sm"><strong>Datas:</strong> {dateRange?.from && format(dateRange.from, "dd MMM", { locale: pt })} - {dateRange?.to && format(dateRange.to, "dd MMM yyyy", { locale: pt })}</p>
               <p className="text-sm"><strong>Total:</strong> €{priceDetails?.total.toFixed(2)}</p>
             </div>
@@ -295,57 +356,151 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={customStyles}>
+      {/* Header with Logo */}
+      {page.logo_url && (
+        <header className="absolute top-4 left-4 z-20">
+          <img 
+            src={page.logo_url} 
+            alt="Logo" 
+            className="h-12 w-auto object-contain"
+          />
+        </header>
+      )}
+
       {/* Hero Section */}
-      <div className="relative h-64 sm:h-80 lg:h-96 bg-gradient-to-br from-primary/20 to-primary/5">
+      <div 
+        className="relative h-64 sm:h-80 lg:h-[450px]"
+        style={{ 
+          background: page.hero_image_url 
+            ? undefined 
+            : `linear-gradient(135deg, ${page.primary_color || "#247d7f"}30, ${page.secondary_color || "#1e293b"}20)` 
+        }}
+      >
         {page.hero_image_url ? (
           <img 
             src={page.hero_image_url} 
-            alt={page.title}
+            alt={page.title || page.property.name}
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Home className="h-20 w-20 text-primary/30" />
+            <Home className="h-20 w-20" style={{ color: `${page.primary_color}50` }} />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 -mt-20 relative z-10 pb-12">
+      <div className="max-w-6xl mx-auto px-4 -mt-24 relative z-10 pb-12">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl sm:text-3xl">{page.title || page.property.name}</CardTitle>
-                <CardDescription className="flex items-center gap-2 text-base">
-                  <MapPin className="h-4 w-4" />
+                <CardTitle 
+                  className="text-2xl sm:text-3xl"
+                  style={{ fontFamily: customStyles.fontFamily }}
+                >
+                  {page.title || page.property.name}
+                </CardTitle>
+                {page.short_description && (
+                  <p className="text-muted-foreground mt-1">{page.short_description}</p>
+                )}
+                <CardDescription className="flex items-center gap-2 text-base mt-2">
+                  <MapPin className="h-4 w-4" style={{ color: page.primary_color }} />
                   {page.property.address}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-4 mb-6">
-                  <Badge variant="secondary" className="text-sm py-1 px-3">
-                    <Users className="h-4 w-4 mr-1" />
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-sm py-1.5 px-4"
+                    style={{ backgroundColor: `${page.primary_color}15`, color: page.primary_color }}
+                  >
+                    <Users className="h-4 w-4 mr-1.5" />
                     {page.property.capacity} hóspedes
                   </Badge>
-                  <Badge variant="secondary" className="text-sm py-1 px-3">
-                    <Bed className="h-4 w-4 mr-1" />
+                  <Badge 
+                    variant="secondary" 
+                    className="text-sm py-1.5 px-4"
+                    style={{ backgroundColor: `${page.primary_color}15`, color: page.primary_color }}
+                  >
+                    <Bed className="h-4 w-4 mr-1.5" />
                     {page.property.bedrooms} quartos
                   </Badge>
-                  <Badge variant="secondary" className="text-sm py-1 px-3">
-                    <Bath className="h-4 w-4 mr-1" />
-                    {page.property.bathrooms} casas de banho
+                  <Badge 
+                    variant="secondary" 
+                    className="text-sm py-1.5 px-4"
+                    style={{ backgroundColor: `${page.primary_color}15`, color: page.primary_color }}
+                  >
+                    <Bath className="h-4 w-4 mr-1.5" />
+                    {page.property.bathrooms} WC
                   </Badge>
                 </div>
 
                 {page.description && (
                   <>
                     <Separator className="my-4" />
-                    <p className="text-muted-foreground whitespace-pre-line">
+                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
                       {page.description}
                     </p>
+                  </>
+                )}
+
+                {/* Gallery Section */}
+                {page.show_gallery !== false && galleryImages.length > 0 && (
+                  <>
+                    <Separator className="my-6" />
+                    <div>
+                      <h3 className="font-semibold mb-4" style={{ fontFamily: customStyles.fontFamily }}>Galeria</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {galleryImages.slice(0, 6).map((url, index) => (
+                          <div 
+                            key={index} 
+                            className="aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+                            onClick={() => {
+                              setCurrentImageIndex(index);
+                              setGalleryOpen(true);
+                            }}
+                          >
+                            <img 
+                              src={url} 
+                              alt={`Galeria ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            {index === 5 && galleryImages.length > 6 && (
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-semibold">
+                                +{galleryImages.length - 6}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Amenities Section */}
+                {page.show_amenities !== false && (page.amenities || []).length > 0 && (
+                  <>
+                    <Separator className="my-6" />
+                    <div>
+                      <h3 className="font-semibold mb-4" style={{ fontFamily: customStyles.fontFamily }}>Comodidades</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {(page.amenities || []).map((amenity, index) => (
+                          <div 
+                            key={index} 
+                            className="flex items-center gap-2 p-3 rounded-lg border"
+                          >
+                            <span style={{ color: page.primary_color }}>
+                              {amenityIcons[amenity] || <Check className="h-4 w-4" />}
+                            </span>
+                            <span className="text-sm">{amenity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </>
                 )}
 
@@ -353,14 +508,24 @@ export default function PublicBookingPage() {
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-primary" />
+                    <div 
+                      className="h-10 w-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: `${page.primary_color}15` }}
+                    >
+                      <Clock className="h-5 w-5" style={{ color: page.primary_color }} />
+                    </div>
                     <div>
                       <p className="font-medium">Check-in</p>
                       <p className="text-sm text-muted-foreground">A partir das {page.check_in_time}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Clock className="h-5 w-5 text-primary" />
+                    <div 
+                      className="h-10 w-10 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: `${page.primary_color}15` }}
+                    >
+                      <Clock className="h-5 w-5" style={{ color: page.primary_color }} />
+                    </div>
                     <div>
                       <p className="font-medium">Check-out</p>
                       <p className="text-sm text-muted-foreground">Até às {page.check_out_time}</p>
@@ -368,11 +533,11 @@ export default function PublicBookingPage() {
                   </div>
                 </div>
 
-                {page.house_rules && (
+                {page.show_rules !== false && page.house_rules && (
                   <>
                     <Separator className="my-6" />
                     <div>
-                      <h3 className="font-semibold mb-2">Regras da Casa</h3>
+                      <h3 className="font-semibold mb-2" style={{ fontFamily: customStyles.fontFamily }}>Regras da Casa</h3>
                       <p className="text-sm text-muted-foreground whitespace-pre-line">
                         {page.house_rules}
                       </p>
@@ -380,11 +545,11 @@ export default function PublicBookingPage() {
                   </>
                 )}
 
-                {page.cancellation_policy && (
+                {page.show_cancellation_policy !== false && page.cancellation_policy && (
                   <>
                     <Separator className="my-6" />
                     <div>
-                      <h3 className="font-semibold mb-2">Política de Cancelamento</h3>
+                      <h3 className="font-semibold mb-2" style={{ fontFamily: customStyles.fontFamily }}>Política de Cancelamento</h3>
                       <p className="text-sm text-muted-foreground whitespace-pre-line">
                         {page.cancellation_policy}
                       </p>
@@ -400,7 +565,9 @@ export default function PublicBookingPage() {
             <Card className="sticky top-4">
               <CardHeader>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold">€{page.price_per_night}</span>
+                  <span className="text-2xl font-bold" style={{ color: page.primary_color }}>
+                    €{page.price_per_night}
+                  </span>
                   <span className="text-muted-foreground">/ noite</span>
                 </div>
               </CardHeader>
@@ -432,7 +599,7 @@ export default function PublicBookingPage() {
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>Total</span>
-                      <span>€{priceDetails.total.toFixed(2)}</span>
+                      <span style={{ color: page.primary_color }}>€{priceDetails.total.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -494,7 +661,13 @@ export default function PublicBookingPage() {
 
                     <Button 
                       type="submit" 
-                      className="w-full rounded-full"
+                      className="w-full rounded-full transition-colors"
+                      style={{ 
+                        backgroundColor: buttonHovered ? page.button_hover_color : page.button_color,
+                        color: "white"
+                      }}
+                      onMouseEnter={() => setButtonHovered(true)}
+                      onMouseLeave={() => setButtonHovered(false)}
                       disabled={submitMutation.isPending || !dateRange?.from || !dateRange?.to}
                     >
                       {submitMutation.isPending ? (
@@ -502,7 +675,7 @@ export default function PublicBookingPage() {
                       ) : (
                         <Send className="h-4 w-4 mr-2" />
                       )}
-                      Enviar Pedido de Reserva
+                      {page.book_button_text || "Enviar Pedido de Reserva"}
                     </Button>
                   </form>
                 )}
@@ -516,9 +689,53 @@ export default function PublicBookingPage() {
         </div>
       </div>
 
+      {/* Gallery Dialog */}
+      <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <div className="relative aspect-video bg-black">
+            <img 
+              src={galleryImages[currentImageIndex]} 
+              alt={`Imagem ${currentImageIndex + 1}`}
+              className="w-full h-full object-contain"
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 text-white hover:bg-white/20 rounded-full"
+              onClick={() => setGalleryOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            {galleryImages.length > 1 && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full"
+                  onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white hover:bg-white/20 rounded-full"
+                  onClick={() => setCurrentImageIndex((prev) => (prev === galleryImages.length - 1 ? 0 : prev + 1))}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/60 rounded-full text-white text-sm">
+              {currentImageIndex + 1} / {galleryImages.length}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Footer */}
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        <p>Powered by <Link to="/" className="text-primary hover:underline">Monumenta</Link></p>
+        <p>Powered by <Link to="/" className="hover:underline" style={{ color: page.primary_color }}>Monumenta</Link></p>
       </footer>
     </div>
   );

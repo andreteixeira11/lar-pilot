@@ -57,8 +57,8 @@ interface BookingPageData {
   contact_form_enabled: boolean;
   hero_image_url: string;
   logo_url: string | null;
-  gallery_images: string[];
-  amenities: string[];
+  gallery_images: string[] | string | null;
+  amenities: string[] | string | null;
   primary_color: string;
   secondary_color: string;
   button_color: string;
@@ -324,7 +324,14 @@ export default function PublicBookingPage() {
     "--page-button-hover": page.button_hover_color || "#1d6466",
   } as React.CSSProperties;
 
-  const galleryImages = page.gallery_images || [];
+  // Parse gallery_images and amenities (they come as JSON from the database)
+  const galleryImages: string[] = Array.isArray(page.gallery_images) 
+    ? page.gallery_images 
+    : (typeof page.gallery_images === 'string' ? JSON.parse(page.gallery_images) : []);
+  
+  const amenitiesList: string[] = Array.isArray(page.amenities) 
+    ? page.amenities 
+    : (typeof page.amenities === 'string' ? JSON.parse(page.amenities) : []);
 
   // Success state
   if (submitted) {
@@ -482,13 +489,13 @@ export default function PublicBookingPage() {
                 )}
 
                 {/* Amenities Section */}
-                {page.show_amenities !== false && (page.amenities || []).length > 0 && (
+                {page.show_amenities !== false && amenitiesList.length > 0 && (
                   <>
                     <Separator className="my-6" />
                     <div>
                       <h3 className="font-semibold mb-4" style={{ fontFamily: customStyles.fontFamily }}>Comodidades</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {(page.amenities || []).map((amenity, index) => (
+                        {amenitiesList.map((amenity, index) => (
                           <div 
                             key={index} 
                             className="flex items-center gap-2 p-3 rounded-lg border"

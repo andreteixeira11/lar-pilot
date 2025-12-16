@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { ShareButtons } from "@/components/ShareButtons";
 import { 
   Loader2, 
   MapPin, 
@@ -30,7 +32,6 @@ import {
   Snowflake,
   Flame,
   PawPrint,
-  Eye,
   X,
   ChevronLeft,
   ChevronRight
@@ -362,8 +363,63 @@ export default function PublicBookingPage() {
     );
   }
 
+  // Generate SEO data
+  const pageUrl = typeof window !== "undefined" ? window.location.href : "";
+  const pageTitle = page.title || page.property.name;
+  const pageDescription = page.short_description || page.description?.substring(0, 160) || `Reserve ${pageTitle} - ${page.property.address}`;
+
   return (
     <div className="min-h-screen bg-background" style={customStyles}>
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>{pageTitle} | Reservas</title>
+        <meta name="description" content={pageDescription} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        {page.hero_image_url && <meta property="og:image" content={page.hero_image_url} />}
+        <meta property="og:locale" content="pt_PT" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={pageUrl} />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        {page.hero_image_url && <meta name="twitter:image" content={page.hero_image_url} />}
+        
+        {/* Additional SEO */}
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={pageUrl} />
+        
+        {/* Schema.org structured data for vacation rental */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "LodgingBusiness",
+            "name": pageTitle,
+            "description": pageDescription,
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": page.property.address
+            },
+            "image": page.hero_image_url || undefined,
+            "priceRange": `€${page.price_per_night}/noite`,
+            "amenityFeature": amenitiesList.map(amenity => ({
+              "@type": "LocationFeatureSpecification",
+              "name": amenity
+            })),
+            "numberOfRooms": page.property.bedrooms,
+            "occupancy": {
+              "@type": "QuantitativeValue",
+              "maxValue": page.property.capacity
+            }
+          })}
+        </script>
+      </Helmet>
+
       {/* Header with Logo */}
       {page.logo_url && (
         <header className="absolute top-4 left-4 z-20">
@@ -404,12 +460,20 @@ export default function PublicBookingPage() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle 
-                  className="text-2xl sm:text-3xl"
-                  style={{ fontFamily: customStyles.fontFamily }}
-                >
-                  {page.title || page.property.name}
-                </CardTitle>
+                <div className="flex items-start justify-between gap-4">
+                  <CardTitle 
+                    className="text-2xl sm:text-3xl"
+                    style={{ fontFamily: customStyles.fontFamily }}
+                  >
+                    {page.title || page.property.name}
+                  </CardTitle>
+                  <ShareButtons 
+                    url={pageUrl}
+                    title={pageTitle}
+                    description={pageDescription}
+                    primaryColor={page.primary_color}
+                  />
+                </div>
                 {page.short_description && (
                   <p className="text-muted-foreground mt-1">{page.short_description}</p>
                 )}

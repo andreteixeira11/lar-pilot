@@ -42,7 +42,7 @@ const Reservas = () => {
   const [selectedReserva, setSelectedReserva] = useState<any>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   // Listen for property changes
@@ -284,7 +284,7 @@ const Reservas = () => {
       {viewMode === "calendar" && (
         <Card className="mt-6">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
@@ -292,7 +292,7 @@ const Reservas = () => {
               >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-              <CardTitle className="text-lg">
+              <CardTitle className="text-lg min-w-[180px] text-center">
                 {format(calendarMonth, "MMMM yyyy", { locale: pt })}
               </CardTitle>
               <Button

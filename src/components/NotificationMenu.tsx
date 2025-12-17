@@ -193,7 +193,7 @@ export function NotificationMenu() {
                     <div
                       key={request.id}
                       className="border rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer"
-                      onClick={() => navigate("/reservas-diretas")}
+                      onClick={() => navigate(`/reservas-diretas?requestId=${request.id}`)}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">

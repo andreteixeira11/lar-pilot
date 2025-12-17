@@ -48,6 +48,9 @@ export function DatePicker({
           onSelect={onDateChange}
           initialFocus
           className="p-3 pointer-events-auto"
+          captionLayout="dropdown-buttons"
+          fromYear={1920}
+          toYear={2100}
         />
       </PopoverContent>
     </Popover>

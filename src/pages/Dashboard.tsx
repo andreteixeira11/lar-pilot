@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
 import { useNavigate } from "react-router-dom";
-import { format, isAfter, isBefore, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { format, isAfter, isBefore, startOfMonth, endOfMonth, subMonths, differenceInDays, startOfYear, endOfYear } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Calendar, TrendingUp, AlertTriangle, Euro, User, ArrowRight } from "lucide-react";
+import { Calendar, TrendingUp, AlertTriangle, Euro, User, ArrowRight, BedDouble, Percent, Target, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -22,6 +22,10 @@ import {
   Pie,
   Cell,
   Legend,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
 } from "recharts";
 
 const COLORS = ["hsl(var(--primary))", "#FF5A5F", "#003580", "#10B981"];
@@ -58,7 +62,7 @@ const Dashboard = () => {
     .sort((a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime())
     .slice(0, 3);
 
-  // Calculate current month revenue
+  // Calculate current month stats
   const monthStart = startOfMonth(today);
   const monthEnd = endOfMonth(today);
   const currentMonthReservations = reservas.filter((r) => {
@@ -74,6 +78,28 @@ const Dashboard = () => {
   const monthlyRevenue = currentMonthReservations.reduce((total, r) => total + (r.valor || 0), 0);
   const monthlyNights = currentMonthReservations.reduce((total, r) => total + (r.noites || 0), 0);
   const monthlyGuests = currentMonthReservations.reduce((total, r) => total + (r.nrHospedes || 0), 0);
+  const monthlyReservationCount = currentMonthReservations.length;
+
+  // Calculate occupancy rate for current month
+  const daysInMonth = differenceInDays(monthEnd, monthStart) + 1;
+  const occupancyRate = daysInMonth > 0 ? ((monthlyNights / daysInMonth) * 100).toFixed(0) : 0;
+
+  // Calculate average daily rate (ADR)
+  const avgDailyRate = monthlyNights > 0 ? (monthlyRevenue / monthlyNights).toFixed(2) : 0;
+
+  // Calculate year-to-date stats
+  const yearStart = startOfYear(today);
+  const yearEnd = endOfYear(today);
+  const yearReservations = reservas.filter((r) => {
+    const checkIn = new Date(r.checkIn);
+    return (
+      r.propertyId === selectedPropertyId &&
+      r.status === "confirmada" &&
+      isAfter(checkIn, yearStart) &&
+      isBefore(checkIn, yearEnd)
+    );
+  });
+  const yearlyRevenue = yearReservations.reduce((total, r) => total + (r.valor || 0), 0);
 
   // Calculate revenue data for the last 6 months
   const revenueChartData = Array.from({ length: 6 }, (_, i) => {
@@ -92,10 +118,14 @@ const Dashboard = () => {
     });
 
     const revenue = monthReservations.reduce((total, r) => total + (r.valor || 0), 0);
+    const nights = monthReservations.reduce((total, r) => total + (r.noites || 0), 0);
+    const guests = monthReservations.reduce((total, r) => total + (r.nrHospedes || 0), 0);
 
     return {
       name: format(month, "MMM", { locale: pt }),
       faturacao: revenue,
+      noites: nights,
+      hospedes: guests,
     };
   });
 
@@ -121,6 +151,27 @@ const Dashboard = () => {
     color: COLORS[index % COLORS.length],
   }));
 
+  // Calculate reservations by platform count
+  const reservationsByPlatform = reservas
+    .filter((r) => {
+      const checkIn = new Date(r.checkIn);
+      return (
+        r.propertyId === selectedPropertyId &&
+        r.status === "confirmada" &&
+        isAfter(checkIn, subMonths(today, 6))
+      );
+    })
+    .reduce((acc, r) => {
+      const platform = r.plataforma || "Direto";
+      acc[platform] = (acc[platform] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+  const reservationsBarData = Object.entries(reservationsByPlatform).map(([name, value]) => ({
+    name,
+    reservas: value,
+  }));
+
   if (!selectedProperty) {
     return (
       <div className="p-4 md:p-6 lg:p-8">
@@ -143,46 +194,137 @@ const Dashboard = () => {
       />
 
       <div className="grid gap-6 mt-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Stats Cards - Row 1 */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Euro className="h-6 w-6 text-primary" />
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                  <Euro className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Faturação do Mês</p>
-                  <p className="text-2xl font-bold text-primary">€{monthlyRevenue.toFixed(2)}</p>
-                </div>
+                <p className="text-xs text-muted-foreground">Faturação Mês</p>
+                <p className="text-xl font-bold text-primary">€{monthlyRevenue.toFixed(0)}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-accent/10 flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-accent" />
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2">
+                  <Target className="h-5 w-5 text-green-600" />
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Noites do Mês</p>
-                  <p className="text-2xl font-bold">{monthlyNights}</p>
-                </div>
+                <p className="text-xs text-muted-foreground">Faturação Ano</p>
+                <p className="text-xl font-bold">€{yearlyRevenue.toFixed(0)}</p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-2">
+                  <BedDouble className="h-5 w-5 text-blue-600" />
+                </div>
+                <p className="text-xs text-muted-foreground">Noites Mês</p>
+                <p className="text-xl font-bold">{monthlyNights}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-2">
+                  <Percent className="h-5 w-5 text-purple-600" />
+                </div>
+                <p className="text-xs text-muted-foreground">Ocupação</p>
+                <p className="text-xl font-bold">{occupancyRate}%</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-2">
+                  <Users className="h-5 w-5 text-orange-600" />
+                </div>
+                <p className="text-xs text-muted-foreground">Hóspedes Mês</p>
+                <p className="text-xl font-bold">{monthlyGuests}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center">
+                <div className="h-10 w-10 rounded-xl bg-teal-500/10 flex items-center justify-center mb-2">
+                  <Calendar className="h-5 w-5 text-teal-600" />
+                </div>
+                <p className="text-xs text-muted-foreground">Reservas Mês</p>
+                <p className="text-xl font-bold">{monthlyReservationCount}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* ADR Card */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="md:col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Tarifa Média Diária (ADR)</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <User className="h-6 w-6 text-green-600" />
+                <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <Euro className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Hóspedes do Mês</p>
-                  <p className="text-2xl font-bold">{monthlyGuests}</p>
+                  <p className="text-3xl font-bold text-primary">€{avgDailyRate}</p>
+                  <p className="text-sm text-muted-foreground">por noite (este mês)</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Evolução de Noites Ocupadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[120px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueChartData}>
+                    <defs>
+                      <linearGradient id="colorNoites" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis 
+                      dataKey="name" 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} noites`, "Noites"]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="noites" 
+                      stroke="hsl(var(--primary))" 
+                      fillOpacity={1} 
+                      fill="url(#colorNoites)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -281,6 +423,53 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Reservations by Platform */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Reservas por Plataforma (últimos 6 meses)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[200px]">
+              {reservationsBarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={reservationsBarData} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" className="text-xs fill-muted-foreground" tickLine={false} axisLine={false} />
+                    <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                      width={80}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} reservas`, "Reservas"]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar 
+                      dataKey="reservas" 
+                      fill="hsl(var(--primary))" 
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Sem dados de reservas
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Two columns layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

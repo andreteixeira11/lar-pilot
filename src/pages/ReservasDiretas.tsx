@@ -3,6 +3,7 @@ import { useProperty } from "@/contexts/PropertyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,7 @@ export default function ReservasDiretas() {
   const { selectedPropertyId, properties } = useProperty();
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [activeTab, setActiveTab] = useState("config");
   const [slug, setSlug] = useState("");
@@ -169,6 +171,22 @@ export default function ReservasDiretas() {
   });
 
   const pendingRequests = bookingRequests?.filter(r => r.status === "pending") || [];
+
+  // Handle requestId from URL to open booking request dialog
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    if (requestId && bookingRequests) {
+      const request = bookingRequests.find(r => r.id === requestId);
+      if (request) {
+        setSelectedRequest(request);
+        setRequestDialogOpen(true);
+        setActiveTab("requests");
+        // Clear the URL param after opening
+        searchParams.delete("requestId");
+        setSearchParams(searchParams);
+      }
+    }
+  }, [searchParams, bookingRequests]);
 
   // Update form when existing page loads
   useEffect(() => {
@@ -643,43 +661,62 @@ export default function ReservasDiretas() {
                   <CardTitle>Ações</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {/* Page Link */}
+                  {existingPage?.is_published && existingPage.slug && (
+                    <div className="p-3 rounded-lg bg-muted/50 space-y-2">
+                      <p className="text-xs text-muted-foreground">Link da página:</p>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 text-xs bg-background rounded px-2 py-1 truncate">
+                          {baseUrl}/p/{existingPage.slug}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={copyLink}
+                        >
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          asChild
+                        >
+                          <a href={`${baseUrl}/p/${existingPage.slug}`} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   <Button
                     className="w-full rounded-full"
-                    onClick={() => saveMutation.mutate(false)}
+                    onClick={() => saveMutation.mutate(existingPage?.is_published || true)}
                     disabled={saveMutation.isPending || slugStatus !== "valid"}
-                    variant="outline"
                   >
                     {saveMutation.isPending ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    Guardar Rascunho
+                    {existingPage?.is_published ? "Guardar e Atualizar" : "Publicar Página"}
                   </Button>
 
-                  <Button
-                    className="w-full rounded-full"
-                    onClick={() => saveMutation.mutate(true)}
-                    disabled={saveMutation.isPending || slugStatus !== "valid"}
-                  >
-                    {saveMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Globe className="h-4 w-4 mr-2" />
-                    )}
-                    {existingPage?.is_published ? "Atualizar Página" : "Publicar Página"}
-                  </Button>
-
-                  {existingPage?.is_published && (
+                  {!existingPage && (
                     <Button
-                      variant="outline"
                       className="w-full rounded-full"
-                      asChild
+                      onClick={() => saveMutation.mutate(false)}
+                      disabled={saveMutation.isPending || slugStatus !== "valid"}
+                      variant="outline"
                     >
-                      <a href={`${baseUrl}/p/${existingPage.slug}`} target="_blank" rel="noopener noreferrer">
-                        <Eye className="h-4 w-4 mr-2" />
-                        Ver Página
-                      </a>
+                      {saveMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4 mr-2" />
+                      )}
+                      Guardar Rascunho
                     </Button>
                   )}
                 </CardContent>

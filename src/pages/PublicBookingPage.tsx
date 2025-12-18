@@ -85,6 +85,16 @@ interface BookedDate {
   check_out: string;
 }
 
+interface DynamicPricing {
+  id: string;
+  page_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  price_per_night: number;
+  min_nights: number | null;
+}
+
 // Map amenities to icons
 const amenityIcons: Record<string, React.ReactNode> = {
   "Wi-Fi": <Wifi className="h-4 w-4" />,
@@ -132,7 +142,7 @@ export default function PublicBookingPage() {
         throw result;
       }
       
-      return result as { page: BookingPageData; bookedDates: BookedDate[] };
+      return result as { page: BookingPageData; bookedDates: BookedDate[]; dynamicPricing: DynamicPricing[] };
     },
     enabled: !!slug,
     retry: false,
@@ -164,19 +174,61 @@ export default function PublicBookingPage() {
     });
   };
 
-  // Calculate price
+  // Calculate price with dynamic pricing support
   const priceDetails = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to || !data?.page) return null;
     
     const nights = differenceInDays(dateRange.to, dateRange.from);
     if (nights < 1) return null;
 
-    const nightsPrice = nights * (data.page.price_per_night || 0);
-    const cleaningFee = data.page.cleaning_fee || 0;
-    const total = nightsPrice + cleaningFee;
+    // Calculate price per night considering dynamic pricing
+    let totalNightsPrice = 0;
+    const priceBreakdown: { date: Date; price: number; source: string }[] = [];
+    
+    for (let i = 0; i < nights; i++) {
+      const currentDate = addDays(dateRange.from, i);
+      let nightPrice = data.page.price_per_night || 0;
+      let priceSource = "base";
+      
+      // Check if there's dynamic pricing for this date
+      if (data.dynamicPricing && data.dynamicPricing.length > 0) {
+        for (const pricing of data.dynamicPricing) {
+          const startDate = parseISO(pricing.start_date);
+          const endDate = parseISO(pricing.end_date);
+          
+          if (isWithinInterval(currentDate, { start: startDate, end: endDate })) {
+            nightPrice = pricing.price_per_night;
+            priceSource = pricing.name;
+            break;
+          }
+        }
+      }
+      
+      totalNightsPrice += nightPrice;
+      priceBreakdown.push({ date: currentDate, price: nightPrice, source: priceSource });
+    }
 
-    return { nights, nightsPrice, cleaningFee, total };
-  }, [dateRange, data?.page]);
+    const cleaningFee = data.page.cleaning_fee || 0;
+    const total = totalNightsPrice + cleaningFee;
+    
+    // Calculate average price per night for display
+    const avgPricePerNight = totalNightsPrice / nights;
+    
+    // Check if all nights have the same price
+    const hasDynamicPricing = priceBreakdown.some(p => p.source !== "base");
+    const hasVariedPrices = new Set(priceBreakdown.map(p => p.price)).size > 1;
+
+    return { 
+      nights, 
+      nightsPrice: totalNightsPrice, 
+      cleaningFee, 
+      total, 
+      avgPricePerNight,
+      hasDynamicPricing,
+      hasVariedPrices,
+      breakdown: priceBreakdown 
+    };
+  }, [dateRange, data?.page, data?.dynamicPricing]);
 
   // Submit booking request
   const submitMutation = useMutation({
@@ -641,6 +693,11 @@ export default function PublicBookingPage() {
                   </span>
                   <span className="text-muted-foreground">/ noite</span>
                 </div>
+                {data?.dynamicPricing && data.dynamicPricing.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Preços podem variar conforme a época
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -652,15 +709,65 @@ export default function PublicBookingPage() {
                     disabled={(date) => date < new Date() || isDateBooked(date)}
                     locale={pt}
                     className="rounded-md border"
+                    modifiers={{
+                      booked: (date) => isDateBooked(date),
+                      specialPrice: (date) => {
+                        if (!data?.dynamicPricing) return false;
+                        return data.dynamicPricing.some(pricing => {
+                          const startDate = parseISO(pricing.start_date);
+                          const endDate = parseISO(pricing.end_date);
+                          return isWithinInterval(date, { start: startDate, end: endDate });
+                        });
+                      }
+                    }}
+                    modifiersStyles={{
+                      booked: { 
+                        backgroundColor: "hsl(var(--destructive) / 0.1)", 
+                        color: "hsl(var(--destructive))",
+                        textDecoration: "line-through"
+                      },
+                      specialPrice: {
+                        backgroundColor: `${page.primary_color}15`,
+                        fontWeight: "600"
+                      }
+                    }}
                   />
+                  {/* Calendar legend */}
+                  <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-3 h-3 rounded bg-destructive/10 border border-destructive/30" />
+                      <span>Ocupado</span>
+                    </div>
+                    {data?.dynamicPricing && data.dynamicPricing.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div 
+                          className="w-3 h-3 rounded" 
+                          style={{ backgroundColor: `${page.primary_color}30` }}
+                        />
+                        <span>Preço especial</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {priceDetails && (
                   <div className="space-y-2 pt-4 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span>€{page.price_per_night} × {priceDetails.nights} noites</span>
-                      <span>€{priceDetails.nightsPrice.toFixed(2)}</span>
-                    </div>
+                    {priceDetails.hasVariedPrices ? (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span>{priceDetails.nights} noites (preço variável)</span>
+                          <span>€{priceDetails.nightsPrice.toFixed(2)}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Média: €{priceDetails.avgPricePerNight.toFixed(2)}/noite
+                        </p>
+                      </>
+                    ) : (
+                      <div className="flex justify-between text-sm">
+                        <span>€{page.price_per_night} × {priceDetails.nights} noites</span>
+                        <span>€{priceDetails.nightsPrice.toFixed(2)}</span>
+                      </div>
+                    )}
                     {priceDetails.cleaningFee > 0 && (
                       <div className="flex justify-between text-sm">
                         <span>Taxa de limpeza</span>

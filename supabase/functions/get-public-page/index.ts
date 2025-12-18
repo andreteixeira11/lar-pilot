@@ -99,7 +99,19 @@ serve(async (req: Request) => {
       console.error("Error fetching reservations:", reservationsError);
     }
 
-    console.log(`Public page "${slug}" fetched successfully`);
+    // Get dynamic pricing for this page
+    const { data: dynamicPricing, error: pricingError } = await supabase
+      .from("dynamic_pricing")
+      .select("*")
+      .eq("page_id", page.id)
+      .gte("end_date", new Date().toISOString().split("T")[0])
+      .order("start_date", { ascending: true });
+
+    if (pricingError) {
+      console.error("Error fetching dynamic pricing:", pricingError);
+    }
+
+    console.log(`Public page "${slug}" fetched successfully with ${dynamicPricing?.length || 0} pricing rules`);
 
     // Remove sensitive data before sending
     const { property, ...pageData } = page;
@@ -114,7 +126,8 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({ 
         page: { ...pageData, property: safeProperty },
-        bookedDates: reservations || []
+        bookedDates: reservations || [],
+        dynamicPricing: dynamicPricing || []
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

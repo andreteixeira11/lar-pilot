@@ -251,6 +251,50 @@ export type Database = {
           },
         ]
       }
+      dynamic_pricing: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          min_nights: number | null
+          name: string
+          page_id: string
+          price_per_night: number
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          min_nights?: number | null
+          name: string
+          page_id: string
+          price_per_night: number
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          min_nights?: number | null
+          name?: string
+          page_id?: string
+          price_per_night?: number
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dynamic_pricing_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "direct_booking_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fiscal_tasks: {
         Row: {
           categoria: string

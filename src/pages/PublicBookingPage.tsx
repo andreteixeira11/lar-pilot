@@ -95,6 +95,15 @@ interface DynamicPricing {
   min_nights: number | null;
 }
 
+interface ExternalEvent {
+  id: string;
+  page_id: string;
+  source: string;
+  summary: string | null;
+  start_date: string;
+  end_date: string;
+}
+
 // Map amenities to icons
 const amenityIcons: Record<string, React.ReactNode> = {
   "Wi-Fi": <Wifi className="h-4 w-4" />,
@@ -142,7 +151,7 @@ export default function PublicBookingPage() {
         throw result;
       }
       
-      return result as { page: BookingPageData; bookedDates: BookedDate[]; dynamicPricing: DynamicPricing[] };
+      return result as { page: BookingPageData; bookedDates: BookedDate[]; dynamicPricing: DynamicPricing[]; externalEvents: ExternalEvent[] };
     },
     enabled: !!slug,
     retry: false,
@@ -163,15 +172,27 @@ export default function PublicBookingPage() {
     }
   }, [data?.page?.font_family]);
 
-  // Check if date is booked
+  // Check if date is booked (including external calendar events)
   const isDateBooked = (date: Date) => {
-    if (!data?.bookedDates) return false;
+    if (!data) return false;
     
-    return data.bookedDates.some((booking) => {
+    // Check internal reservations
+    const internalBooked = data.bookedDates?.some((booking) => {
       const checkIn = parseISO(booking.check_in);
       const checkOut = parseISO(booking.check_out);
       return isWithinInterval(date, { start: checkIn, end: addDays(checkOut, -1) });
     });
+
+    if (internalBooked) return true;
+
+    // Check external calendar events (from Booking/Airbnb)
+    const externalBooked = data.externalEvents?.some((event) => {
+      const startDate = parseISO(event.start_date);
+      const endDate = parseISO(event.end_date);
+      return isWithinInterval(date, { start: startDate, end: addDays(endDate, -1) });
+    });
+
+    return externalBooked || false;
   };
 
   // Calculate price with dynamic pricing support

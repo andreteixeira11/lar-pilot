@@ -35,6 +35,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DirectBookingCustomization } from "@/components/DirectBookingCustomization";
 import { BookingRequestDialog } from "@/components/BookingRequestDialog";
 import { DynamicPricingManager } from "@/components/DynamicPricingManager";
+import { ICalSyncCard } from "@/components/ICalSyncCard";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
@@ -658,6 +659,11 @@ export default function ReservasDiretas() {
                 pageId={existingPage?.id} 
                 defaultPrice={formData.price_per_night || 0}
               />
+
+              {/* iCal Sync */}
+              {existingPage?.id && (
+                <ICalSyncCard pageId={existingPage.id} />
+              )}
             </div>
 
             {/* Sidebar */}

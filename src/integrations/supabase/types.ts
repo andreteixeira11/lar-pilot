@@ -94,6 +94,9 @@ export type Database = {
           gallery_images: Json | null
           hero_image_url: string | null
           house_rules: string | null
+          ical_airbnb_url: string | null
+          ical_booking_url: string | null
+          ical_last_sync: string | null
           id: string
           is_published: boolean
           logo_url: string | null
@@ -130,6 +133,9 @@ export type Database = {
           gallery_images?: Json | null
           hero_image_url?: string | null
           house_rules?: string | null
+          ical_airbnb_url?: string | null
+          ical_booking_url?: string | null
+          ical_last_sync?: string | null
           id?: string
           is_published?: boolean
           logo_url?: string | null
@@ -166,6 +172,9 @@ export type Database = {
           gallery_images?: Json | null
           hero_image_url?: string | null
           house_rules?: string | null
+          ical_airbnb_url?: string | null
+          ical_booking_url?: string | null
+          ical_last_sync?: string | null
           id?: string
           is_published?: boolean
           logo_url?: string | null
@@ -288,6 +297,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "dynamic_pricing_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "direct_booking_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_calendar_events: {
+        Row: {
+          created_at: string
+          end_date: string
+          external_id: string | null
+          id: string
+          page_id: string
+          source: string
+          start_date: string
+          summary: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          external_id?: string | null
+          id?: string
+          page_id: string
+          source: string
+          start_date: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          external_id?: string | null
+          id?: string
+          page_id?: string
+          source?: string
+          start_date?: string
+          summary?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_calendar_events_page_id_fkey"
             columns: ["page_id"]
             isOneToOne: false
             referencedRelation: "direct_booking_pages"

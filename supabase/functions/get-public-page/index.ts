@@ -111,7 +111,18 @@ serve(async (req: Request) => {
       console.error("Error fetching dynamic pricing:", pricingError);
     }
 
-    console.log(`Public page "${slug}" fetched successfully with ${dynamicPricing?.length || 0} pricing rules`);
+    // Get external calendar events (from Booking/Airbnb iCal sync)
+    const { data: externalEvents, error: externalError } = await supabase
+      .from("external_calendar_events")
+      .select("*")
+      .eq("page_id", page.id)
+      .gte("end_date", new Date().toISOString().split("T")[0]);
+
+    if (externalError) {
+      console.error("Error fetching external events:", externalError);
+    }
+
+    console.log(`Public page "${slug}" fetched with ${dynamicPricing?.length || 0} pricing rules, ${externalEvents?.length || 0} external events`);
 
     // Remove sensitive data before sending
     const { property, ...pageData } = page;
@@ -127,7 +138,8 @@ serve(async (req: Request) => {
       JSON.stringify({ 
         page: { ...pageData, property: safeProperty },
         bookedDates: reservations || [],
-        dynamicPricing: dynamicPricing || []
+        dynamicPricing: dynamicPricing || [],
+        externalEvents: externalEvents || []
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -34,6 +34,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { DirectBookingCustomization } from "@/components/DirectBookingCustomization";
 import { BookingRequestDialog } from "@/components/BookingRequestDialog";
+import { DynamicPricingManager } from "@/components/DynamicPricingManager";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
@@ -651,6 +652,12 @@ export default function ReservasDiretas() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Dynamic Pricing */}
+              <DynamicPricingManager 
+                pageId={existingPage?.id} 
+                defaultPrice={formData.price_per_night || 0}
+              />
             </div>
 
             {/* Sidebar */}

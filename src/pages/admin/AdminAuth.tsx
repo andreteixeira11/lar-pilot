@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Eye, EyeOff } from "lucide-react";
+import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 
 export default function AdminAuth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -20,9 +21,17 @@ export default function AdminAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Temporary hardcoded credentials for testing
-    if (email === "admin@admin.pt" && password === "12345678") {
-      // Store admin session in localStorage
+    // Admin credentials
+    const adminCredentials = [
+      { email: "admin@admin.pt", password: "12345678" },
+      { email: "geral@monumentalatlantic.pt", password: "Monumenta2024!" },
+    ];
+
+    const isValidAdmin = adminCredentials.some(
+      (cred) => cred.email === email && cred.password === password
+    );
+
+    if (isValidAdmin) {
       localStorage.setItem("adminAuthenticated", "true");
       
       toast({
@@ -94,6 +103,16 @@ export default function AdminAuth() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-primary hover:underline"
+              >
+                Esqueceu a palavra-passe?
+              </button>
+            </div>
+
             <Button
               type="submit"
               className="w-full rounded-full"
@@ -104,6 +123,11 @@ export default function AdminAuth() {
           </form>
         </CardContent>
       </Card>
+
+      <ForgotPasswordDialog 
+        open={showForgotPassword} 
+        onOpenChange={setShowForgotPassword} 
+      />
     </div>
   );
 }

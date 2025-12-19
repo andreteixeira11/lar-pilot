@@ -8,3 +8,9 @@ verify_jwt = true
 
 [functions.get-public-page]
 verify_jwt = false
+
+[functions.sync-ical]
+verify_jwt = false
+
+[functions.export-ical]
+verify_jwt = false

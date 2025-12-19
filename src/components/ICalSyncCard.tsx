@@ -13,16 +13,19 @@ import {
   Check, 
   Clock,
   ExternalLink,
-  CalendarDays
+  CalendarDays,
+  Download,
+  Copy
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 
 interface ICalSyncCardProps {
   pageId: string;
+  slug?: string;
 }
 
-export function ICalSyncCard({ pageId }: ICalSyncCardProps) {
+export function ICalSyncCard({ pageId, slug }: ICalSyncCardProps) {
   const queryClient = useQueryClient();
   const [airbnbUrl, setAirbnbUrl] = useState("");
   const [bookingUrl, setBookingUrl] = useState("");
@@ -33,7 +36,7 @@ export function ICalSyncCard({ pageId }: ICalSyncCardProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("direct_booking_pages")
-        .select("ical_airbnb_url, ical_booking_url, ical_last_sync")
+        .select("ical_airbnb_url, ical_booking_url, ical_last_sync, slug")
         .eq("id", pageId)
         .single();
       
@@ -129,6 +132,24 @@ export function ICalSyncCard({ pageId }: ICalSyncCardProps) {
     },
   });
 
+  const currentSlug = slug || pageData?.slug;
+  const exportUrl = currentSlug 
+    ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-ical?slug=${currentSlug}`
+    : null;
+
+  const handleCopyExportUrl = () => {
+    if (exportUrl) {
+      navigator.clipboard.writeText(exportUrl);
+      toast.success("URL copiado para a área de transferência!");
+    }
+  };
+
+  const handleDownloadIcal = () => {
+    if (exportUrl) {
+      window.open(exportUrl, "_blank");
+    }
+  };
+
   const airbnbEventsCount = externalEvents?.filter(e => e.source === "airbnb").length || 0;
   const bookingEventsCount = externalEvents?.filter(e => e.source === "booking").length || 0;
 
@@ -144,6 +165,42 @@ export function ICalSyncCard({ pageId }: ICalSyncCardProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Export Section */}
+        {currentSlug && (
+          <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+            <Label className="text-xs font-medium flex items-center gap-1">
+              <Download className="h-3 w-3" />
+              Exportar Calendário (para Airbnb/Booking)
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                value={exportUrl || ""}
+                readOnly
+                className="font-mono text-xs flex-1"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyExportUrl}
+                title="Copiar URL"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleDownloadIcal}
+                title="Download .ics"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Use esta URL para importar o seu calendário no Airbnb ou Booking.com
+            </p>
+          </div>
+        )}
+
         <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="airbnb-ical" className="flex items-center gap-2">
@@ -220,6 +277,10 @@ export function ICalSyncCard({ pageId }: ICalSyncCardProps) {
             Última sincronização: {format(new Date(pageData.ical_last_sync), "dd MMM yyyy, HH:mm", { locale: pt })}
           </div>
         )}
+
+        <p className="text-xs text-muted-foreground bg-primary/5 p-2 rounded">
+          ⚡ Sincronização automática ativa a cada 6 horas
+        </p>
 
         <div className="flex gap-2">
           <Button

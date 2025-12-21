@@ -32,6 +32,8 @@ import Equipa from "./pages/Equipa";
 import AcceptInvite from "./pages/AcceptInvite";
 import PublicBookingPage from "./pages/PublicBookingPage";
 import ReservasDiretas from "./pages/ReservasDiretas";
+import Faturacao from "./pages/Faturacao";
+import Guidebooks from "./pages/Guidebooks";
 import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -91,7 +93,7 @@ const App = () => (
                 <ProtectedRoute>
                   <div className="flex min-h-screen w-full">
                     <AnimatedSidebar />
-                    <main className="flex-1 md:ml-64 bg-background">
+                      <main className="flex-1 md:ml-72 bg-background">
                       <header className="h-14 sm:h-16 border-b border-border flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4 bg-card sticky top-0 z-10">
                         <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-md">
                           <PropertySelectorCommand />
@@ -112,6 +114,8 @@ const App = () => (
                         <Route path="/subscriptions" element={<Subscriptions />} />
                         <Route path="/equipa" element={<Equipa />} />
                         <Route path="/reservas-diretas" element={<ReservasDiretas />} />
+                        <Route path="/faturacao" element={<Faturacao />} />
+                        <Route path="/guidebooks" element={<Guidebooks />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

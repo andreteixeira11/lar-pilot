@@ -14,6 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_transactions: {
+        Row: {
+          amount: number
+          balance: number
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string | null
+          property_id: string | null
+          transaction_date: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance?: number
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id?: string | null
+          property_id?: string | null
+          transaction_date?: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance?: number
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string | null
+          property_id?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_transactions_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_transactions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string
@@ -398,6 +452,150 @@ export type Database = {
           },
         ]
       }
+      guidebook_sections: {
+        Row: {
+          content: Json
+          created_at: string
+          guidebook_id: string
+          icon: string | null
+          id: string
+          is_visible: boolean
+          order_index: number
+          section_type: string
+          title: Json
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          guidebook_id: string
+          icon?: string | null
+          id?: string
+          is_visible?: boolean
+          order_index?: number
+          section_type: string
+          title?: Json
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          guidebook_id?: string
+          icon?: string | null
+          id?: string
+          is_visible?: boolean
+          order_index?: number
+          section_type?: string
+          title?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guidebook_sections_guidebook_id_fkey"
+            columns: ["guidebook_id"]
+            isOneToOne: false
+            referencedRelation: "guidebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guidebook_upsells: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: Json
+          guidebook_id: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          name: Json
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: Json
+          guidebook_id: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: Json
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: Json
+          guidebook_id?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: Json
+          price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guidebook_upsells_guidebook_id_fkey"
+            columns: ["guidebook_id"]
+            isOneToOne: false
+            referencedRelation: "guidebooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guidebooks: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          languages: Json
+          logo_url: string | null
+          primary_color: string | null
+          property_id: string
+          title: string
+          updated_at: string
+          welcome_message: string | null
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          languages?: Json
+          logo_url?: string | null
+          primary_color?: string | null
+          property_id: string
+          title: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          languages?: Json
+          logo_url?: string | null
+          primary_color?: string | null
+          property_id?: string
+          title?: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guidebooks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ine_statistics: {
         Row: {
           country: string
@@ -441,6 +639,129 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_series: {
+        Row: {
+          created_at: string
+          current_number: number
+          id: string
+          is_active: boolean
+          prefix: string | null
+          series_code: string
+          series_name: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          current_number?: number
+          id?: string
+          is_active?: boolean
+          prefix?: string | null
+          series_code: string
+          series_name: string
+          updated_at?: string
+          user_id: string
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          current_number?: number
+          id?: string
+          is_active?: boolean
+          prefix?: string | null
+          series_code?: string
+          series_name?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          client_address: string | null
+          client_name: string
+          created_at: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          items: Json
+          nif_cliente: string | null
+          notes: string | null
+          payment_status: string
+          property_id: string | null
+          reservation_id: string | null
+          series: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_address?: string | null
+          client_name: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          items?: Json
+          nif_cliente?: string | null
+          notes?: string | null
+          payment_status?: string
+          property_id?: string | null
+          reservation_id?: string | null
+          series?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_address?: string | null
+          client_name?: string
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          items?: Json
+          nif_cliente?: string | null
+          notes?: string | null
+          payment_status?: string
+          property_id?: string | null
+          reservation_id?: string | null
+          series?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
             referencedColumns: ["id"]
           },
         ]
@@ -802,6 +1123,42 @@ export type Database = {
           },
         ]
       }
+      saft_submissions: {
+        Row: {
+          created_at: string
+          file_url: string | null
+          id: string
+          month: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          month: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          month?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
       tourist_tax: {
         Row: {
           created_at: string
@@ -845,6 +1202,63 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upsell_orders: {
+        Row: {
+          created_at: string
+          guest_email: string
+          guest_name: string
+          guidebook_id: string
+          id: string
+          items: Json
+          payment_status: string
+          reservation_id: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          guidebook_id: string
+          id?: string
+          items?: Json
+          payment_status?: string
+          reservation_id?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          guidebook_id?: string
+          id?: string
+          items?: Json
+          payment_status?: string
+          reservation_id?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upsell_orders_guidebook_id_fkey"
+            columns: ["guidebook_id"]
+            isOneToOne: false
+            referencedRelation: "guidebooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upsell_orders_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
             referencedColumns: ["id"]
           },
         ]

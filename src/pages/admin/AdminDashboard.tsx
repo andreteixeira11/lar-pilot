@@ -25,6 +25,7 @@ import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { AdminPDFExport } from "@/components/admin/AdminPDFExport";
 
 const COLORS = ["hsl(180, 53%, 32%)", "#FF5A5F", "#003580", "#10B981", "#F59E0B", "#8B5CF6"];
 
@@ -291,10 +292,25 @@ const AdminDashboard = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <PageHeader
-        title="Painel de Administração"
-        description="Visão geral da plataforma"
-      />
+      <div className="flex justify-between items-start">
+        <PageHeader
+          title="Painel de Administração"
+          description="Visão geral da plataforma"
+        />
+        <AdminPDFExport 
+          data={{
+            usersCount: usersCount || 0,
+            propertiesCount: propertiesCount || 0,
+            reservationsCount: reservationsCount || 0,
+            totalRevenue,
+            planDistribution,
+            planSales,
+            topProperties,
+            monthlyUsers,
+            monthlyRevenue,
+          }}
+        />
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -16,18 +15,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProperty } from "@/contexts/PropertyContext";
 import { toast } from "sonner";
+import { GuidebookEditor } from "@/components/guidebook/GuidebookEditor";
 import { 
   Plus, 
   BookOpen, 
@@ -44,12 +37,10 @@ import {
   Languages,
   Eye,
   Settings,
-  Euro,
-  Image,
-  ExternalLink,
   Edit,
-  Trash2,
   Crown,
+  ExternalLink,
+  QrCode,
 } from "lucide-react";
 
 const LANGUAGES = [
@@ -78,6 +69,7 @@ const Guidebooks = () => {
   const { selectedProperty, properties } = useProperty();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingGuidebookId, setEditingGuidebookId] = useState<string | null>(null);
   const [newGuidebook, setNewGuidebook] = useState({
     title: "",
     welcome_message: "",
@@ -121,11 +113,12 @@ const Guidebooks = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Guidebook criado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["guidebooks"] });
       setIsCreateOpen(false);
       setNewGuidebook({ title: "", welcome_message: "", primary_color: "#1a7a6e" });
+      setEditingGuidebookId(data.id);
     },
     onError: (error) => {
       toast.error("Erro ao criar guidebook: " + error.message);
@@ -146,6 +139,30 @@ const Guidebooks = () => {
       toast.success("Estado atualizado!");
     },
   });
+
+  // Delete guidebook mutation
+  const deleteGuidebook = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("guidebooks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["guidebooks"] });
+      toast.success("Guidebook eliminado!");
+    },
+  });
+
+  // If editing a guidebook, show the editor
+  if (editingGuidebookId) {
+    return (
+      <div className="p-0 md:p-0 lg:p-0">
+        <GuidebookEditor
+          guidebookId={editingGuidebookId}
+          onBack={() => setEditingGuidebookId(null)}
+        />
+      </div>
+    );
+  }
 
   if (!isPremium) {
     return (
@@ -365,14 +382,21 @@ const Guidebooks = () => {
                       <span className="text-sm text-muted-foreground">Publicar</span>
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
+                      {guidebook.is_published && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => window.open(`/guidebook/${guidebook.id}`, "_blank")}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingGuidebookId(guidebook.id)}
+                      >
                         <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

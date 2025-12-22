@@ -34,6 +34,7 @@ import PublicBookingPage from "./pages/PublicBookingPage";
 import ReservasDiretas from "./pages/ReservasDiretas";
 import Faturacao from "./pages/Faturacao";
 import Guidebooks from "./pages/Guidebooks";
+import PublicGuidebook from "./pages/PublicGuidebook";
 import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -60,6 +61,7 @@ const App = () => (
         <Route path="/checkin/:token" element={<CheckIn />} />
         <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route path="/p/:slug" element={<PublicBookingPage />} />
+        <Route path="/guidebook/:id" element={<PublicGuidebook />} />
               
               {/* Admin Login Page */}
               <Route path="/admin" element={<AdminAuth />} />

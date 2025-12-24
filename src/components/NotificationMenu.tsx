@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, CheckCircle2, AlertCircle, Clock, Calendar, User } from "lucide-react";
+import { Bell, CheckCircle2, AlertCircle, Clock, Calendar, User, Package, ShoppingCart } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import { useProperty } from "@/contexts/PropertyContext";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import { toast } from "sonner";
 
 interface TarefaFiscal {
   id: string;
@@ -37,9 +38,22 @@ interface BookingRequest {
   created_at: string;
 }
 
+interface UpsellOrder {
+  id: string;
+  guest_name: string;
+  guest_email: string;
+  total_amount: number;
+  status: string;
+  payment_status: string;
+  items: unknown;
+  created_at: string;
+  guidebook_id: string;
+}
+
 export function NotificationMenu() {
   const [tarefasPendentes, setTarefasPendentes] = useState<TarefaFiscal[]>([]);
   const [bookingRequests, setBookingRequests] = useState<BookingRequest[]>([]);
+  const [upsellOrders, setUpsellOrders] = useState<UpsellOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const { selectedProperty, selectedPropertyId } = useProperty();
   const navigate = useNavigate();
@@ -93,6 +107,29 @@ export function NotificationMenu() {
       setBookingRequests([]);
     }
 
+    // Load pending upsell orders
+    const { data: guidebookData } = await supabase
+      .from("guidebooks")
+      .select("id")
+      .eq("property_id", selectedProperty.id)
+      .maybeSingle();
+
+    if (guidebookData?.id) {
+      const { data: ordersData, error: ordersError } = await supabase
+        .from("upsell_orders")
+        .select("*")
+        .eq("guidebook_id", guidebookData.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (!ordersError) {
+        setUpsellOrders((ordersData || []) as UpsellOrder[]);
+      }
+    } else {
+      setUpsellOrders([]);
+    }
+
     setLoading(false);
   };
 
@@ -120,6 +157,49 @@ export function NotificationMenu() {
     };
   }, [selectedPropertyId]);
 
+  // Set up realtime subscription for upsell orders
+  useEffect(() => {
+    if (!selectedPropertyId) return;
+
+    const channel = supabase
+      .channel('upsell-orders-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'upsell_orders'
+        },
+        (payload) => {
+          const newOrder = payload.new as UpsellOrder;
+          toast.success(`Novo pedido de upsell de ${newOrder.guest_name}!`, {
+            description: `Valor: €${newOrder.total_amount.toFixed(2)}`,
+            action: {
+              label: "Ver",
+              onClick: () => navigate("/guidebooks"),
+            },
+          });
+          loadData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'upsell_orders'
+        },
+        () => {
+          loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedPropertyId, navigate]);
+
   const getPrioridadeIcon = (prioridade: string) => {
     if (prioridade === "alta") return <AlertCircle className="h-4 w-4 text-red-500" />;
     if (prioridade === "media") return <Clock className="h-4 w-4 text-yellow-500" />;
@@ -137,7 +217,18 @@ export function NotificationMenu() {
     return colors[categoria] || colors.outros;
   };
 
-  const totalNotifications = tarefasPendentes.length + bookingRequests.length;
+  const getPaymentStatusBadge = (status: string) => {
+    switch (status) {
+      case "paid":
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Pago</Badge>;
+      case "pending":
+        return <Badge variant="secondary">Aguarda pagamento</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const totalNotifications = tarefasPendentes.length + bookingRequests.length + upsellOrders.length;
 
   return (
     <DropdownMenu>
@@ -155,7 +246,7 @@ export function NotificationMenu() {
         <Tabs defaultValue="reservas" className="w-full">
           <div className="p-3 border-b">
             <TabsList className="w-full">
-              <TabsTrigger value="reservas" className="flex-1 gap-2">
+              <TabsTrigger value="reservas" className="flex-1 gap-1 text-xs sm:text-sm">
                 Reservas
                 {bookingRequests.length > 0 && (
                   <Badge variant="destructive" className="h-5 min-w-5 px-1.5">
@@ -163,7 +254,15 @@ export function NotificationMenu() {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="fiscal" className="flex-1 gap-2">
+              <TabsTrigger value="upsells" className="flex-1 gap-1 text-xs sm:text-sm">
+                Upsells
+                {upsellOrders.length > 0 && (
+                  <Badge variant="destructive" className="h-5 min-w-5 px-1.5">
+                    {upsellOrders.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="fiscal" className="flex-1 gap-1 text-xs sm:text-sm">
                 Fiscal
                 {tarefasPendentes.length > 0 && (
                   <Badge variant="secondary" className="h-5 min-w-5 px-1.5">
@@ -231,6 +330,67 @@ export function NotificationMenu() {
                     variant="ghost"
                     className="w-full justify-center text-sm"
                     onClick={() => navigate("/reservas-diretas")}
+                  >
+                    Ver todos os pedidos
+                  </Button>
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="upsells" className="m-0 max-h-[350px] overflow-y-auto">
+            <div className="p-3">
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  A carregar...
+                </div>
+              ) : upsellOrders.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="h-12 w-12 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Sem pedidos de upsell pendentes
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {upsellOrders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="border rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer"
+                      onClick={() => navigate("/guidebooks")}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium text-sm">{order.guest_name}</span>
+                        </div>
+                        {getPaymentStatusBadge(order.payment_status)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {order.guest_email}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(order.created_at), "d MMM, HH:mm", { locale: pt })}
+                        </span>
+                        <span className="text-sm font-medium text-primary">
+                          €{order.total_amount.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {upsellOrders.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="p-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-center text-sm"
+                    onClick={() => navigate("/guidebooks")}
                   >
                     Ver todos os pedidos
                   </Button>

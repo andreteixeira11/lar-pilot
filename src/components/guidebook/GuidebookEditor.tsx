@@ -25,6 +25,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { SortableSection } from "./SortableSection";
 import { GuidebookPreview } from "./GuidebookPreview";
+import { ImageUpload } from "./ImageUpload";
+import { UpsellManager } from "./UpsellManager";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -46,6 +48,7 @@ import {
   MapPin,
   Globe,
   QrCode,
+  ShoppingBag,
 } from "lucide-react";
 
 interface GuidebookEditorProps {
@@ -313,6 +316,10 @@ export const GuidebookEditor = ({ guidebookId, onBack }: GuidebookEditorProps) =
                 <Plus className="h-4 w-4" />
                 Secções
               </TabsTrigger>
+              <TabsTrigger value="upsells" className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4" />
+                Upsells
+              </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 Definições
@@ -392,75 +399,106 @@ export const GuidebookEditor = ({ guidebookId, onBack }: GuidebookEditorProps) =
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="settings" className="flex-1 m-0 p-4">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label>Título do Guidebook</Label>
-                  <Input
-                    value={guidebook?.title || ""}
-                    onChange={(e) => updateGuidebook.mutate({ title: e.target.value })}
+            <TabsContent value="upsells" className="flex-1 overflow-hidden m-0">
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <UpsellManager 
+                    guidebookId={guidebookId} 
+                    selectedLanguage={selectedLanguage} 
                   />
                 </div>
+              </ScrollArea>
+            </TabsContent>
 
-                <div className="space-y-2">
-                  <Label>Mensagem de Boas-vindas</Label>
-                  <Textarea
-                    value={guidebook?.welcome_message || ""}
-                    onChange={(e) =>
-                      updateGuidebook.mutate({ welcome_message: e.target.value })
-                    }
-                    rows={3}
+            <TabsContent value="settings" className="flex-1 m-0 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-6">
+                  <div className="space-y-2">
+                    <Label>Título do Guidebook</Label>
+                    <Input
+                      value={guidebook?.title || ""}
+                      onChange={(e) => updateGuidebook.mutate({ title: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Mensagem de Boas-vindas</Label>
+                    <Textarea
+                      value={guidebook?.welcome_message || ""}
+                      onChange={(e) =>
+                        updateGuidebook.mutate({ welcome_message: e.target.value })
+                      }
+                      rows={3}
+                    />
+                  </div>
+
+                  <ImageUpload
+                    currentUrl={guidebook?.logo_url || null}
+                    onUpload={(url) => updateGuidebook.mutate({ logo_url: url })}
+                    onRemove={() => updateGuidebook.mutate({ logo_url: null })}
+                    label="Logo"
+                    aspectRatio="square"
+                    guidebookId={guidebookId}
                   />
-                </div>
 
-                <div className="space-y-2">
-                  <Label>Cor Principal</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={guidebook?.primary_color || "#1a7a6e"}
-                      onChange={(e) =>
-                        updateGuidebook.mutate({ primary_color: e.target.value })
-                      }
-                      className="w-16 h-10 p-1"
-                    />
-                    <Input
-                      value={guidebook?.primary_color || "#1a7a6e"}
-                      onChange={(e) =>
-                        updateGuidebook.mutate({ primary_color: e.target.value })
-                      }
-                      className="flex-1"
-                    />
+                  <ImageUpload
+                    currentUrl={guidebook?.cover_image_url || null}
+                    onUpload={(url) => updateGuidebook.mutate({ cover_image_url: url })}
+                    onRemove={() => updateGuidebook.mutate({ cover_image_url: null })}
+                    label="Imagem de Capa"
+                    aspectRatio="wide"
+                    guidebookId={guidebookId}
+                  />
+
+                  <div className="space-y-2">
+                    <Label>Cor Principal</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={guidebook?.primary_color || "#1a7a6e"}
+                        onChange={(e) =>
+                          updateGuidebook.mutate({ primary_color: e.target.value })
+                        }
+                        className="w-16 h-10 p-1"
+                      />
+                      <Input
+                        value={guidebook?.primary_color || "#1a7a6e"}
+                        onChange={(e) =>
+                          updateGuidebook.mutate({ primary_color: e.target.value })
+                        }
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Idiomas Disponíveis</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {LANGUAGES.map((lang) => {
+                        const isActive = (guidebook?.languages as string[] || []).includes(
+                          lang.code
+                        );
+                        return (
+                          <Badge
+                            key={lang.code}
+                            variant={isActive ? "default" : "outline"}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              const current = (guidebook?.languages as string[]) || [];
+                              const updated = isActive
+                                ? current.filter((l) => l !== lang.code)
+                                : [...current, lang.code];
+                              updateGuidebook.mutate({ languages: updated });
+                            }}
+                          >
+                            {lang.flag} {lang.name}
+                          </Badge>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label>Idiomas Disponíveis</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {LANGUAGES.map((lang) => {
-                      const isActive = (guidebook?.languages as string[] || []).includes(
-                        lang.code
-                      );
-                      return (
-                        <Badge
-                          key={lang.code}
-                          variant={isActive ? "default" : "outline"}
-                          className="cursor-pointer"
-                          onClick={() => {
-                            const current = (guidebook?.languages as string[]) || [];
-                            const updated = isActive
-                              ? current.filter((l) => l !== lang.code)
-                              : [...current, lang.code];
-                            updateGuidebook.mutate({ languages: updated });
-                          }}
-                        >
-                          {lang.flag} {lang.name}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
+              </ScrollArea>
             </TabsContent>
 
             <TabsContent value="qrcode" className="flex-1 m-0 p-4">

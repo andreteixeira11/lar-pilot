@@ -100,20 +100,29 @@ const Reservas = () => {
     });
   };
 
+  const getPlatformInfo = (plataforma: string) => {
+    switch (plataforma) {
+      case "Airbnb":
+        return { bg: "bg-rose-500", text: "text-white", icon: "/logos/airbnb.svg", label: "Airbnb" };
+      case "Booking":
+        return { bg: "bg-blue-600", text: "text-white", icon: "/logos/booking.svg", label: "Booking" };
+      default:
+        return { bg: "bg-primary", text: "text-primary-foreground", icon: null, label: "Direto" };
+    }
+  };
+
   const getReservationStyle = (reserva: any, day: Date) => {
     const checkIn = parseISO(reserva.checkIn);
     const checkOut = parseISO(reserva.checkOut);
     const isStart = isSameDay(day, checkIn);
     const isEnd = isSameDay(day, checkOut);
-    
-    let bgColor = "bg-primary/20 text-primary";
-    if (reserva.plataforma === "Airbnb") bgColor = "bg-rose-500/20 text-rose-600";
-    if (reserva.plataforma === "Booking") bgColor = "bg-blue-500/20 text-blue-600";
+    const platform = getPlatformInfo(reserva.plataforma);
     
     return {
-      className: `${bgColor} ${isStart ? "rounded-l-lg" : ""} ${isEnd ? "rounded-r-lg" : ""} px-1 py-0.5 text-xs truncate cursor-pointer hover:opacity-80`,
+      className: `${platform.bg} ${platform.text} ${isStart ? "rounded-l-lg ml-1" : ""} ${isEnd ? "rounded-r-lg mr-1" : ""} px-1.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity`,
       isStart,
       isEnd,
+      platform,
     };
   };
 
@@ -336,23 +345,47 @@ const Reservas = () => {
                     >
                       {format(day, "d")}
                     </div>
-                    <div className="space-y-0.5 overflow-hidden">
+                    <div className="space-y-1 overflow-hidden flex-1">
                       {dayReservations.slice(0, 2).map((reserva) => {
                         const style = getReservationStyle(reserva, day);
                         return (
                           <div
                             key={reserva.id}
                             className={style.className}
-                            onClick={() => handleReservaClick(reserva)}
-                            title={reserva.hospede}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReservaClick(reserva);
+                            }}
+                            title={`${reserva.hospede} - ${reserva.plataforma}`}
                           >
-                            {style.isStart ? reserva.hospede : ""}
+                            <div className="flex items-center gap-1 min-w-0">
+                              {style.isStart && (
+                                <span className="font-medium text-[10px] bg-white/20 px-1 rounded">
+                                  IN
+                                </span>
+                              )}
+                              {style.isEnd && (
+                                <span className="font-medium text-[10px] bg-black/20 px-1 rounded">
+                                  OUT
+                                </span>
+                              )}
+                              <span className="truncate flex-1 font-medium">
+                                {style.isStart ? reserva.hospede : (style.isEnd ? reserva.hospede : "")}
+                              </span>
+                              {style.platform.icon && style.isStart && (
+                                <img 
+                                  src={style.platform.icon} 
+                                  alt={style.platform.label} 
+                                  className="h-3 w-3 object-contain brightness-0 invert opacity-80"
+                                />
+                              )}
+                            </div>
                           </div>
                         );
                       })}
                       {dayReservations.length > 2 && (
-                        <div className="text-xs text-muted-foreground">
-                          +{dayReservations.length - 2}
+                        <div className="text-[10px] text-muted-foreground font-medium">
+                          +{dayReservations.length - 2} mais
                         </div>
                       )}
                     </div>

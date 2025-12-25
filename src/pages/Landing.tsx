@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { PricingSection, PricingTier } from "@/components/blocks/pricing-section";
 import { HeroSection } from "@/components/blocks/hero-section-landing";
+import {
+  FadeInOnScroll,
+  StaggerContainer,
+  StaggerItem,
+  ScaleOnScroll,
+  GlowingOrb,
+  FloatingElement,
+  Parallax,
+} from "@/components/ui/scroll-animations";
 import {
   Check,
   Calendar,
@@ -23,6 +33,7 @@ import {
   Building2,
   Crown,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 // Assets
@@ -161,9 +172,34 @@ const Landing = () => {
   const formatNumber = (num: number) => (num >= 1000 ? Math.floor(num).toLocaleString() : Number(num.toFixed(1)));
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted overflow-hidden relative">
+      {/* Background decorative elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <GlowingOrb className="-top-40 -left-40" color="primary" size={600} />
+        <GlowingOrb className="top-1/3 -right-60" color="accent" size={500} />
+        <GlowingOrb className="bottom-1/4 left-1/4" color="primary" size={400} />
+      </div>
+
+      {/* Floating decorative shapes */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <FloatingElement className="absolute top-20 right-[15%] opacity-20" duration={4} distance={15}>
+          <div className="w-16 h-16 rounded-full border-2 border-primary/30" />
+        </FloatingElement>
+        <FloatingElement className="absolute top-[40%] left-[10%] opacity-20" duration={5} distance={20}>
+          <div className="w-24 h-24 rounded-2xl border-2 border-accent/30 rotate-45" />
+        </FloatingElement>
+        <FloatingElement className="absolute bottom-[30%] right-[20%] opacity-20" duration={3.5} distance={12}>
+          <Sparkles className="w-12 h-12 text-primary/30" />
+        </FloatingElement>
+      </div>
+
       {/* Header */}
-      <header className="fixed top-5 left-0 w-full z-50 px-4">
+      <motion.header 
+        className="fixed top-5 left-0 w-full z-50 px-4"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="mx-auto max-w-7xl rounded-full border bg-background/90 backdrop-blur shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -269,7 +305,7 @@ const Landing = () => {
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Hero Section */}
       <HeroSection
@@ -326,74 +362,128 @@ const Landing = () => {
       </section>*/}
 
       {/* Features */}
-      <section id="features" className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-12">Tudo o que precisa para gerir o seu alojamento</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section id="features" className="container mx-auto px-4 py-20 relative">
+        <FadeInOnScroll>
+          <h2 className="text-3xl font-bold text-center mb-12">Tudo o que precisa para gerir o seu alojamento</h2>
+        </FadeInOnScroll>
+        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.1}>
           {features.map((feature, i) => (
-            <Card
-              key={i}
-              className="border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 hover:bg-primary/5"
-            >
-              <CardContent className="pt-6">
-                <feature.icon className="h-12 w-12 text-primary mb-4" />
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
+            <StaggerItem key={i}>
+              <Card
+                className="border-2 hover:border-primary transition-all duration-300 hover:shadow-lg hover:scale-105 hover:bg-primary/5 h-full group"
+              >
+                <CardContent className="pt-6">
+                  <motion.div
+                    whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <feature.icon className="h-12 w-12 text-primary mb-4" />
+                  </motion.div>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
+                </CardContent>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="container mx-auto px-4 py-20">
-        <PricingSection
-          tiers={pricingTiers}
-          onSelectPlan={(tier, isYearly) => navigate(`/auth?showPlans=true&plan=${tier.name.toLowerCase()}`)}
-        />
+      <section id="pricing" className="container mx-auto px-4 py-20 relative">
+        <ScaleOnScroll>
+          <PricingSection
+            tiers={pricingTiers}
+            onSelectPlan={(tier, isYearly) => navigate(`/auth?showPlans=true&plan=${tier.name.toLowerCase()}`)}
+          />
+        </ScaleOnScroll>
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-accent/10 border-2">
-          <CardContent className="pt-12 pb-12">
-            <h2 className="text-3xl font-bold mb-4">Pronto para simplificar a sua gestão?</h2>
-            <p className="text-xl text-muted-foreground mb-4">
-              +370 propriedades já geridas através da Monumental Atlantic
-            </p>
-            <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
-              Comece Gratuitamente
-            </Button>
-          </CardContent>
-        </Card>
+      <section className="container mx-auto px-4 py-20 text-center relative">
+        <Parallax speed={-0.2}>
+          <FadeInOnScroll>
+            <Card className="max-w-3xl mx-auto bg-gradient-to-r from-primary/10 to-accent/10 border-2 overflow-hidden relative">
+              {/* Animated background gradient */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5"
+                animate={{
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{ backgroundSize: "200% 200%" }}
+              />
+              <CardContent className="pt-12 pb-12 relative z-10">
+                <h2 className="text-3xl font-bold mb-4">Pronto para simplificar a sua gestão?</h2>
+                <p className="text-xl text-muted-foreground mb-6">
+                  +370 propriedades já geridas através da Monumental Atlantic
+                </p>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button size="lg" onClick={() => navigate("/auth?showPlans=true")} className="shadow-lg">
+                    Comece Gratuitamente
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </motion.div>
+              </CardContent>
+            </Card>
+          </FadeInOnScroll>
+        </Parallax>
       </section>
 
       {/* Testimonials */}
-      <section className="container mx-auto px-4 py-20 bg-muted/50">
-        <h2 className="text-3xl font-bold text-center mb-8">O que dizem os nossos clientes</h2>
-        <div className="grid md:grid-cols-3 gap-8">
+      <section className="container mx-auto px-4 py-20 bg-muted/50 relative">
+        <FadeInOnScroll>
+          <h2 className="text-3xl font-bold text-center mb-8">O que dizem os nossos clientes</h2>
+        </FadeInOnScroll>
+        <StaggerContainer className="grid md:grid-cols-3 gap-8" staggerDelay={0.15}>
           {testimonials.map((t, i) => (
-            <Card key={i} className="border-2 hover:shadow-md transition-all duration-300">
-              <CardContent className="pt-6">
-                <Quote className="h-10 w-10 text-primary/20 mb-4" />
-                <div className="flex gap-1 mb-2">
-                  {[...Array(t.rating)].map((_, j) => (
-                    <Star key={j} className="h-5 w-5 text-primary" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-4 italic">"{t.content}"</p>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground">{t.initials}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold">{t.name}</p>
-                    <p className="text-sm text-muted-foreground">{t.role}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <StaggerItem key={i}>
+              <motion.div
+                whileHover={{ y: -8 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <Card className="border-2 hover:shadow-xl transition-all duration-300 h-full">
+                  <CardContent className="pt-6">
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      whileHover={{ rotate: 12, scale: 1.1 }}
+                    >
+                      <Quote className="h-10 w-10 text-primary/20 mb-4" />
+                    </motion.div>
+                    <div className="flex gap-1 mb-2">
+                      {[...Array(t.rating)].map((_, j) => (
+                        <motion.div
+                          key={j}
+                          initial={{ opacity: 0, scale: 0 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: j * 0.1 }}
+                        >
+                          <Star className="h-5 w-5 text-primary fill-primary" />
+                        </motion.div>
+                      ))}
+                    </div>
+                    <p className="text-muted-foreground mb-4 italic">"{t.content}"</p>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary text-primary-foreground">{t.initials}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-semibold">{t.name}</p>
+                        <p className="text-sm text-muted-foreground">{t.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </section>
 
       {/* Footer */}

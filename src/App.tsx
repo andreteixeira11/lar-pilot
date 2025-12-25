@@ -34,6 +34,7 @@ import PublicBookingPage from "./pages/PublicBookingPage";
 import ReservasDiretas from "./pages/ReservasDiretas";
 import Faturacao from "./pages/Faturacao";
 import Guidebooks from "./pages/Guidebooks";
+import UpsellOrders from "./pages/UpsellOrders";
 import PublicGuidebook from "./pages/PublicGuidebook";
 import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -118,6 +119,7 @@ const App = () => (
                         <Route path="/reservas-diretas" element={<ReservasDiretas />} />
                         <Route path="/faturacao" element={<Faturacao />} />
                         <Route path="/guidebooks" element={<Guidebooks />} />
+                        <Route path="/upsell-orders" element={<UpsellOrders />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>

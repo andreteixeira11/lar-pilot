@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -269,35 +270,23 @@ export default function Auth() {
             <form onSubmit={handlePasswordReset} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="new-password">Nova Palavra-passe</Label>
-                <div className="relative">
-                  <Input
-                    id="new-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Mínimo 6 caracteres"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="new-password"
+                  placeholder="Introduza a nova palavra-passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  showStrength
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirmar Palavra-passe</Label>
-                <Input
+                <PasswordInput
                   id="confirm-password"
-                  type={showPassword ? "text" : "password"}
                   placeholder="Repita a palavra-passe"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
                 />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -514,24 +503,14 @@ export default function Auth() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Palavra-passe *</Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Mínimo 6 caracteres"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+                <PasswordInput
+                  id="signup-password"
+                  placeholder="Introduza a palavra-passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  showStrength
+                />
               </div>
               <Button type="submit" className="w-full">
                 Continuar

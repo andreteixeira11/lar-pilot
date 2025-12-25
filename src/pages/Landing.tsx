@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { PricingSection, PricingTier } from "@/components/blocks/pricing-section";
+import { HeroSection } from "@/components/blocks/hero-section-landing";
 import {
   Check,
   Calendar,
@@ -21,6 +22,7 @@ import {
   Menu,
   Building2,
   Crown,
+  ArrowRight,
 } from "lucide-react";
 
 // Assets
@@ -269,31 +271,36 @@ const Landing = () => {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden min-h-[60vh] pt-[80px]">
-        <div className="absolute inset-0 z-0">
-          <img src={heroImage} alt="Gestão de Alojamento Local" className="w-full h-full object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/50 to-background"></div>
-        </div>
-        <div className="container relative z-10 mx-auto px-4 pt-20 pb-32 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Gestão de Alojamento Local Simplificada
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Plataforma completa para gerir as suas propriedades de AL. Reservas, finanças, relatórios INE e taxa
-            turística - tudo num só lugar.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/auth?showPlans=true")}>
-              Comece Gratuitamente
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate("/auth?mode=login")}>
-              Ver Demo
-            </Button>
-          </div>
-          <p className="mt-4 text-muted-foreground">+370 propriedades já geridas através da Monumental Atlantic</p>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <HeroSection
+        badge={{
+          text: "Novo: Guidebooks digitais para hóspedes",
+          action: {
+            text: "Ver mais",
+            onClick: () => navigate("/auth?showPlans=true"),
+          },
+        }}
+        title="Gestão de Alojamento Local Simplificada"
+        description="Plataforma completa para gerir as suas propriedades de AL. Reservas, finanças, relatórios INE e taxa turística - tudo num só lugar."
+        actions={[
+          {
+            text: "Comece Gratuitamente",
+            onClick: () => navigate("/auth?showPlans=true"),
+            variant: "glow",
+            icon: <ArrowRight className="h-4 w-4" />,
+          },
+          {
+            text: "Ver Demo",
+            onClick: () => navigate("/auth?mode=login"),
+            variant: "outline",
+          },
+        ]}
+        image={{
+          src: heroImage,
+          alt: "Dashboard de Gestão de Alojamento Local",
+        }}
+        stats="+370 propriedades já geridas através da Monumental Atlantic"
+      />
 
       {/* Statistics 
       <section className="container mx-auto px-4 py-20 text-center">

@@ -282,39 +282,6 @@ export const AnimatedSidebar = () => {
         </span>
       </NavLink>
 
-      {/* Upsell Orders */}
-      <NavLink
-        to="/upsell-orders"
-        onClick={onItemClick}
-        className={({ isActive }) =>
-          cn(
-            "flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors",
-            isActive
-              ? "bg-primary/10 text-primary font-medium shadow-sm"
-              : "hover:bg-primary/10 hover:text-primary text-foreground"
-          )
-        }
-      >
-        <ShoppingCart className="h-5 w-5" />
-        <span>Pedidos Upsell</span>
-      </NavLink>
-
-      {/* Proprietários */}
-      <NavLink
-        to="/proprietarios"
-        onClick={onItemClick}
-        className={({ isActive }) =>
-          cn(
-            "flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors",
-            isActive
-              ? "bg-primary/10 text-primary font-medium shadow-sm"
-              : "hover:bg-primary/10 hover:text-primary text-foreground"
-          )
-        }
-      >
-        <UserCheck className="h-5 w-5" />
-        <span>Proprietários</span>
-      </NavLink>
     </>
   );
 

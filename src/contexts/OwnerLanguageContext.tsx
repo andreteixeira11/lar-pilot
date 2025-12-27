@@ -1,16 +1,33 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 export type OwnerLanguage = "pt" | "en";
+export type OwnerCurrency = "EUR" | "USD" | "GBP";
 
 interface OwnerLanguageContextType {
   language: OwnerLanguage;
   setLanguage: (lang: OwnerLanguage) => void;
+  currency: OwnerCurrency;
+  setCurrency: (currency: OwnerCurrency) => void;
+  formatCurrency: (value: number) => string;
   t: (key: string) => string;
 }
 
 const OwnerLanguageContext = createContext<OwnerLanguageContextType | undefined>(undefined);
 
-const STORAGE_KEY = "owner_language";
+const LANGUAGE_STORAGE_KEY = "owner_language";
+const CURRENCY_STORAGE_KEY = "owner_currency";
+
+const currencySymbols: Record<OwnerCurrency, string> = {
+  EUR: "€",
+  USD: "$",
+  GBP: "£",
+};
+
+const currencyLocales: Record<OwnerCurrency, string> = {
+  EUR: "pt-PT",
+  USD: "en-US",
+  GBP: "en-GB",
+};
 
 const translations: Record<OwnerLanguage, Record<string, string>> = {
   pt: {
@@ -233,17 +250,35 @@ const translations: Record<OwnerLanguage, Record<string, string>> = {
 
 export function OwnerLanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<OwnerLanguage>("pt");
+  const [currency, setCurrencyState] = useState<OwnerCurrency>("EUR");
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "pt" || stored === "en") {
-      setLanguageState(stored);
+    const storedLang = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (storedLang === "pt" || storedLang === "en") {
+      setLanguageState(storedLang);
+    }
+    
+    const storedCurrency = localStorage.getItem(CURRENCY_STORAGE_KEY);
+    if (storedCurrency === "EUR" || storedCurrency === "USD" || storedCurrency === "GBP") {
+      setCurrencyState(storedCurrency);
     }
   }, []);
 
   const setLanguage = (lang: OwnerLanguage) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+  };
+
+  const setCurrency = (curr: OwnerCurrency) => {
+    setCurrencyState(curr);
+    localStorage.setItem(CURRENCY_STORAGE_KEY, curr);
+  };
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat(currencyLocales[currency], {
+      style: "currency",
+      currency: currency,
+    }).format(value);
   };
 
   const t = (key: string): string => {
@@ -251,7 +286,7 @@ export function OwnerLanguageProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <OwnerLanguageContext.Provider value={{ language, setLanguage, t }}>
+    <OwnerLanguageContext.Provider value={{ language, setLanguage, currency, setCurrency, formatCurrency, t }}>
       {children}
     </OwnerLanguageContext.Provider>
   );

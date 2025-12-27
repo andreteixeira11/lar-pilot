@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { OwnerLanguageSelector } from "@/components/OwnerLanguageSelector";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -12,6 +14,7 @@ import {
   FolderOpen,
   LogOut,
   Home,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +26,7 @@ const menuItems = [
   { path: "/proprietario/documentos", icon: FolderOpen, labelKey: "sidebar.documents" },
 ];
 
-export function OwnerSidebar() {
+function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const { owner, logout } = useOwnerAuth();
   const { t } = useOwnerLanguage();
   const location = useLocation();
@@ -37,8 +40,13 @@ export function OwnerSidebar() {
       .slice(0, 2);
   };
 
+  const handleLogout = () => {
+    onItemClick?.();
+    logout();
+  };
+
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-sidebar-border bg-sidebar-background hidden md:flex flex-col">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
@@ -69,6 +77,7 @@ export function OwnerSidebar() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={onItemClick}
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
                 isActive
@@ -101,12 +110,39 @@ export function OwnerSidebar() {
         <Button
           variant="outline"
           className="w-full justify-start"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <LogOut className="w-4 h-4 mr-2" />
           {t("sidebar.logout")}
         </Button>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function OwnerSidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <div className="fixed top-4 left-4 z-50 md:hidden">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="bg-background shadow-md">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0 bg-sidebar-background">
+            <SidebarContent onItemClick={() => setMobileOpen(false)} />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-sidebar-border bg-sidebar-background hidden md:flex flex-col">
+        <SidebarContent />
+      </aside>
+    </>
   );
 }

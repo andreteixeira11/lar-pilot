@@ -65,7 +65,9 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from('reservations')
         .select('*')
-        .in('property_id', propertyIds);
+        .in('property_id', propertyIds)
+        .order('check_in', { ascending: false })
+        .limit(2000);
 
       if (error) throw error;
 

@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { OwnerLanguageSelector } from "@/components/OwnerLanguageSelector";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -14,15 +16,16 @@ import {
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { path: "/proprietario", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/proprietario/reservas", icon: CalendarDays, label: "Reservas" },
-  { path: "/proprietario/financeiro", icon: Wallet, label: "Financeiro" },
-  { path: "/proprietario/relatorios", icon: FileText, label: "Relatórios" },
-  { path: "/proprietario/documentos", icon: FolderOpen, label: "Documentos" },
+  { path: "/proprietario", icon: LayoutDashboard, labelKey: "sidebar.dashboard" },
+  { path: "/proprietario/reservas", icon: CalendarDays, labelKey: "sidebar.reservations" },
+  { path: "/proprietario/financeiro", icon: Wallet, labelKey: "sidebar.financial" },
+  { path: "/proprietario/relatorios", icon: FileText, labelKey: "sidebar.reports" },
+  { path: "/proprietario/documentos", icon: FolderOpen, labelKey: "sidebar.documents" },
 ];
 
 export function OwnerSidebar() {
   const { owner, logout } = useOwnerAuth();
+  const { t } = useOwnerLanguage();
   const location = useLocation();
 
   const getInitials = (name: string) => {
@@ -44,13 +47,18 @@ export function OwnerSidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="font-semibold text-sidebar-foreground truncate">
-              Portal do Proprietário
+              {t("sidebar.title")}
             </h2>
             <p className="text-xs text-muted-foreground truncate">
               {owner?.propertyName}
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Language Selector */}
+      <div className="px-4 py-3 border-b border-sidebar-border">
+        <OwnerLanguageSelector />
       </div>
 
       {/* Navigation */}
@@ -69,7 +77,7 @@ export function OwnerSidebar() {
               )}
             >
               <item.icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
             </Link>
           );
         })}
@@ -87,7 +95,7 @@ export function OwnerSidebar() {
             <p className="font-medium text-sm text-sidebar-foreground truncate">
               {owner?.ownerName}
             </p>
-            <p className="text-xs text-muted-foreground">Proprietário</p>
+            <p className="text-xs text-muted-foreground">{t("sidebar.owner")}</p>
           </div>
         </div>
         <Button
@@ -96,7 +104,7 @@ export function OwnerSidebar() {
           onClick={logout}
         >
           <LogOut className="w-4 h-4 mr-2" />
-          Terminar Sessão
+          {t("sidebar.logout")}
         </Button>
       </div>
     </aside>

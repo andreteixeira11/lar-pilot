@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,8 @@ import {
   Cell,
 } from "recharts";
 import { FileText, Download, Calendar, TrendingUp } from "lucide-react";
-import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { pt } from "date-fns/locale";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { pt, enUS } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -45,6 +46,7 @@ const CHART_COLORS = [
 
 export default function OwnerRelatorios() {
   const { owner } = useOwnerAuth();
+  const { t, language } = useOwnerLanguage();
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [yearlyStats, setYearlyStats] = useState<YearlyStats>({
     totalRevenue: 0,
@@ -54,6 +56,8 @@ export default function OwnerRelatorios() {
     occupancyRate: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
+
+  const dateLocale = language === "pt" ? pt : enUS;
 
   useEffect(() => {
     if (owner?.propertyId) {
@@ -92,7 +96,7 @@ export default function OwnerRelatorios() {
         }) || [];
 
         months.push({
-          month: format(monthDate, "MMM", { locale: pt }),
+          month: format(monthDate, "MMM", { locale: dateLocale }),
           revenue: monthReservations.reduce((sum, r) => sum + (r.total_price || 0), 0),
           reservations: monthReservations.length,
           nights: monthReservations.reduce((sum, r) => sum + (r.num_nights || 0), 0),
@@ -109,7 +113,6 @@ export default function OwnerRelatorios() {
       
       // Calculate occupancy for past months only
       const today = new Date();
-      const monthsPassed = today.getMonth() + 1;
       const daysPassed = Math.ceil(
         (today.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24)
       );
@@ -130,7 +133,7 @@ export default function OwnerRelatorios() {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-PT", {
+    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
       style: "currency",
       currency: "EUR",
     }).format(value);
@@ -138,30 +141,30 @@ export default function OwnerRelatorios() {
 
   const downloadMonthlyReport = () => {
     const doc = new jsPDF();
-    const currentMonth = format(new Date(), "MMMM yyyy", { locale: pt });
+    const currentMonth = format(new Date(), "MMMM yyyy", { locale: dateLocale });
 
     doc.setFontSize(20);
-    doc.text("Relatório Mensal", 20, 20);
+    doc.text(language === "pt" ? "Relatório Mensal" : "Monthly Report", 20, 20);
     doc.setFontSize(12);
-    doc.text(`Propriedade: ${owner?.propertyName}`, 20, 30);
-    doc.text(`Período: ${currentMonth}`, 20, 38);
+    doc.text(`${language === "pt" ? "Propriedade" : "Property"}: ${owner?.propertyName}`, 20, 30);
+    doc.text(`${language === "pt" ? "Período" : "Period"}: ${currentMonth}`, 20, 38);
 
     const currentMonthData = monthlyData[new Date().getMonth()];
 
     autoTable(doc, {
       startY: 50,
-      head: [["Métrica", "Valor"]],
+      head: [[language === "pt" ? "Métrica" : "Metric", language === "pt" ? "Valor" : "Value"]],
       body: [
-        ["Receita Total", formatCurrency(currentMonthData?.revenue || 0)],
-        ["Número de Reservas", String(currentMonthData?.reservations || 0)],
-        ["Total de Noites", String(currentMonthData?.nights || 0)],
-        ["Valor Médio/Noite", formatCurrency(currentMonthData?.nights ? currentMonthData.revenue / currentMonthData.nights : 0)],
+        [t("dashboard.totalRevenue"), formatCurrency(currentMonthData?.revenue || 0)],
+        [language === "pt" ? "Número de Reservas" : "Number of Reservations", String(currentMonthData?.reservations || 0)],
+        [language === "pt" ? "Total de Noites" : "Total Nights", String(currentMonthData?.nights || 0)],
+        [language === "pt" ? "Valor Médio/Noite" : "Avg Value/Night", formatCurrency(currentMonthData?.nights ? currentMonthData.revenue / currentMonthData.nights : 0)],
       ],
       theme: "grid",
       headStyles: { fillColor: [36, 125, 127] },
     });
 
-    doc.save(`relatorio-mensal-${format(new Date(), "yyyy-MM")}.pdf`);
+    doc.save(`${language === "pt" ? "relatorio-mensal" : "monthly-report"}-${format(new Date(), "yyyy-MM")}.pdf`);
   };
 
   const downloadYearlyReport = () => {
@@ -169,20 +172,20 @@ export default function OwnerRelatorios() {
     const currentYear = new Date().getFullYear();
 
     doc.setFontSize(20);
-    doc.text("Relatório Anual", 20, 20);
+    doc.text(language === "pt" ? "Relatório Anual" : "Annual Report", 20, 20);
     doc.setFontSize(12);
-    doc.text(`Propriedade: ${owner?.propertyName}`, 20, 30);
-    doc.text(`Ano: ${currentYear}`, 20, 38);
+    doc.text(`${language === "pt" ? "Propriedade" : "Property"}: ${owner?.propertyName}`, 20, 30);
+    doc.text(`${language === "pt" ? "Ano" : "Year"}: ${currentYear}`, 20, 38);
 
     autoTable(doc, {
       startY: 50,
-      head: [["Métrica", "Valor"]],
+      head: [[language === "pt" ? "Métrica" : "Metric", language === "pt" ? "Valor" : "Value"]],
       body: [
-        ["Receita Total Anual", formatCurrency(yearlyStats.totalRevenue)],
-        ["Total de Reservas", String(yearlyStats.totalReservations)],
-        ["Total de Noites", String(yearlyStats.totalNights)],
-        ["Valor Médio/Noite", formatCurrency(yearlyStats.averageNightValue)],
-        ["Taxa de Ocupação", `${yearlyStats.occupancyRate}%`],
+        [language === "pt" ? "Receita Total Anual" : "Total Annual Revenue", formatCurrency(yearlyStats.totalRevenue)],
+        [language === "pt" ? "Total de Reservas" : "Total Reservations", String(yearlyStats.totalReservations)],
+        [language === "pt" ? "Total de Noites" : "Total Nights", String(yearlyStats.totalNights)],
+        [language === "pt" ? "Valor Médio/Noite" : "Avg Value/Night", formatCurrency(yearlyStats.averageNightValue)],
+        [t("dashboard.occupancyRate"), `${yearlyStats.occupancyRate}%`],
       ],
       theme: "grid",
       headStyles: { fillColor: [36, 125, 127] },
@@ -191,11 +194,11 @@ export default function OwnerRelatorios() {
     // Monthly breakdown
     const currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
     doc.setFontSize(14);
-    doc.text("Evolução Mensal", 20, currentY);
+    doc.text(language === "pt" ? "Evolução Mensal" : "Monthly Evolution", 20, currentY);
 
     autoTable(doc, {
       startY: currentY + 10,
-      head: [["Mês", "Receita", "Reservas", "Noites"]],
+      head: [[language === "pt" ? "Mês" : "Month", language === "pt" ? "Receita" : "Revenue", language === "pt" ? "Reservas" : "Reservations", language === "pt" ? "Noites" : "Nights"]],
       body: monthlyData.map((m) => [
         m.month,
         formatCurrency(m.revenue),
@@ -206,7 +209,7 @@ export default function OwnerRelatorios() {
       headStyles: { fillColor: [100, 100, 100] },
     });
 
-    doc.save(`relatorio-anual-${currentYear}.pdf`);
+    doc.save(`${language === "pt" ? "relatorio-anual" : "annual-report"}-${currentYear}.pdf`);
   };
 
   // Pie chart data for revenue distribution
@@ -223,9 +226,9 @@ export default function OwnerRelatorios() {
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Relatórios</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("reports.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Análise detalhada do desempenho da sua propriedade
+          {t("reports.subtitle")}
         </p>
       </div>
 
@@ -239,9 +242,9 @@ export default function OwnerRelatorios() {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Relatório Mensal</p>
+                  <p className="font-medium">{language === "pt" ? "Relatório Mensal" : "Monthly Report"}</p>
                   <p className="text-sm text-muted-foreground">
-                    {format(new Date(), "MMMM yyyy", { locale: pt })}
+                    {format(new Date(), "MMMM yyyy", { locale: dateLocale })}
                   </p>
                 </div>
               </div>
@@ -261,7 +264,7 @@ export default function OwnerRelatorios() {
                   <TrendingUp className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Relatório Anual</p>
+                  <p className="font-medium">{language === "pt" ? "Relatório Anual" : "Annual Report"}</p>
                   <p className="text-sm text-muted-foreground">{new Date().getFullYear()}</p>
                 </div>
               </div>
@@ -279,31 +282,31 @@ export default function OwnerRelatorios() {
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{formatCurrency(yearlyStats.totalRevenue)}</p>
-            <p className="text-sm text-muted-foreground">Receita Anual</p>
+            <p className="text-sm text-muted-foreground">{language === "pt" ? "Receita Anual" : "Annual Revenue"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{yearlyStats.totalReservations}</p>
-            <p className="text-sm text-muted-foreground">Reservas</p>
+            <p className="text-sm text-muted-foreground">{t("reservations.title")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{yearlyStats.totalNights}</p>
-            <p className="text-sm text-muted-foreground">Noites</p>
+            <p className="text-sm text-muted-foreground">{t("reservations.nights")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{formatCurrency(yearlyStats.averageNightValue)}</p>
-            <p className="text-sm text-muted-foreground">Valor/Noite</p>
+            <p className="text-sm text-muted-foreground">{language === "pt" ? "Valor/Noite" : "Value/Night"}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 text-center">
             <p className="text-2xl font-bold">{yearlyStats.occupancyRate}%</p>
-            <p className="text-sm text-muted-foreground">Ocupação</p>
+            <p className="text-sm text-muted-foreground">{language === "pt" ? "Ocupação" : "Occupancy"}</p>
           </CardContent>
         </Card>
       </div>
@@ -313,14 +316,14 @@ export default function OwnerRelatorios() {
         {/* Revenue Bar Chart */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Receita Mensal</CardTitle>
-            <CardDescription>Evolução da receita ao longo do ano</CardDescription>
+            <CardTitle>{language === "pt" ? "Receita Mensal" : "Monthly Revenue"}</CardTitle>
+            <CardDescription>{language === "pt" ? "Evolução da receita ao longo do ano" : "Revenue evolution throughout the year"}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               {isLoading ? (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
-                  A carregar...
+                  {t("common.loading")}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -340,7 +343,7 @@ export default function OwnerRelatorios() {
                         border: "1px solid hsl(var(--border))",
                         borderRadius: "8px",
                       }}
-                      formatter={(value: number) => [formatCurrency(value), "Receita"]}
+                      formatter={(value: number) => [formatCurrency(value), t("dashboard.revenue")]}
                     />
                     <Bar
                       dataKey="revenue"
@@ -357,20 +360,20 @@ export default function OwnerRelatorios() {
         {/* Pie Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribuição</CardTitle>
-            <CardDescription>Últimos meses com receita</CardDescription>
+            <CardTitle>{language === "pt" ? "Distribuição" : "Distribution"}</CardTitle>
+            <CardDescription>{language === "pt" ? "Últimos meses com receita" : "Recent months with revenue"}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-80">
               {isLoading ? (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
-                  A carregar...
+                  {t("common.loading")}
                 </div>
               ) : pieData.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Sem dados disponíveis</p>
+                    <p>{t("reports.noData")}</p>
                   </div>
                 </div>
               ) : (

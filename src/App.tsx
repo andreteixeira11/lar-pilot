@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
 import { OwnerAuthProvider } from "@/contexts/OwnerAuthContext";
+import { OwnerLanguageProvider } from "@/contexts/OwnerLanguageContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import { OwnerProtectedRoute } from "@/components/OwnerProtectedRoute";
@@ -78,27 +79,29 @@ const App = () => (
                   <Route path="/guidebook/:id" element={<PublicGuidebook />} />
                   
                   {/* Owner Portal Login */}
-                  <Route path="/proprietario/login" element={<OwnerLogin />} />
-                  <Route path="/proprietario/reset-password" element={<OwnerResetPassword />} />
+                  <Route path="/proprietario/login" element={<OwnerLanguageProvider><OwnerLogin /></OwnerLanguageProvider>} />
+                  <Route path="/proprietario/reset-password" element={<OwnerLanguageProvider><OwnerResetPassword /></OwnerLanguageProvider>} />
                   
                   {/* Owner Portal Protected Routes */}
                   <Route
                     path="/proprietario/*"
                     element={
-                      <OwnerProtectedRoute>
-                        <div className="flex min-h-screen w-full">
-                          <OwnerSidebar />
-                          <main className="flex-1 md:ml-64 bg-background">
-                            <Routes>
-                              <Route path="/" element={<OwnerDashboard />} />
-                              <Route path="/reservas" element={<OwnerReservas />} />
-                              <Route path="/financeiro" element={<OwnerFinanceiro />} />
-                              <Route path="/relatorios" element={<OwnerRelatorios />} />
-                              <Route path="/documentos" element={<OwnerDocumentos />} />
-                            </Routes>
-                          </main>
-                        </div>
-                      </OwnerProtectedRoute>
+                      <OwnerLanguageProvider>
+                        <OwnerProtectedRoute>
+                          <div className="flex min-h-screen w-full">
+                            <OwnerSidebar />
+                            <main className="flex-1 md:ml-64 bg-background">
+                              <Routes>
+                                <Route path="/" element={<OwnerDashboard />} />
+                                <Route path="/reservas" element={<OwnerReservas />} />
+                                <Route path="/financeiro" element={<OwnerFinanceiro />} />
+                                <Route path="/relatorios" element={<OwnerRelatorios />} />
+                                <Route path="/documentos" element={<OwnerDocumentos />} />
+                              </Routes>
+                            </main>
+                          </div>
+                        </OwnerProtectedRoute>
+                      </OwnerLanguageProvider>
                     }
                   />
                   

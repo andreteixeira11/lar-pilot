@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { CalendarDays, Users, Moon, Euro } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS } from "date-fns/locale";
 
 interface Reservation {
   id: string;
@@ -34,18 +35,21 @@ interface Reservation {
   booking_source: string | null;
 }
 
-const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  confirmada: { label: "Confirmada", variant: "default" },
-  concluida: { label: "Concluída", variant: "secondary" },
-  cancelada: { label: "Cancelada", variant: "destructive" },
-  pendente: { label: "Pendente", variant: "outline" },
-};
-
 export default function OwnerReservas() {
   const { owner } = useOwnerAuth();
+  const { t, language } = useOwnerLanguage();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState("all");
+
+  const dateLocale = language === "pt" ? pt : enUS;
+
+  const statusLabels: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    confirmada: { label: t("reservations.confirmed"), variant: "default" },
+    concluida: { label: t("reservations.completed"), variant: "secondary" },
+    cancelada: { label: t("reservations.cancelled"), variant: "destructive" },
+    pendente: { label: t("reservations.pending"), variant: "outline" },
+  };
 
   useEffect(() => {
     if (owner?.propertyId) {
@@ -118,14 +122,14 @@ export default function OwnerReservas() {
 
   const formatCurrency = (value: number | null) => {
     if (value === null) return "-";
-    return new Intl.NumberFormat("pt-PT", {
+    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
       style: "currency",
       currency: "EUR",
     }).format(value);
   };
 
   const formatDate = (dateStr: string) => {
-    return format(new Date(dateStr), "dd MMM yyyy", { locale: pt });
+    return format(new Date(dateStr), "dd MMM yyyy", { locale: dateLocale });
   };
 
   // Summary stats
@@ -139,22 +143,22 @@ export default function OwnerReservas() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Reservas</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("reservations.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Acompanhe as reservas da sua propriedade
+            {t("reservations.subtitle")}
           </p>
         </div>
 
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Período" />
+            <SelectValue placeholder={t("dashboard.period")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
-            <SelectItem value="current">Mês Atual</SelectItem>
-            <SelectItem value="last">Mês Anterior</SelectItem>
-            <SelectItem value="last3">Últimos 3 Meses</SelectItem>
-            <SelectItem value="year">Este Ano</SelectItem>
+            <SelectItem value="all">{language === "pt" ? "Todas" : "All"}</SelectItem>
+            <SelectItem value="current">{t("dashboard.currentMonth")}</SelectItem>
+            <SelectItem value="last">{t("dashboard.lastMonth")}</SelectItem>
+            <SelectItem value="last3">{t("dashboard.last3Months")}</SelectItem>
+            <SelectItem value="year">{t("dashboard.thisYear")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -165,7 +169,7 @@ export default function OwnerReservas() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Reservas</span>
+              <span className="text-sm text-muted-foreground">{t("reservations.title")}</span>
             </div>
             <p className="text-2xl font-bold mt-1">{totalReservations}</p>
           </CardContent>
@@ -174,7 +178,7 @@ export default function OwnerReservas() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Confirmadas</span>
+              <span className="text-sm text-muted-foreground">{t("reservations.confirmed")}</span>
             </div>
             <p className="text-2xl font-bold mt-1">{confirmedCount}</p>
           </CardContent>
@@ -183,7 +187,7 @@ export default function OwnerReservas() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Moon className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Noites</span>
+              <span className="text-sm text-muted-foreground">{t("reservations.nights")}</span>
             </div>
             <p className="text-2xl font-bold mt-1">{totalNights}</p>
           </CardContent>
@@ -192,7 +196,7 @@ export default function OwnerReservas() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <Euro className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Receita</span>
+              <span className="text-sm text-muted-foreground">{t("dashboard.revenue")}</span>
             </div>
             <p className="text-2xl font-bold mt-1">{formatCurrency(totalRevenue)}</p>
           </CardContent>
@@ -202,29 +206,29 @@ export default function OwnerReservas() {
       {/* Reservations Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Reservas</CardTitle>
+          <CardTitle>{language === "pt" ? "Lista de Reservas" : "Reservation List"}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="py-8 text-center text-muted-foreground">
-              A carregar...
+              {t("common.loading")}
             </div>
           ) : reservations.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Sem reservas neste período</p>
+              <p>{t("reservations.noReservations")}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Check-in</TableHead>
-                    <TableHead>Check-out</TableHead>
-                    <TableHead className="text-center">Noites</TableHead>
-                    <TableHead className="text-center">Hóspedes</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead>{t("reservations.checkIn")}</TableHead>
+                    <TableHead>{t("reservations.checkOut")}</TableHead>
+                    <TableHead className="text-center">{t("reservations.nights")}</TableHead>
+                    <TableHead className="text-center">{t("reservations.guest")}</TableHead>
+                    <TableHead className="text-right">{t("reservations.value")}</TableHead>
+                    <TableHead>{t("reservations.status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

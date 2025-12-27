@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS } from "date-fns/locale";
 
 interface Document {
   id: string;
@@ -32,34 +33,37 @@ interface Document {
   created_at: string;
 }
 
-const documentTypeLabels: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  contrato: {
-    label: "Contrato de Gestão",
-    icon: <FileCheck className="w-4 h-4" />,
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  },
-  fatura: {
-    label: "Fatura",
-    icon: <FileText className="w-4 h-4" />,
-    color: "bg-green-500/10 text-green-600 border-green-500/20",
-  },
-  relatorio: {
-    label: "Relatório",
-    icon: <FileWarning className="w-4 h-4" />,
-    color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  },
-  outros: {
-    label: "Outros",
-    icon: <FolderOpen className="w-4 h-4" />,
-    color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
-  },
-};
-
 export default function OwnerDocumentos() {
   const { owner } = useOwnerAuth();
+  const { t, language } = useOwnerLanguage();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  const dateLocale = language === "pt" ? pt : enUS;
+
+  const documentTypeLabels: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+    contrato: {
+      label: t("documents.contract"),
+      icon: <FileCheck className="w-4 h-4" />,
+      color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+    },
+    fatura: {
+      label: t("documents.invoice"),
+      icon: <FileText className="w-4 h-4" />,
+      color: "bg-green-500/10 text-green-600 border-green-500/20",
+    },
+    relatorio: {
+      label: t("documents.report"),
+      icon: <FileWarning className="w-4 h-4" />,
+      color: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+    },
+    outros: {
+      label: t("documents.other"),
+      icon: <FolderOpen className="w-4 h-4" />,
+      color: "bg-gray-500/10 text-gray-600 border-gray-500/20",
+    },
+  };
 
   useEffect(() => {
     if (owner?.propertyId) {
@@ -99,7 +103,7 @@ export default function OwnerDocumentos() {
   };
 
   const formatDate = (dateStr: string) => {
-    return format(new Date(dateStr), "dd MMM yyyy", { locale: pt });
+    return format(new Date(dateStr), "dd MMM yyyy", { locale: dateLocale });
   };
 
   const handleDownload = (url: string, name: string) => {
@@ -129,14 +133,14 @@ export default function OwnerDocumentos() {
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Documentos</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("documents.title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Contratos, faturas e outros documentos da sua propriedade
+          {t("documents.subtitle")}
         </p>
       </div>
 
       {/* Type Filter Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card
           className={`cursor-pointer transition-colors ${
             selectedType === null ? "ring-2 ring-primary" : "hover:bg-muted/50"
@@ -146,7 +150,7 @@ export default function OwnerDocumentos() {
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">
               <FolderOpen className="w-4 h-4 text-primary" />
-              <span className="text-sm font-medium">Todos</span>
+              <span className="text-sm font-medium">{language === "pt" ? "Todos" : "All"}</span>
             </div>
             <p className="text-2xl font-bold mt-1">{documents.length}</p>
           </CardContent>
@@ -174,24 +178,24 @@ export default function OwnerDocumentos() {
       {/* Documents Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Documentos</CardTitle>
+          <CardTitle>{language === "pt" ? "Lista de Documentos" : "Document List"}</CardTitle>
           <CardDescription>
             {selectedType
-              ? `A mostrar: ${documentTypeLabels[selectedType]?.label || selectedType}`
-              : "Todos os documentos disponíveis"}
+              ? `${language === "pt" ? "A mostrar:" : "Showing:"} ${documentTypeLabels[selectedType]?.label || selectedType}`
+              : language === "pt" ? "Todos os documentos disponíveis" : "All available documents"}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground">A carregar...</div>
+            <div className="py-8 text-center text-muted-foreground">{t("common.loading")}</div>
           ) : filteredDocuments.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Sem documentos</p>
+              <p className="font-medium">{t("documents.noDocuments")}</p>
               <p className="text-sm mt-1">
                 {selectedType
-                  ? "Não existem documentos deste tipo"
-                  : "O seu gestor ainda não partilhou documentos consigo"}
+                  ? (language === "pt" ? "Não existem documentos deste tipo" : "No documents of this type")
+                  : (language === "pt" ? "O seu gestor ainda não partilhou documentos consigo" : "Your manager hasn't shared any documents yet")}
               </p>
             </div>
           ) : (
@@ -199,11 +203,11 @@ export default function OwnerDocumentos() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Documento</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Tamanho</TableHead>
-                    <TableHead className="text-right">Ação</TableHead>
+                    <TableHead>{language === "pt" ? "Documento" : "Document"}</TableHead>
+                    <TableHead>{t("documents.type")}</TableHead>
+                    <TableHead>{t("documents.date")}</TableHead>
+                    <TableHead>{language === "pt" ? "Tamanho" : "Size"}</TableHead>
+                    <TableHead className="text-right">{t("documents.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -242,7 +246,7 @@ export default function OwnerDocumentos() {
                               onClick={() => handleDownload(doc.file_url, doc.name)}
                             >
                               <Download className="w-4 h-4 mr-2" />
-                              Descarregar
+                              {t("common.download")}
                             </Button>
                           </div>
                         </TableCell>

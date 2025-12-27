@@ -176,11 +176,18 @@ const Dashboard = () => {
     return (
       <div className="p-4 md:p-6 lg:p-8">
         <PageHeader
-          title="Dashboard"
-          description="Visão geral da sua propriedade"
+          title="Dashboard da Propriedade"
+          description="Selecione uma propriedade para ver os detalhes"
         />
-        <div className="mt-8 text-center text-muted-foreground">
-          Selecione uma propriedade para ver o dashboard
+        <div className="mt-8 text-center py-12">
+          <BedDouble className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Nenhuma propriedade selecionada</h3>
+          <p className="text-muted-foreground mb-4">
+            Use o seletor no topo para escolher uma propriedade
+          </p>
+          <Button onClick={() => navigate("/overview")} variant="outline">
+            Voltar à Visão Geral
+          </Button>
         </div>
       </div>
     );
@@ -188,10 +195,15 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <PageHeader
-        title="Dashboard"
-        description={`Visão geral - ${selectedProperty?.name}`}
-      />
+      <div className="flex items-center justify-between mb-6">
+        <PageHeader
+          title={selectedProperty?.name || "Dashboard"}
+          description="Detalhes e métricas da propriedade"
+        />
+        <Button variant="outline" onClick={() => navigate("/overview")}>
+          ← Visão Geral
+        </Button>
+      </div>
 
       <div className="grid gap-6 mt-6">
         {/* Stats Cards - Row 1 */}

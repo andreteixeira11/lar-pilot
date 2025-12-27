@@ -116,7 +116,7 @@ const DadosAlojamento = () => {
     if (!selectedProperty) return;
     deleteProperty(selectedProperty.id);
     toast.success("Propriedade eliminada com sucesso!");
-    navigate("/dashboard");
+    navigate("/overview");
   };
 
   if (!selectedProperty) {

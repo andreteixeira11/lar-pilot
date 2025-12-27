@@ -179,7 +179,7 @@ export default function Auth() {
       description: "A sua palavra-passe foi alterada com sucesso.",
     });
     setIsLoading(false);
-    navigate("/dashboard");
+    navigate("/overview");
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -245,7 +245,7 @@ export default function Auth() {
       description: "Pode agora aceder à plataforma.",
     });
     setIsLoading(false);
-    navigate("/dashboard");
+    navigate("/overview");
   };
 
   // Password reset page

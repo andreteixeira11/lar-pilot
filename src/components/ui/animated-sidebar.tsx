@@ -197,7 +197,24 @@ export const AnimatedSidebar = () => {
 
   const renderNavigation = (onItemClick?: () => void) => (
     <>
-      {/* Dashboard */}
+      {/* Visão Geral - New Overview Page */}
+      <NavLink
+        to="/overview"
+        onClick={onItemClick}
+        className={({ isActive }) =>
+          cn(
+            "flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors",
+            isActive
+              ? "bg-primary/10 text-primary font-medium shadow-sm"
+              : "hover:bg-primary/10 hover:text-primary text-foreground"
+          )
+        }
+      >
+        <LayoutDashboard className="h-5 w-5" />
+        <span>Visão Geral</span>
+      </NavLink>
+
+      {/* Dashboard Propriedade */}
       <NavLink
         to="/dashboard"
         onClick={onItemClick}
@@ -210,8 +227,8 @@ export const AnimatedSidebar = () => {
           )
         }
       >
-        <LayoutDashboard className="h-5 w-5" />
-        <span>Dashboard</span>
+        <Building2 className="h-5 w-5" />
+        <span>Dashboard Propriedade</span>
       </NavLink>
 
       {/* Collapsible Groups */}

@@ -19,6 +19,7 @@ import Simulador from "./pages/Simulador";
 import CheckIn from "./pages/CheckIn";
 import CheckIns from "./pages/CheckIns";
 import Dashboard from "./pages/Dashboard";
+import OverviewDashboard from "./pages/OverviewDashboard";
 import Reservas from "./pages/Reservas";
 import ResumoMensal from "./pages/ResumoMensal";
 import TaxaTuristica from "./pages/TaxaTuristica";
@@ -104,6 +105,7 @@ const App = () => (
                         <NotificationMenu />
                       </header>
                       <Routes>
+                        <Route path="/overview" element={<OverviewDashboard />} />
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/reservas" element={<Reservas />} />
                         <Route path="/checkins" element={<CheckIns />} />

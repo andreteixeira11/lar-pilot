@@ -136,7 +136,7 @@ export default function AcceptInvite() {
           {status === "success" && (
             <Button 
               className="w-full rounded-full" 
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/overview")}
             >
               Ir para o Dashboard
             </Button>

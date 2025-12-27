@@ -766,6 +766,140 @@ export type Database = {
           },
         ]
       }
+      owner_costs: {
+        Row: {
+          amount: number
+          cost_type: string
+          created_at: string
+          description: string | null
+          id: string
+          month: string
+          property_id: string
+          reservation_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          cost_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month: string
+          property_id: string
+          reservation_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cost_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: string
+          property_id?: string
+          reservation_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_costs_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_costs_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owner_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_size: number | null
+          file_url: string
+          id: string
+          name: string
+          owner_id: string
+          property_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          name: string
+          owner_id: string
+          property_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          property_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_documents_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "property_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      owner_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          owner_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          owner_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          owner_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_sessions_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "property_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -982,6 +1116,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_members_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_owners: {
+        Row: {
+          commission_rate: number | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          phone: string | null
+          property_id: string
+          updated_at: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          phone?: string | null
+          property_id: string
+          updated_at?: string
+        }
+        Update: {
+          commission_rate?: number | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          phone?: string | null
+          property_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_owners_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
@@ -1349,6 +1527,15 @@ export type Database = {
       is_property_owner: {
         Args: { _property_id: string; _user_id: string }
         Returns: boolean
+      }
+      verify_owner_login: {
+        Args: { p_email: string; p_password: string }
+        Returns: {
+          owner_id: string
+          owner_name: string
+          property_id: string
+          property_name: string
+        }[]
       }
     }
     Enums: {

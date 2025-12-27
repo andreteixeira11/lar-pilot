@@ -7,8 +7,11 @@ import { AnimatedSidebar } from "@/components/ui/animated-sidebar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PropertyProvider } from "@/contexts/PropertyContext";
 import { ReservaProvider } from "@/contexts/ReservaContext";
+import { OwnerAuthProvider } from "@/contexts/OwnerAuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { OwnerProtectedRoute } from "@/components/OwnerProtectedRoute";
+import { OwnerSidebar } from "@/components/OwnerSidebar";
 import { PropertySelectorCommand } from "@/components/PropertySelectorCommand";
 import { NotificationMenu } from "@/components/NotificationMenu";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -42,6 +45,12 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminReports from "./pages/admin/AdminReports";
+import OwnerLogin from "./pages/proprietario/OwnerLogin";
+import OwnerDashboard from "./pages/proprietario/OwnerDashboard";
+import OwnerReservas from "./pages/proprietario/OwnerReservas";
+import OwnerFinanceiro from "./pages/proprietario/OwnerFinanceiro";
+import OwnerRelatorios from "./pages/proprietario/OwnerRelatorios";
+import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
 
 import NotFound from "./pages/NotFound";
 
@@ -52,86 +61,112 @@ const App = () => (
     <AuthProvider>
       <PropertyProvider>
         <ReservaProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/simulador" element={<Simulador />} />
-        <Route path="/checkin/:token" element={<CheckIn />} />
-        <Route path="/accept-invite" element={<AcceptInvite />} />
-        <Route path="/p/:slug" element={<PublicBookingPage />} />
-        <Route path="/guidebook/:id" element={<PublicGuidebook />} />
-              
-              {/* Admin Login Page */}
-              <Route path="/admin" element={<AdminAuth />} />
-              
-              {/* Admin Protected Routes */}
-              <Route
-                path="/admin/*"
-                element={
-                  <AdminRoute>
-                    <SidebarProvider>
+          <OwnerAuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/simulador" element={<Simulador />} />
+                  <Route path="/checkin/:token" element={<CheckIn />} />
+                  <Route path="/accept-invite" element={<AcceptInvite />} />
+                  <Route path="/p/:slug" element={<PublicBookingPage />} />
+                  <Route path="/guidebook/:id" element={<PublicGuidebook />} />
+                  
+                  {/* Owner Portal Login */}
+                  <Route path="/proprietario/login" element={<OwnerLogin />} />
+                  
+                  {/* Owner Portal Protected Routes */}
+                  <Route
+                    path="/proprietario/*"
+                    element={
+                      <OwnerProtectedRoute>
+                        <div className="flex min-h-screen w-full">
+                          <OwnerSidebar />
+                          <main className="flex-1 md:ml-64 bg-background">
+                            <Routes>
+                              <Route path="/" element={<OwnerDashboard />} />
+                              <Route path="/reservas" element={<OwnerReservas />} />
+                              <Route path="/financeiro" element={<OwnerFinanceiro />} />
+                              <Route path="/relatorios" element={<OwnerRelatorios />} />
+                              <Route path="/documentos" element={<OwnerDocumentos />} />
+                            </Routes>
+                          </main>
+                        </div>
+                      </OwnerProtectedRoute>
+                    }
+                  />
+                  
+                  {/* Admin Login Page */}
+                  <Route path="/admin" element={<AdminAuth />} />
+                  
+                  {/* Admin Protected Routes */}
+                  <Route
+                    path="/admin/*"
+                    element={
+                      <AdminRoute>
+                        <SidebarProvider>
+                          <div className="flex min-h-screen w-full">
+                            <AdminSidebar />
+                            <main className="flex-1 md:ml-64 bg-background">
+                              <Routes>
+                                <Route path="/dashboard" element={<AdminDashboard />} />
+                                <Route path="/users" element={<AdminUsers />} />
+                                <Route path="/properties" element={<AdminProperties />} />
+                                <Route path="/reports" element={<AdminReports />} />
+                              </Routes>
+                            </main>
+                          </div>
+                        </SidebarProvider>
+                      </AdminRoute>
+                    }
+                  />
+
+                  {/* Regular Backoffice Routes */}
+                  <Route
+                    path="/*"
+                    element={
+                    <ProtectedRoute>
                       <div className="flex min-h-screen w-full">
-                        <AdminSidebar />
-                        <main className="flex-1 md:ml-64 bg-background">
+                        <AnimatedSidebar />
+                          <main className="flex-1 md:ml-72 bg-background">
+                          <header className="h-14 sm:h-16 border-b border-border flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4 bg-card sticky top-0 z-10">
+                            <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-md">
+                              <PropertySelectorCommand />
+                            </div>
+                            <NotificationMenu />
+                          </header>
                           <Routes>
-                            <Route path="/dashboard" element={<AdminDashboard />} />
-                            <Route path="/users" element={<AdminUsers />} />
-                            <Route path="/properties" element={<AdminProperties />} />
-                            <Route path="/reports" element={<AdminReports />} />
+                            <Route path="/overview" element={<OverviewDashboard />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/reservas" element={<Reservas />} />
+                            <Route path="/checkins" element={<CheckIns />} />
+                            <Route path="/alojamento" element={<DadosAlojamento />} />
+                            <Route path="/acessos" element={<Acessos />} />
+                            <Route path="/calendario-fiscal" element={<CalendarioFiscal />} />
+                            <Route path="/resumo-mensal" element={<ResumoMensal />} />
+                            <Route path="/taxa-turistica" element={<TaxaTuristica />} />
+                            <Route path="/ine" element={<INE />} />
+                            <Route path="/perfil" element={<Perfil />} />
+                            <Route path="/subscriptions" element={<Subscriptions />} />
+                            <Route path="/equipa" element={<Equipa />} />
+                            <Route path="/reservas-diretas" element={<ReservasDiretas />} />
+                            <Route path="/faturacao" element={<Faturacao />} />
+                            <Route path="/guidebooks" element={<Guidebooks />} />
+                            <Route path="/upsell-orders" element={<UpsellOrders />} />
+                            <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>
                       </div>
-                    </SidebarProvider>
-                  </AdminRoute>
-                }
-              />
-
-              {/* Regular Backoffice Routes */}
-              <Route
-                path="/*"
-                element={
-                <ProtectedRoute>
-                  <div className="flex min-h-screen w-full">
-                    <AnimatedSidebar />
-                      <main className="flex-1 md:ml-72 bg-background">
-                      <header className="h-14 sm:h-16 border-b border-border flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4 bg-card sticky top-0 z-10">
-                        <div className="flex-1 max-w-[180px] sm:max-w-xs md:max-w-md">
-                          <PropertySelectorCommand />
-                        </div>
-                        <NotificationMenu />
-                      </header>
-                      <Routes>
-                        <Route path="/overview" element={<OverviewDashboard />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/reservas" element={<Reservas />} />
-                        <Route path="/checkins" element={<CheckIns />} />
-                        <Route path="/alojamento" element={<DadosAlojamento />} />
-                        <Route path="/acessos" element={<Acessos />} />
-                        <Route path="/calendario-fiscal" element={<CalendarioFiscal />} />
-                        <Route path="/resumo-mensal" element={<ResumoMensal />} />
-                        <Route path="/taxa-turistica" element={<TaxaTuristica />} />
-                        <Route path="/ine" element={<INE />} />
-                        <Route path="/perfil" element={<Perfil />} />
-                        <Route path="/subscriptions" element={<Subscriptions />} />
-                        <Route path="/equipa" element={<Equipa />} />
-                        <Route path="/reservas-diretas" element={<ReservasDiretas />} />
-                        <Route path="/faturacao" element={<Faturacao />} />
-                        <Route path="/guidebooks" element={<Guidebooks />} />
-                        <Route path="/upsell-orders" element={<UpsellOrders />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </main>
-                  </div>
-                </ProtectedRoute>
-                }
-              />
-            </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
+                    </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </OwnerAuthProvider>
         </ReservaProvider>
       </PropertyProvider>
     </AuthProvider>

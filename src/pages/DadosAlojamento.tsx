@@ -91,9 +91,12 @@ const DadosAlojamento = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedUrlData, error: signedError } = await supabase.storage
         .from('insurance-documents')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 31536000); // 1 year expiry for document access
+      
+      if (signedError) throw signedError;
+      const publicUrl = signedUrlData.signedUrl;
 
       setFormData({ ...formData, insuranceFileUrl: publicUrl });
       toast.success("Ficheiro carregado com sucesso!");

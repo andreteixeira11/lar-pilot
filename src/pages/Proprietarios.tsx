@@ -329,9 +329,11 @@ export default function Proprietarios() {
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage
+      const { data: signedUrlData, error: signedError } = await supabase.storage
         .from("insurance-documents")
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 31536000); // 1 year expiry
+
+      if (signedError) throw signedError;
 
       // Create document record
       const { error: dbError } = await supabase.from("owner_documents").insert({
@@ -339,7 +341,7 @@ export default function Proprietarios() {
         owner_id: selectedOwner.id,
         document_type: newDoc.document_type,
         name: newDoc.name,
-        file_url: urlData.publicUrl,
+        file_url: signedUrlData.signedUrl,
         file_size: newDoc.file.size,
         uploaded_by: user?.id,
       });

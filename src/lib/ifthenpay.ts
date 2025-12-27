@@ -54,12 +54,14 @@ export class IfthenPayService {
     // Generate a reference (this should come from IfthenPay API)
     const reference = this.generateReference();
     
-    console.log('Creating Multibanco payment:', {
-      entity: MULTIBANCO_CONFIG.entity,
-      reference,
-      amount: formattedAmount,
-      orderId: request.orderId,
-    });
+    if (import.meta.env.DEV) {
+      console.log('Creating Multibanco payment:', {
+        entity: MULTIBANCO_CONFIG.entity,
+        reference,
+        amount: formattedAmount,
+        orderId: request.orderId,
+      });
+    }
     
     return {
       entidade: MULTIBANCO_CONFIG.entity,
@@ -80,12 +82,14 @@ export class IfthenPayService {
     // Format amount to 2 decimal places
     const formattedAmount = request.amount.toFixed(2);
     
-    console.log('Creating MB Way payment:', {
-      entity: MBWAY_CONFIG.entity,
-      phone: request.phone,
-      amount: formattedAmount,
-      orderId: request.orderId,
-    });
+    if (import.meta.env.DEV) {
+      console.log('Creating MB Way payment:', {
+        entity: MBWAY_CONFIG.entity,
+        phone: request.phone,
+        amount: formattedAmount,
+        orderId: request.orderId,
+      });
+    }
     
     // In a real implementation, this would call the IfthenPay API
     return {

@@ -44,8 +44,18 @@ export default function OwnerResetPassword() {
     e.preventDefault();
     setError(null);
 
-    if (password.length < 6) {
-      setError("A password deve ter pelo menos 6 caracteres.");
+    if (password.length < 8) {
+      setError("A password deve ter pelo menos 8 caracteres.");
+      return;
+    }
+
+    // Check for complexity requirements
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    
+    if (!hasUppercase || !hasLowercase || !hasNumber) {
+      setError("A password deve conter pelo menos uma letra maiúscula, uma minúscula e um número.");
       return;
     }
 

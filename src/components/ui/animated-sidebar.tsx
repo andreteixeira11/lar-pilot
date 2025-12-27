@@ -63,6 +63,7 @@ const menuGroups: MenuGroup[] = [
       { title: "Calendário", url: "/reservas", icon: CalendarIcon },
       { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
       { title: "Reservas Diretas", url: "/reservas-diretas", icon: Globe },
+      { title: "Pedidos Upsell", url: "/upsell-orders", icon: ShoppingCart },
     ],
   },
   {
@@ -80,6 +81,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
       { title: "INE", url: "/ine", icon: BarChart3 },
+      { title: "Proprietários", url: "/proprietarios", icon: UserCheck },
     ],
   },
 ];

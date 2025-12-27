@@ -51,6 +51,7 @@ import OwnerReservas from "./pages/proprietario/OwnerReservas";
 import OwnerFinanceiro from "./pages/proprietario/OwnerFinanceiro";
 import OwnerRelatorios from "./pages/proprietario/OwnerRelatorios";
 import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
+import Proprietarios from "./pages/Proprietarios";
 
 import NotFound from "./pages/NotFound";
 
@@ -156,6 +157,7 @@ const App = () => (
                             <Route path="/faturacao" element={<Faturacao />} />
                             <Route path="/guidebooks" element={<Guidebooks />} />
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
+                            <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Home, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { OwnerForgotPasswordDialog } from "@/components/OwnerForgotPasswordDialog";
 
 export default function OwnerLogin() {
   const navigate = useNavigate();
@@ -84,7 +85,10 @@ export default function OwnerLogin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <OwnerForgotPasswordDialog />
+                </div>
                 <div className="relative">
                   <Input
                     id="password"

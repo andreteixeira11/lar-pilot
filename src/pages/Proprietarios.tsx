@@ -63,6 +63,7 @@ import {
   Wrench,
   Sparkles,
   Plus,
+  KeyRound,
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -345,6 +346,21 @@ export default function Proprietarios() {
 
       if (dbError) throw dbError;
 
+      // Send notification email
+      try {
+        await supabase.functions.invoke("send-owner-notification", {
+          body: {
+            type: "new_document",
+            ownerEmail: selectedOwner.email,
+            ownerName: selectedOwner.name,
+            propertyName: selectedOwner.property?.name || "Propriedade",
+            documentName: newDoc.name,
+          },
+        });
+      } catch (emailError) {
+        console.error("Email notification failed:", emailError);
+      }
+
       toast({ title: "Documento enviado" });
       setNewDoc({ document_type: "outros", name: "", file: null });
       setDocDialogOpen(false);
@@ -357,6 +373,51 @@ export default function Proprietarios() {
       });
     } finally {
       setIsUploadingDoc(false);
+    }
+  };
+
+  const handleResetPassword = async (owner: PropertyOwner) => {
+    try {
+      // Generate reset token
+      const resetToken = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      // Save token
+      const { error: updateError } = await supabase
+        .from("property_owners")
+        .update({
+          password_reset_token: resetToken,
+          password_reset_expires: expiresAt.toISOString(),
+        })
+        .eq("id", owner.id);
+
+      if (updateError) throw updateError;
+
+      // Send email
+      const resetLink = `${window.location.origin}/proprietario/reset-password?token=${resetToken}`;
+      
+      await supabase.functions.invoke("send-owner-notification", {
+        body: {
+          type: "password_reset",
+          ownerEmail: owner.email,
+          ownerName: owner.name,
+          propertyName: owner.property?.name || "Propriedade",
+          resetLink,
+        },
+      });
+
+      toast({ 
+        title: "Email enviado",
+        description: `Link de reset enviado para ${owner.email}`
+      });
+    } catch (err) {
+      console.error("Reset password error:", err);
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar o email de reset.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -729,6 +790,14 @@ export default function Proprietarios() {
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResetPassword(selectedOwner)}
+                      >
+                        <KeyRound className="h-4 w-4 mr-2" />
+                        Reset Password
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="sm">

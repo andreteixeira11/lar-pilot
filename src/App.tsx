@@ -46,6 +46,7 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminReports from "./pages/admin/AdminReports";
 import OwnerLogin from "./pages/proprietario/OwnerLogin";
+import OwnerResetPassword from "./pages/proprietario/OwnerResetPassword";
 import OwnerDashboard from "./pages/proprietario/OwnerDashboard";
 import OwnerReservas from "./pages/proprietario/OwnerReservas";
 import OwnerFinanceiro from "./pages/proprietario/OwnerFinanceiro";
@@ -78,6 +79,7 @@ const App = () => (
                   
                   {/* Owner Portal Login */}
                   <Route path="/proprietario/login" element={<OwnerLogin />} />
+                  <Route path="/proprietario/reset-password" element={<OwnerResetPassword />} />
                   
                   {/* Owner Portal Protected Routes */}
                   <Route

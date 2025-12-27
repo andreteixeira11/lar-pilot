@@ -1131,6 +1131,8 @@ export type Database = {
           id: string
           name: string
           password_hash: string
+          password_reset_expires: string | null
+          password_reset_token: string | null
           phone: string | null
           property_id: string
           updated_at: string
@@ -1142,6 +1144,8 @@ export type Database = {
           id?: string
           name: string
           password_hash: string
+          password_reset_expires?: string | null
+          password_reset_token?: string | null
           phone?: string | null
           property_id: string
           updated_at?: string
@@ -1153,6 +1157,8 @@ export type Database = {
           id?: string
           name?: string
           password_hash?: string
+          password_reset_expires?: string | null
+          password_reset_token?: string | null
           phone?: string | null
           property_id?: string
           updated_at?: string

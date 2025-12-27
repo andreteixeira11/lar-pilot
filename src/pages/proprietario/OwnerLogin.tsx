@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Home, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { OwnerForgotPasswordDialog } from "@/components/OwnerForgotPasswordDialog";
+import { OwnerLanguageSelector } from "@/components/OwnerLanguageSelector";
 
 export default function OwnerLogin() {
   const navigate = useNavigate();
   const { login, isLoading } = useOwnerAuth();
+  const { t } = useOwnerLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,7 +39,7 @@ export default function OwnerLogin() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">A carregar...</div>
+        <div className="animate-pulse text-muted-foreground">{t("login.loading")}</div>
       </div>
     );
   }
@@ -44,22 +47,27 @@ export default function OwnerLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
       <div className="w-full max-w-md">
+        {/* Language Selector */}
+        <div className="flex justify-end mb-4">
+          <OwnerLanguageSelector />
+        </div>
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4">
             <Home className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Portal do Proprietário</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("login.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Acompanhe o desempenho da sua propriedade
+            {t("login.subtitle")}
           </p>
         </div>
 
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle>Entrar</CardTitle>
+            <CardTitle>{t("login.enter")}</CardTitle>
             <CardDescription>
-              Use as credenciais fornecidas pelo seu gestor
+              {t("login.credentials")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -72,7 +80,7 @@ export default function OwnerLogin() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("login.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -86,7 +94,7 @@ export default function OwnerLogin() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">{t("login.password")}</Label>
                   <OwnerForgotPasswordDialog />
                 </div>
                 <div className="relative">
@@ -120,15 +128,15 @@ export default function OwnerLogin() {
                 className="w-full"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "A entrar..." : "Entrar"}
+                {isSubmitting ? t("login.submitting") : t("login.enter")}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>
-                Não tem acesso?{" "}
+                {t("login.noAccess")}{" "}
                 <span className="text-foreground">
-                  Contacte o seu gestor de propriedade.
+                  {t("login.contactManager")}
                 </span>
               </p>
             </div>

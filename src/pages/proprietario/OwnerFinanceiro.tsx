@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import {
   ShowerHead,
 } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -50,14 +51,9 @@ interface FinancialSummary {
   commissionRate: number;
 }
 
-const costTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
-  limpeza: { label: "Limpeza", icon: <ShowerHead className="w-4 h-4" /> },
-  manutencao: { label: "Manutenção", icon: <Wrench className="w-4 h-4" /> },
-  outros: { label: "Outros", icon: <Sparkles className="w-4 h-4" /> },
-};
-
 export default function OwnerFinanceiro() {
   const { owner } = useOwnerAuth();
+  const { t, language } = useOwnerLanguage();
   const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
   const [summary, setSummary] = useState<FinancialSummary>({
     grossRevenue: 0,
@@ -70,12 +66,20 @@ export default function OwnerFinanceiro() {
   const [costs, setCosts] = useState<CostItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const dateLocale = language === "pt" ? pt : enUS;
+
+  const costTypeLabels: Record<string, { label: string; icon: React.ReactNode }> = {
+    limpeza: { label: t("financial.cleaning"), icon: <ShowerHead className="w-4 h-4" /> },
+    manutencao: { label: t("financial.maintenance"), icon: <Wrench className="w-4 h-4" /> },
+    outros: { label: t("financial.other"), icon: <Sparkles className="w-4 h-4" /> },
+  };
+
   // Generate month options for the last 12 months
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
     const date = subMonths(new Date(), i);
     return {
       value: format(date, "yyyy-MM"),
-      label: format(date, "MMMM yyyy", { locale: pt }),
+      label: format(date, "MMMM yyyy", { locale: dateLocale }),
     };
   });
 
@@ -142,7 +146,7 @@ export default function OwnerFinanceiro() {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-PT", {
+    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
       style: "currency",
       currency: "EUR",
     }).format(value);
@@ -154,21 +158,21 @@ export default function OwnerFinanceiro() {
 
     // Header
     doc.setFontSize(20);
-    doc.text("Relatório Financeiro", 20, 20);
+    doc.text(language === "pt" ? "Relatório Financeiro" : "Financial Report", 20, 20);
     doc.setFontSize(12);
-    doc.text(`Propriedade: ${owner?.propertyName}`, 20, 30);
-    doc.text(`Período: ${monthLabel}`, 20, 38);
+    doc.text(`${language === "pt" ? "Propriedade" : "Property"}: ${owner?.propertyName}`, 20, 30);
+    doc.text(`${language === "pt" ? "Período" : "Period"}: ${monthLabel}`, 20, 38);
 
     // Summary table
     autoTable(doc, {
       startY: 50,
-      head: [["Descrição", "Valor"]],
+      head: [[language === "pt" ? "Descrição" : "Description", language === "pt" ? "Valor" : "Value"]],
       body: [
-        ["Receita Bruta", formatCurrency(summary.grossRevenue)],
-        [`Comissão do Gestor (${summary.commissionRate}%)`, `- ${formatCurrency(summary.managerCommission)}`],
-        ["Receita Líquida", formatCurrency(summary.netRevenue)],
-        ["Total de Custos", `- ${formatCurrency(summary.totalCosts)}`],
-        ["Lucro Final", formatCurrency(summary.finalProfit)],
+        [t("financial.totalRevenue"), formatCurrency(summary.grossRevenue)],
+        [`${t("financial.managementCommission")} (${summary.commissionRate}%)`, `- ${formatCurrency(summary.managerCommission)}`],
+        [language === "pt" ? "Receita Líquida" : "Net Revenue", formatCurrency(summary.netRevenue)],
+        [t("financial.operationalCosts"), `- ${formatCurrency(summary.totalCosts)}`],
+        [t("financial.netProfit"), formatCurrency(summary.finalProfit)],
       ],
       theme: "grid",
       headStyles: { fillColor: [36, 125, 127] },
@@ -179,11 +183,11 @@ export default function OwnerFinanceiro() {
     if (costs.length > 0) {
       const currentY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 20;
       doc.setFontSize(14);
-      doc.text("Detalhe de Custos", 20, currentY);
+      doc.text(t("financial.costsBreakdown"), 20, currentY);
 
       autoTable(doc, {
         startY: currentY + 10,
-        head: [["Tipo", "Descrição", "Valor"]],
+        head: [[t("documents.type"), language === "pt" ? "Descrição" : "Description", language === "pt" ? "Valor" : "Value"]],
         body: costs.map((cost) => [
           costTypeLabels[cost.cost_type]?.label || cost.cost_type,
           cost.description || "-",
@@ -194,7 +198,7 @@ export default function OwnerFinanceiro() {
       });
     }
 
-    doc.save(`relatorio-financeiro-${selectedMonth}.pdf`);
+    doc.save(`${language === "pt" ? "relatorio-financeiro" : "financial-report"}-${selectedMonth}.pdf`);
   };
 
   return (
@@ -202,16 +206,16 @@ export default function OwnerFinanceiro() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Financeiro</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("financial.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Receitas, custos e lucro da sua propriedade
+            {t("financial.subtitle")}
           </p>
         </div>
 
         <div className="flex gap-2">
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="Mês" />
+              <SelectValue placeholder={language === "pt" ? "Mês" : "Month"} />
             </SelectTrigger>
             <SelectContent>
               {monthOptions.map((option) => (
@@ -235,23 +239,23 @@ export default function OwnerFinanceiro() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-green-500" />
-              Receitas
+              {language === "pt" ? "Receitas" : "Revenue"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Receita Bruta</span>
+              <span className="text-muted-foreground">{t("financial.totalRevenue")}</span>
               <span className="font-semibold">{formatCurrency(summary.grossRevenue)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-muted-foreground flex items-center gap-1">
                 <Percent className="w-3 h-3" />
-                Comissão ({summary.commissionRate}%)
+                {language === "pt" ? "Comissão" : "Commission"} ({summary.commissionRate}%)
               </span>
               <span className="text-destructive">- {formatCurrency(summary.managerCommission)}</span>
             </div>
             <div className="border-t pt-2 flex justify-between items-center">
-              <span className="font-medium">Receita Líquida</span>
+              <span className="font-medium">{language === "pt" ? "Receita Líquida" : "Net Revenue"}</span>
               <span className="font-bold text-lg">{formatCurrency(summary.netRevenue)}</span>
             </div>
           </CardContent>
@@ -262,12 +266,12 @@ export default function OwnerFinanceiro() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <TrendingDown className="w-4 h-4 text-red-500" />
-              Custos
+              {t("financial.operationalCosts")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {costs.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Sem custos registados</p>
+              <p className="text-muted-foreground text-sm">{t("financial.noCosts")}</p>
             ) : (
               costs.slice(0, 3).map((cost) => (
                 <div key={cost.id} className="flex justify-between items-center text-sm">
@@ -280,7 +284,7 @@ export default function OwnerFinanceiro() {
               ))
             )}
             <div className="border-t pt-2 flex justify-between items-center">
-              <span className="font-medium">Total Custos</span>
+              <span className="font-medium">{language === "pt" ? "Total Custos" : "Total Costs"}</span>
               <span className="font-bold text-lg text-destructive">
                 - {formatCurrency(summary.totalCosts)}
               </span>
@@ -293,7 +297,7 @@ export default function OwnerFinanceiro() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-primary flex items-center gap-2">
               <Wallet className="w-4 h-4" />
-              Lucro Final
+              {t("financial.netProfit")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -301,7 +305,7 @@ export default function OwnerFinanceiro() {
               {isLoading ? "..." : formatCurrency(summary.finalProfit)}
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Após comissão e custos operacionais
+              {language === "pt" ? "Após comissão e custos operacionais" : "After commission and operational costs"}
             </p>
           </CardContent>
         </Card>
@@ -310,40 +314,40 @@ export default function OwnerFinanceiro() {
       {/* Monthly Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle>Resumo Mensal</CardTitle>
+          <CardTitle>{language === "pt" ? "Resumo Mensal" : "Monthly Summary"}</CardTitle>
           <CardDescription>
-            Detalhamento completo das finanças de{" "}
+            {language === "pt" ? "Detalhamento completo das finanças de" : "Complete financial breakdown for"}{" "}
             {monthOptions.find((m) => m.value === selectedMonth)?.label}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground">A carregar...</div>
+            <div className="py-8 text-center text-muted-foreground">{t("common.loading")}</div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>{language === "pt" ? "Descrição" : "Description"}</TableHead>
+                  <TableHead className="text-right">{language === "pt" ? "Valor" : "Value"}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">Receita Bruta (Reservas)</TableCell>
+                  <TableCell className="font-medium">{t("financial.totalRevenue")} ({language === "pt" ? "Reservas" : "Bookings"})</TableCell>
                   <TableCell className="text-right text-green-600">
                     + {formatCurrency(summary.grossRevenue)}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-medium">
-                    Comissão do Gestor ({summary.commissionRate}%)
+                    {t("financial.managementCommission")} ({summary.commissionRate}%)
                   </TableCell>
                   <TableCell className="text-right text-destructive">
                     - {formatCurrency(summary.managerCommission)}
                   </TableCell>
                 </TableRow>
                 <TableRow className="bg-muted/50">
-                  <TableCell className="font-semibold">Receita Líquida</TableCell>
+                  <TableCell className="font-semibold">{language === "pt" ? "Receita Líquida" : "Net Revenue"}</TableCell>
                   <TableCell className="text-right font-semibold">
                     {formatCurrency(summary.netRevenue)}
                   </TableCell>
@@ -365,7 +369,7 @@ export default function OwnerFinanceiro() {
                   </TableRow>
                 ))}
                 <TableRow className="bg-primary/10">
-                  <TableCell className="font-bold text-primary">Lucro Final</TableCell>
+                  <TableCell className="font-bold text-primary">{t("financial.netProfit")}</TableCell>
                   <TableCell className="text-right font-bold text-primary text-lg">
                     {formatCurrency(summary.finalProfit)}
                   </TableCell>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
+import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +29,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt, enUS } from "date-fns/locale";
 
 interface KPIData {
   totalRevenue: number;
@@ -45,6 +46,7 @@ interface ChartData {
 
 export default function OwnerDashboard() {
   const { owner } = useOwnerAuth();
+  const { t, language } = useOwnerLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState("current");
   const [kpis, setKpis] = useState<KPIData>({
     totalRevenue: 0,
@@ -56,6 +58,8 @@ export default function OwnerDashboard() {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [propertyStatus, setPropertyStatus] = useState<"normal" | "attention">("normal");
+
+  const dateLocale = language === "pt" ? pt : enUS;
 
   useEffect(() => {
     if (owner?.propertyId) {
@@ -175,7 +179,7 @@ export default function OwnerDashboard() {
         ) || 0;
 
         chartMonths.push({
-          month: format(monthDate, "MMM", { locale: pt }),
+          month: format(monthDate, "MMM", { locale: dateLocale }),
           revenue: monthRevenue,
         });
       }
@@ -189,7 +193,7 @@ export default function OwnerDashboard() {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-PT", {
+    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
       style: "currency",
       currency: "EUR",
     }).format(value);
@@ -207,12 +211,12 @@ export default function OwnerDashboard() {
             {propertyStatus === "normal" ? (
               <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Estado Normal
+                {t("dashboard.statusNormal")}
               </Badge>
             ) : (
               <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
                 <AlertTriangle className="w-3 h-3 mr-1" />
-                Requer Atenção
+                {t("dashboard.statusAttention")}
               </Badge>
             )}
           </div>
@@ -220,14 +224,14 @@ export default function OwnerDashboard() {
 
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-48">
-            <SelectValue placeholder="Período" />
+            <SelectValue placeholder={t("dashboard.period")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="current">Mês Atual</SelectItem>
-            <SelectItem value="last">Mês Anterior</SelectItem>
-            <SelectItem value="last3">Últimos 3 Meses</SelectItem>
-            <SelectItem value="last6">Últimos 6 Meses</SelectItem>
-            <SelectItem value="year">Este Ano</SelectItem>
+            <SelectItem value="current">{t("dashboard.currentMonth")}</SelectItem>
+            <SelectItem value="last">{t("dashboard.lastMonth")}</SelectItem>
+            <SelectItem value="last3">{t("dashboard.last3Months")}</SelectItem>
+            <SelectItem value="last6">{t("dashboard.last6Months")}</SelectItem>
+            <SelectItem value="year">{t("dashboard.thisYear")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -237,7 +241,7 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Receita Total
+              {t("dashboard.totalRevenue")}
             </CardTitle>
             <TrendingUp className="w-4 h-4 text-primary" />
           </CardHeader>
@@ -246,7 +250,7 @@ export default function OwnerDashboard() {
               {isLoading ? "..." : formatCurrency(kpis.totalRevenue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Valor bruto das reservas
+              {t("dashboard.grossValue")}
             </p>
           </CardContent>
         </Card>
@@ -254,7 +258,7 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Reservas
+              {t("dashboard.reservations")}
             </CardTitle>
             <CalendarDays className="w-4 h-4 text-primary" />
           </CardHeader>
@@ -263,7 +267,7 @@ export default function OwnerDashboard() {
               {isLoading ? "..." : kpis.totalReservations}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Total de reservas no período
+              {t("dashboard.totalReservations")}
             </p>
           </CardContent>
         </Card>
@@ -271,7 +275,7 @@ export default function OwnerDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Taxa de Ocupação
+              {t("dashboard.occupancyRate")}
             </CardTitle>
             <Percent className="w-4 h-4 text-primary" />
           </CardHeader>
@@ -280,7 +284,7 @@ export default function OwnerDashboard() {
               {isLoading ? "..." : `${kpis.occupancyRate}%`}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Noites ocupadas no período
+              {t("dashboard.nightsOccupied")}
             </p>
           </CardContent>
         </Card>
@@ -288,7 +292,7 @@ export default function OwnerDashboard() {
         <Card className="bg-primary/5 border-primary/20">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-primary">
-              Lucro Estimado
+              {t("dashboard.estimatedProfit")}
             </CardTitle>
             <Wallet className="w-4 h-4 text-primary" />
           </CardHeader>
@@ -297,7 +301,7 @@ export default function OwnerDashboard() {
               {isLoading ? "..." : formatCurrency(kpis.estimatedProfit)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Após comissão de {kpis.commissionRate}%
+              {t("dashboard.afterCommission")} {kpis.commissionRate}%
             </p>
           </CardContent>
         </Card>
@@ -306,17 +310,17 @@ export default function OwnerDashboard() {
       {/* Revenue Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Evolução da Receita</CardTitle>
+          <CardTitle>{t("dashboard.revenueEvolution")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80">
             {isLoading ? (
               <div className="h-full flex items-center justify-center text-muted-foreground">
-                A carregar...
+                {t("dashboard.loading")}
               </div>
             ) : chartData.length === 0 ? (
               <div className="h-full flex items-center justify-center text-muted-foreground">
-                Sem dados disponíveis
+                {t("dashboard.noData")}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
@@ -338,7 +342,7 @@ export default function OwnerDashboard() {
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
                     }}
-                    formatter={(value: number) => [formatCurrency(value), "Receita"]}
+                    formatter={(value: number) => [formatCurrency(value), t("dashboard.revenue")]}
                   />
                   <Line
                     type="monotone"

@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { OwnerLanguageSelector } from "@/components/OwnerLanguageSelector";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -14,7 +20,7 @@ import {
   FolderOpen,
   LogOut,
   Home,
-  Menu,
+  UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,10 +32,18 @@ const menuItems = [
   { path: "/proprietario/documentos", icon: FolderOpen, labelKey: "sidebar.documents" },
 ];
 
-function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
+export function OwnerSidebar() {
+  const [isOpen, setIsOpen] = useState(false);
   const { owner, logout } = useOwnerAuth();
   const { t } = useOwnerLanguage();
   const location = useLocation();
+
+  const mobileSidebarVariants = {
+    hidden: { x: "-100%" },
+    visible: { x: 0 },
+  };
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   const getInitials = (name: string) => {
     return name
@@ -41,108 +55,195 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   };
 
   const handleLogout = () => {
-    onItemClick?.();
+    setIsOpen(false);
     logout();
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <Home className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-sidebar-foreground truncate">
-              {t("sidebar.title")}
-            </h2>
-            <p className="text-xs text-muted-foreground truncate">
-              {owner?.propertyName}
-            </p>
-          </div>
-        </div>
-      </div>
+  const renderNavigation = (onItemClick?: () => void) => (
+    <>
+      {menuItems.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            onClick={onItemClick}
+            className={cn(
+              "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors",
+              isActive
+                ? "bg-primary/10 text-primary font-medium shadow-sm"
+                : "hover:bg-primary/10 hover:text-primary text-foreground"
+            )}
+          >
+            <item.icon className="w-5 h-5" />
+            <span>{t(item.labelKey)}</span>
+          </Link>
+        );
+      })}
+    </>
+  );
 
-      {/* Language Selector */}
-      <div className="px-4 py-3 border-b border-sidebar-border">
-        <OwnerLanguageSelector />
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={onItemClick}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-              )}
-            >
-              <item.icon className="w-5 h-5" />
-              <span>{t(item.labelKey)}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Footer - User */}
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary/10 text-primary">
-              {owner?.ownerName ? getInitials(owner.ownerName) : "?"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm text-sidebar-foreground truncate">
-              {owner?.ownerName}
-            </p>
-            <p className="text-xs text-muted-foreground">{t("sidebar.owner")}</p>
-          </div>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full justify-start"
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          {t("sidebar.logout")}
-        </Button>
-      </div>
+  const renderUserSection = (onLogout: () => void) => (
+    <div className="p-4 border-t border-border">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex items-center gap-3 w-full px-2 py-2 rounded-lg hover:bg-primary/10 transition-colors">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {owner?.ownerName ? getInitials(owner.ownerName) : "?"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-medium truncate">{owner?.ownerName}</p>
+              <p className="text-xs text-muted-foreground">{t("sidebar.owner")}</p>
+            </div>
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-popover">
+          <DropdownMenuItem className="cursor-default">
+            <UserCircle className="mr-2 h-4 w-4" />
+            <span>{owner?.propertyName}</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={onLogout}
+            className="text-destructive focus:text-destructive focus:bg-destructive/10"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>{t("sidebar.logout")}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
-}
-
-export function OwnerSidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="bg-background shadow-md">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-64 p-0 bg-sidebar-background">
-            <SidebarContent onItemClick={() => setMobileOpen(false)} />
-          </SheetContent>
-        </Sheet>
-      </div>
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/50"
+              onClick={toggleSidebar}
+            />
+
+            {/* Sidebar */}
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={mobileSidebarVariants}
+              transition={{ duration: 0.3 }}
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-background border-r border-border"
+            >
+              <div className="flex flex-col h-full">
+                {/* Logo Section */}
+                <div className="p-6 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                      <Home className="w-5 h-5 text-primary-foreground" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h2 className="font-semibold text-foreground truncate">
+                        {t("sidebar.title")}
+                      </h2>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {owner?.propertyName}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Language Selector */}
+                <div className="px-4 py-3 border-b border-border">
+                  <OwnerLanguageSelector />
+                </div>
+
+                {/* Navigation Section */}
+                <nav className="flex-1 p-4 overflow-y-auto">
+                  <div className="space-y-1">{renderNavigation(toggleSidebar)}</div>
+                </nav>
+
+                {/* User Profile Section */}
+                {renderUserSection(handleLogout)}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Desktop Sidebar */}
-      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-sidebar-border bg-sidebar-background hidden md:flex flex-col">
-        <SidebarContent />
-      </aside>
+      <div className="hidden md:flex flex-col fixed top-0 left-0 h-full w-72 bg-background border-r border-border">
+        {/* Logo Section */}
+        <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+              <Home className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-foreground truncate">
+                {t("sidebar.title")}
+              </h2>
+              <p className="text-xs text-muted-foreground truncate">
+                {owner?.propertyName}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Language Selector */}
+        <div className="px-4 py-3 border-b border-border">
+          <OwnerLanguageSelector />
+        </div>
+
+        {/* Navigation Section */}
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <div className="space-y-1">{renderNavigation()}</div>
+        </nav>
+
+        {/* User Profile Section */}
+        {renderUserSection(logout)}
+      </div>
+
+      {/* Mobile Toggle Button - Fixed Position */}
+      <div className="md:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={toggleSidebar}
+          aria-label="Toggle menu"
+          className="p-2 rounded-lg bg-card border border-border shadow-md"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-foreground"
+          >
+            {isOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
+      </div>
     </>
   );
 }

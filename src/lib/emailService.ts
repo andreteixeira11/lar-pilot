@@ -26,7 +26,9 @@ export class EmailService {
       html: this.getPaymentConfirmationTemplate(paymentDetails),
     };
 
-    console.log('Sending payment confirmation email:', template);
+    if (import.meta.env.DEV) {
+      console.log('Sending payment confirmation email:', template);
+    }
     // In production, this would call an email service API
     // await fetch('/api/send-email', { method: 'POST', body: JSON.stringify(template) });
   }
@@ -49,7 +51,9 @@ export class EmailService {
       html: this.getPaymentReferenceTemplate(paymentDetails),
     };
 
-    console.log('Sending payment reference email:', template);
+    if (import.meta.env.DEV) {
+      console.log('Sending payment reference email:', template);
+    }
     // In production, this would call an email service API
   }
 
@@ -63,7 +67,9 @@ export class EmailService {
       html: this.getWelcomeTemplate(name),
     };
 
-    console.log('Sending welcome email:', template);
+    if (import.meta.env.DEV) {
+      console.log('Sending welcome email:', template);
+    }
     // In production, this would call an email service API
   }
 
@@ -80,7 +86,9 @@ export class EmailService {
       html: this.getSubscriptionReminderTemplate(daysRemaining),
     };
 
-    console.log('Sending subscription reminder:', template);
+    if (import.meta.env.DEV) {
+      console.log('Sending subscription reminder:', template);
+    }
     // In production, this would call an email service API
   }
 

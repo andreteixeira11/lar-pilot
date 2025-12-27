@@ -251,35 +251,48 @@ export default function PublicBookingPage() {
     };
   }, [dateRange, data?.page, data?.dynamicPricing]);
 
-  // Submit booking request
+  // Submit booking request via secure edge function
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!dateRange?.from || !dateRange?.to || !data?.page) {
         throw new Error("Dados incompletos");
       }
 
-      const { error } = await supabase
-        .from("direct_booking_requests")
-        .insert({
-          page_id: data.page.id,
-          guest_name: formData.guest_name,
-          guest_email: formData.guest_email,
-          guest_phone: formData.guest_phone || null,
-          check_in: format(dateRange.from, "yyyy-MM-dd"),
-          check_out: format(dateRange.to, "yyyy-MM-dd"),
-          num_guests: formData.num_guests,
-          message: formData.message || null,
-          total_price: priceDetails?.total || null,
-        });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-booking-request`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            page_id: data.page.id,
+            guest_name: formData.guest_name.trim(),
+            guest_email: formData.guest_email.trim(),
+            guest_phone: formData.guest_phone?.trim() || null,
+            check_in: format(dateRange.from, "yyyy-MM-dd"),
+            check_out: format(dateRange.to, "yyyy-MM-dd"),
+            num_guests: formData.num_guests,
+            message: formData.message?.trim() || null,
+            total_price: priceDetails?.total || null,
+          }),
+        }
+      );
 
-      if (error) throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erro ao enviar pedido");
+      }
+
+      return result;
     },
     onSuccess: () => {
       setSubmitted(true);
       toast.success("Pedido enviado com sucesso!");
     },
-    onError: () => {
-      toast.error("Erro ao enviar pedido. Tente novamente.");
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao enviar pedido. Tente novamente.");
     },
   });
 

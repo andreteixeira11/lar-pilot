@@ -46,6 +46,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminReports from "./pages/admin/AdminReports";
+import AdminSales from "./pages/admin/AdminSales";
 import OwnerLogin from "./pages/proprietario/OwnerLogin";
 import OwnerResetPassword from "./pages/proprietario/OwnerResetPassword";
 import OwnerDashboard from "./pages/proprietario/OwnerDashboard";
@@ -90,7 +91,7 @@ const App = () => (
                         <OwnerProtectedRoute>
                           <div className="flex min-h-screen w-full">
                             <OwnerSidebar />
-                            <main className="flex-1 md:ml-64 bg-background">
+                            <main className="flex-1 md:ml-72 bg-background">
                               <Routes>
                                 <Route path="/" element={<OwnerDashboard />} />
                                 <Route path="/reservas" element={<OwnerReservas />} />
@@ -116,9 +117,10 @@ const App = () => (
                         <SidebarProvider>
                           <div className="flex min-h-screen w-full">
                             <AdminSidebar />
-                            <main className="flex-1 md:ml-64 bg-background">
+                            <main className="flex-1 md:ml-72 bg-background">
                               <Routes>
                                 <Route path="/dashboard" element={<AdminDashboard />} />
+                                <Route path="/sales" element={<AdminSales />} />
                                 <Route path="/users" element={<AdminUsers />} />
                                 <Route path="/properties" element={<AdminProperties />} />
                                 <Route path="/reports" element={<AdminReports />} />

@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CalendarDays, Users, Moon, Euro } from "lucide-react";
-import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
 
 interface Reservation {
@@ -37,10 +37,11 @@ interface Reservation {
 
 export default function OwnerReservas() {
   const { owner } = useOwnerAuth();
-  const { t, language } = useOwnerLanguage();
+  const { t, language, formatCurrency } = useOwnerLanguage();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState("all");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedMonth, setSelectedMonth] = useState("all");
 
   const dateLocale = language === "pt" ? pt : enUS;
 
@@ -51,39 +52,31 @@ export default function OwnerReservas() {
     pendente: { label: t("reservations.pending"), variant: "outline" },
   };
 
+  const months = language === "pt" 
+    ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    : ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
   useEffect(() => {
     if (owner?.propertyId) {
       loadReservations();
     }
-  }, [owner?.propertyId, selectedPeriod]);
+  }, [owner?.propertyId, selectedYear, selectedMonth]);
 
   const getDateRange = () => {
-    const now = new Date();
-    let startDate: Date | null = null;
-    let endDate: Date | null = null;
-
-    switch (selectedPeriod) {
-      case "current":
-        startDate = startOfMonth(now);
-        endDate = endOfMonth(now);
-        break;
-      case "last":
-        startDate = startOfMonth(subMonths(now, 1));
-        endDate = endOfMonth(subMonths(now, 1));
-        break;
-      case "last3":
-        startDate = startOfMonth(subMonths(now, 2));
-        endDate = endOfMonth(now);
-        break;
-      case "year":
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = endOfMonth(now);
-        break;
-      default: // all
-        return { startDate: null, endDate: null };
+    const year = parseInt(selectedYear);
+    
+    if (selectedMonth === "all") {
+      return {
+        startDate: new Date(year, 0, 1),
+        endDate: new Date(year, 11, 31),
+      };
     }
-
-    return { startDate, endDate };
+    
+    const month = parseInt(selectedMonth) - 1;
+    return {
+      startDate: startOfMonth(new Date(year, month)),
+      endDate: endOfMonth(new Date(year, month)),
+    };
   };
 
   const loadReservations = async () => {
@@ -93,19 +86,13 @@ export default function OwnerReservas() {
     try {
       const { startDate, endDate } = getDateRange();
 
-      let query = supabase
+      const { data, error } = await supabase
         .from("reservations")
         .select("*")
         .eq("property_id", owner.propertyId)
+        .gte("check_in", startDate.toISOString().split("T")[0])
+        .lte("check_in", endDate.toISOString().split("T")[0])
         .order("check_in", { ascending: false });
-
-      if (startDate && endDate) {
-        query = query
-          .gte("check_in", startDate.toISOString().split("T")[0])
-          .lte("check_in", endDate.toISOString().split("T")[0]);
-      }
-
-      const { data, error } = await query;
 
       if (error) {
         console.error("Error loading reservations:", error);
@@ -118,14 +105,6 @@ export default function OwnerReservas() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatCurrency = (value: number | null) => {
-    if (value === null) return "-";
-    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(value);
   };
 
   const formatDate = (dateStr: string) => {
@@ -149,18 +128,32 @@ export default function OwnerReservas() {
           </p>
         </div>
 
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder={t("dashboard.period")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{language === "pt" ? "Todas" : "All"}</SelectItem>
-            <SelectItem value="current">{t("dashboard.currentMonth")}</SelectItem>
-            <SelectItem value="last">{t("dashboard.lastMonth")}</SelectItem>
-            <SelectItem value="last3">{t("dashboard.last3Months")}</SelectItem>
-            <SelectItem value="year">{t("dashboard.thisYear")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2023">2023</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder={language === "pt" ? "Mês" : "Month"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{language === "pt" ? "Todos" : "All"}</SelectItem>
+              {months.map((month, index) => (
+                <SelectItem key={index + 1} value={(index + 1).toString()}>
+                  {month}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -247,7 +240,7 @@ export default function OwnerReservas() {
                           {reservation.num_guests}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {formatCurrency(reservation.total_price)}
+                          {formatCurrency(reservation.total_price || 0)}
                         </TableCell>
                         <TableCell>
                           <Badge variant={status.variant}>{status.label}</Badge>

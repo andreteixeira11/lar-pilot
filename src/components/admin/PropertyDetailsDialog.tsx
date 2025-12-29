@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -6,9 +7,10 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Building2, MapPin, Users, Bed, Bath, Calendar, Euro, Clock, Wifi, Car } from "lucide-react";
-import { format } from "date-fns";
+import { Building2, MapPin, Users, Calendar, Euro, TrendingUp, BarChart3, CalendarCheck } from "lucide-react";
+import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { pt } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PropertyDetailsDialogProps {
   open: boolean;
@@ -42,6 +44,87 @@ export const PropertyDetailsDialog = ({
   property,
   stats,
 }: PropertyDetailsDialogProps) => {
+  // Fetch detailed statistics for this property
+  const { data: detailedStats } = useQuery({
+    queryKey: ["admin-property-detailed-stats", property?.id],
+    queryFn: async () => {
+      if (!property?.id) return null;
+
+      // Get all reservations for this property
+      const { data: reservations } = await supabase
+        .from("reservations")
+        .select("*")
+        .eq("property_id", property.id);
+
+      if (!reservations) return null;
+
+      // Calculate stats
+      const totalReservations = reservations.length;
+      const totalRevenue = reservations.reduce((sum, r) => sum + (r.total_price || 0), 0);
+      const totalNights = reservations.reduce((sum, r) => sum + (r.num_nights || 0), 0);
+      const totalGuests = reservations.reduce((sum, r) => sum + (r.num_guests || 0), 0);
+      const avgNightsPerReservation = totalReservations > 0 ? Math.round(totalNights / totalReservations * 10) / 10 : 0;
+      const avgRevenuePerReservation = totalReservations > 0 ? totalRevenue / totalReservations : 0;
+      const avgRevenuePerNight = totalNights > 0 ? totalRevenue / totalNights : 0;
+
+      // Bookings by source
+      const bySource: Record<string, { count: number; revenue: number }> = {};
+      reservations.forEach((r) => {
+        const source = (r.booking_source || "Direto").toLowerCase();
+        let normalizedSource = "Direto";
+        if (source.includes("airbnb")) normalizedSource = "Airbnb";
+        else if (source.includes("booking")) normalizedSource = "Booking";
+        
+        if (!bySource[normalizedSource]) {
+          bySource[normalizedSource] = { count: 0, revenue: 0 };
+        }
+        bySource[normalizedSource].count++;
+        bySource[normalizedSource].revenue += r.total_price || 0;
+      });
+
+      // Monthly stats (last 6 months)
+      const now = new Date();
+      const monthlyStats: { month: string; reservations: number; revenue: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const monthDate = subMonths(now, i);
+        const monthStart = startOfMonth(monthDate);
+        const monthEnd = endOfMonth(monthDate);
+        
+        const monthReservations = reservations.filter((r) => {
+          const checkIn = new Date(r.check_in);
+          return checkIn >= monthStart && checkIn <= monthEnd;
+        });
+
+        monthlyStats.push({
+          month: format(monthDate, "MMM", { locale: pt }),
+          reservations: monthReservations.length,
+          revenue: monthReservations.reduce((sum, r) => sum + (r.total_price || 0), 0),
+        });
+      }
+
+      // Status breakdown
+      const statusCounts: Record<string, number> = {};
+      reservations.forEach((r) => {
+        const status = r.status || "pendente";
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+      });
+
+      return {
+        totalReservations,
+        totalRevenue,
+        totalNights,
+        totalGuests,
+        avgNightsPerReservation,
+        avgRevenuePerReservation,
+        avgRevenuePerNight,
+        bySource,
+        monthlyStats,
+        statusCounts,
+      };
+    },
+    enabled: open && !!property?.id,
+  });
+
   if (!property) return null;
 
   const getStatusBadge = (status: string | null) => {
@@ -55,9 +138,17 @@ export const PropertyDetailsDialog = ({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-PT", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5 text-primary" />
@@ -79,114 +170,144 @@ export const PropertyDetailsDialog = ({
               <p className="text-sm text-muted-foreground">RNAL</p>
               <p>{property.rnal || "-"}</p>
             </div>
-          </div>
-
-          <Separator />
-
-          {/* Capacity */}
-          <div>
-            <h4 className="font-medium mb-3">Capacidade</h4>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <Users className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Hóspedes</p>
-                  <p className="font-medium">{property.capacity || 0}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <Bed className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Quartos</p>
-                  <p className="font-medium">{property.bedrooms || 0}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <Bath className="h-4 w-4 text-primary" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Casas de banho</p>
-                  <p className="font-medium">{property.bathrooms || 0}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Check-in/out Times */}
-          <div>
-            <h4 className="font-medium mb-3">Horários</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
-                <Clock className="h-4 w-4 text-green-600" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Check-in</p>
-                  <p className="font-medium">{property.check_in_time || "15:00"}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 rounded-lg">
-                <Clock className="h-4 w-4 text-red-600" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Check-out</p>
-                  <p className="font-medium">{property.check_out_time || "11:00"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Amenities */}
-          <div>
-            <h4 className="font-medium mb-3">Comodidades</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Wifi className="h-3 w-3" /> WiFi Password
-                </p>
-                <p>{property.wifi_password || "-"}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Car className="h-3 w-3" /> Estacionamento
-                </p>
-                <p>{property.parking_info || "-"}</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Statistics */}
-          <div>
-            <h4 className="font-medium mb-3">Estatísticas</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-primary/10 rounded-lg">
-                <p className="text-sm text-muted-foreground">Total Reservas</p>
-                <p className="text-2xl font-bold text-primary">{stats?.count || 0}</p>
-              </div>
-              <div className="p-4 bg-green-100 dark:bg-green-950 rounded-lg">
-                <p className="text-sm text-muted-foreground">Receita Total</p>
-                <p className="text-2xl font-bold text-green-600">€{(stats?.revenue || 0).toFixed(2)}</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Status & Dates */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Estado Plataforma</p>
+              <p className="text-sm text-muted-foreground">Capacidade</p>
+              <p className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                {property.capacity || 0} hóspedes
+              </p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Estado</p>
               {getStatusBadge(property.platform_status)}
             </div>
+          </div>
+
+          <Separator />
+
+          {/* Main Statistics */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-primary" />
+              Estatísticas Gerais
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-primary/10 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Total Reservas</p>
+                <p className="text-2xl font-bold text-primary">{detailedStats?.totalReservations || stats?.count || 0}</p>
+              </div>
+              <div className="p-4 bg-green-100 dark:bg-green-950 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Receita Total</p>
+                <p className="text-xl font-bold text-green-600">{formatCurrency(detailedStats?.totalRevenue || stats?.revenue || 0)}</p>
+              </div>
+              <div className="p-4 bg-blue-100 dark:bg-blue-950 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Total Noites</p>
+                <p className="text-2xl font-bold text-blue-600">{detailedStats?.totalNights || 0}</p>
+              </div>
+              <div className="p-4 bg-purple-100 dark:bg-purple-950 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">Total Hóspedes</p>
+                <p className="text-2xl font-bold text-purple-600">{detailedStats?.totalGuests || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Average Statistics */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Médias
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-xs text-muted-foreground">Média Noites/Reserva</p>
+                <p className="text-lg font-bold">{detailedStats?.avgNightsPerReservation || 0}</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-xs text-muted-foreground">Média €/Reserva</p>
+                <p className="text-lg font-bold">{formatCurrency(detailedStats?.avgRevenuePerReservation || 0)}</p>
+              </div>
+              <div className="p-3 bg-muted rounded-lg text-center">
+                <p className="text-xs text-muted-foreground">Média €/Noite</p>
+                <p className="text-lg font-bold">{formatCurrency(detailedStats?.avgRevenuePerNight || 0)}</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Bookings by Platform */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <CalendarCheck className="h-4 w-4 text-primary" />
+              Reservas por Plataforma
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              {detailedStats?.bySource && Object.entries(detailedStats.bySource).map(([source, data]) => (
+                <div 
+                  key={source} 
+                  className={`p-3 rounded-lg text-center ${
+                    source === "Airbnb" ? "bg-rose-100 dark:bg-rose-950" :
+                    source === "Booking" ? "bg-blue-100 dark:bg-blue-950" :
+                    "bg-primary/10"
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    {source === "Airbnb" && <img src="/logos/airbnb.svg" alt="Airbnb" className="h-4" />}
+                    {source === "Booking" && <img src="/logos/booking.svg" alt="Booking" className="h-4" />}
+                    <span className="text-sm font-medium">{source}</span>
+                  </div>
+                  <p className="text-lg font-bold">{data.count} reservas</p>
+                  <p className="text-xs text-muted-foreground">{formatCurrency(data.revenue)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Monthly Performance (last 6 months) */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-primary" />
+              Desempenho Últimos 6 Meses
+            </h4>
+            <div className="grid grid-cols-6 gap-2">
+              {detailedStats?.monthlyStats?.map((month) => (
+                <div key={month.month} className="p-2 bg-muted rounded-lg text-center">
+                  <p className="text-xs font-medium text-muted-foreground uppercase">{month.month}</p>
+                  <p className="text-sm font-bold">{month.reservations}</p>
+                  <p className="text-xs text-green-600">{formatCurrency(month.revenue)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Status Breakdown */}
+          <div>
+            <h4 className="font-medium mb-3">Estado das Reservas</h4>
+            <div className="flex flex-wrap gap-2">
+              {detailedStats?.statusCounts && Object.entries(detailedStats.statusCounts).map(([status, count]) => (
+                <Badge 
+                  key={status} 
+                  variant={status === "confirmada" ? "default" : status === "concluida" ? "secondary" : "outline"}
+                >
+                  {status}: {count}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Região</p>
               <p className="capitalize">{property.region || "Continental"}</p>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Validade Seguro</p>
-              <p>{property.insurance_validity ? format(new Date(property.insurance_validity), "dd/MM/yyyy", { locale: pt }) : "-"}</p>
             </div>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">Data Criação</p>

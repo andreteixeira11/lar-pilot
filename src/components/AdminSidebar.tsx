@@ -14,6 +14,7 @@ import {
 
 const menuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Vendas", url: "/admin/sales", icon: FileBarChart },
   { title: "Utilizadores", url: "/admin/users", icon: Users },
   { title: "Propriedades", url: "/admin/properties", icon: Building2 },
   { title: "Relatórios", url: "/admin/reports", icon: FileBarChart },

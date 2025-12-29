@@ -324,13 +324,13 @@ export default function Proprietarios() {
       const filePath = `${selectedOwner.property_id}/${selectedOwner.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("insurance-documents")
+        .from("owner-documents")
         .upload(filePath, newDoc.file);
 
       if (uploadError) throw uploadError;
 
       const { data: signedUrlData, error: signedError } = await supabase.storage
-        .from("insurance-documents")
+        .from("owner-documents")
         .createSignedUrl(filePath, 31536000); // 1 year expiry
 
       if (signedError) throw signedError;

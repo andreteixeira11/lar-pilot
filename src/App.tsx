@@ -15,7 +15,7 @@ import { OwnerProtectedRoute } from "@/components/OwnerProtectedRoute";
 import { OwnerSidebar } from "@/components/OwnerSidebar";
 import { PropertySelectorCommand } from "@/components/PropertySelectorCommand";
 import { NotificationMenu } from "@/components/NotificationMenu";
-import { SidebarProvider } from "@/components/ui/sidebar";
+
 import { AdminSidebar } from "@/components/AdminSidebar";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -117,20 +117,18 @@ const App = () => (
                     path="/admin/*"
                     element={
                       <AdminRoute>
-                        <SidebarProvider>
-                          <div className="flex min-h-screen w-full">
-                            <AdminSidebar />
-                            <main className="flex-1 md:ml-72 bg-background">
-                              <Routes>
-                                <Route path="/dashboard" element={<AdminDashboard />} />
-                                <Route path="/sales" element={<AdminSales />} />
-                                <Route path="/users" element={<AdminUsers />} />
-                                <Route path="/properties" element={<AdminProperties />} />
-                                <Route path="/reports" element={<AdminReports />} />
-                              </Routes>
-                            </main>
-                          </div>
-                        </SidebarProvider>
+                        <div className="flex min-h-screen w-full">
+                          <AdminSidebar />
+                          <main className="flex-1 md:ml-72 bg-background">
+                            <Routes>
+                              <Route path="/dashboard" element={<AdminDashboard />} />
+                              <Route path="/sales" element={<AdminSales />} />
+                              <Route path="/users" element={<AdminUsers />} />
+                              <Route path="/properties" element={<AdminProperties />} />
+                              <Route path="/reports" element={<AdminReports />} />
+                            </Routes>
+                          </main>
+                        </div>
                       </AdminRoute>
                     }
                   />

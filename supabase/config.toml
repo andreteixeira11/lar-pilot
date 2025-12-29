@@ -26,3 +26,6 @@ verify_jwt = true
 
 [functions.create-booking-request]
 verify_jwt = false
+
+[functions.ifthenpay-payment]
+verify_jwt = true

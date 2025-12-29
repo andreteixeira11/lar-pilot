@@ -868,6 +868,42 @@ export type Database = {
           },
         ]
       }
+      owner_properties: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          property_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          property_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "owner_properties_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "property_owners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "owner_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       owner_sessions: {
         Row: {
           created_at: string
@@ -1166,6 +1202,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "property_owners_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      property_reviews: {
+        Row: {
+          created_at: string
+          external_id: string | null
+          guest_name: string
+          id: string
+          platform: string
+          property_id: string
+          rating: number
+          response_date: string | null
+          response_text: string | null
+          review_date: string
+          review_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id?: string | null
+          guest_name: string
+          id?: string
+          platform: string
+          property_id: string
+          rating: number
+          response_date?: string | null
+          response_text?: string | null
+          review_date: string
+          review_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string | null
+          guest_name?: string
+          id?: string
+          platform?: string
+          property_id?: string
+          rating?: number
+          response_date?: string | null
+          response_text?: string | null
+          review_date?: string
+          review_text?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_reviews_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"

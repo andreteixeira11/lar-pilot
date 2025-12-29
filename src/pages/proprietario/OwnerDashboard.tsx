@@ -46,8 +46,12 @@ interface ChartData {
 
 export default function OwnerDashboard() {
   const { owner } = useOwnerAuth();
-  const { t, language } = useOwnerLanguage();
-  const [selectedPeriod, setSelectedPeriod] = useState("current");
+  const { t, language, formatCurrency } = useOwnerLanguage();
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString());
   const [kpis, setKpis] = useState<KPIData>({
     totalRevenue: 0,
     totalReservations: 0,
@@ -60,37 +64,24 @@ export default function OwnerDashboard() {
   const [propertyStatus, setPropertyStatus] = useState<"normal" | "attention">("normal");
 
   const dateLocale = language === "pt" ? pt : enUS;
+  
+  const yearOptions = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
+  const monthOptions = Array.from({ length: 12 }, (_, i) => ({
+    value: (i + 1).toString(),
+    label: format(new Date(2024, i, 1), "MMMM", { locale: dateLocale }),
+  }));
 
   useEffect(() => {
     if (owner?.propertyId) {
       loadDashboardData();
     }
-  }, [owner?.propertyId, selectedPeriod]);
+  }, [owner?.propertyId, selectedYear, selectedMonth]);
 
   const getDateRange = () => {
-    const now = new Date();
-    let startDate: Date;
-    let endDate: Date = endOfMonth(now);
-
-    switch (selectedPeriod) {
-      case "last":
-        startDate = startOfMonth(subMonths(now, 1));
-        endDate = endOfMonth(subMonths(now, 1));
-        break;
-      case "last3":
-        startDate = startOfMonth(subMonths(now, 2));
-        break;
-      case "last6":
-        startDate = startOfMonth(subMonths(now, 5));
-        break;
-      case "year":
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
-      default: // current
-        startDate = startOfMonth(now);
-        break;
-    }
-
+    const year = parseInt(selectedYear);
+    const month = parseInt(selectedMonth) - 1;
+    const startDate = startOfMonth(new Date(year, month));
+    const endDate = endOfMonth(new Date(year, month));
     return { startDate, endDate };
   };
 
@@ -192,13 +183,6 @@ export default function OwnerDashboard() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat(language === "pt" ? "pt-PT" : "en-US", {
-      style: "currency",
-      currency: "EUR",
-    }).format(value);
-  };
-
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Header */}
@@ -222,18 +206,28 @@ export default function OwnerDashboard() {
           </div>
         </div>
 
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-48">
-            <SelectValue placeholder={t("dashboard.period")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="current">{t("dashboard.currentMonth")}</SelectItem>
-            <SelectItem value="last">{t("dashboard.lastMonth")}</SelectItem>
-            <SelectItem value="last3">{t("dashboard.last3Months")}</SelectItem>
-            <SelectItem value="last6">{t("dashboard.last6Months")}</SelectItem>
-            <SelectItem value="year">{t("dashboard.thisYear")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((year) => (
+                <SelectItem key={year} value={year}>{year}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((month) => (
+                <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* KPI Cards */}

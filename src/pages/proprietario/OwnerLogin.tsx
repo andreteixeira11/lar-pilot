@@ -47,6 +47,8 @@ export default function OwnerLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
       <div className="w-full max-w-md">
+        {/* Language Selector */}
+
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4">

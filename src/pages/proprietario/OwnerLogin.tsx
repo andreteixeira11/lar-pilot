@@ -47,28 +47,19 @@ export default function OwnerLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
       <div className="w-full max-w-md">
-        {/* Language Selector */}
-        <div className="flex justify-end mb-4">
-          <OwnerLanguageSelector />
-        </div>
-
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4">
             <Home className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">{t("login.title")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("login.subtitle")}
-          </p>
+          <p className="text-muted-foreground mt-1">{t("login.subtitle")}</p>
         </div>
 
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle>{t("login.enter")}</CardTitle>
-            <CardDescription>
-              {t("login.credentials")}
-            </CardDescription>
+            <CardDescription>{t("login.credentials")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,21 +114,14 @@ export default function OwnerLogin() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting ? t("login.submitting") : t("login.enter")}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>
-                {t("login.noAccess")}{" "}
-                <span className="text-foreground">
-                  {t("login.contactManager")}
-                </span>
+                {t("login.noAccess")} <span className="text-foreground">{t("login.contactManager")}</span>
               </p>
             </div>
           </CardContent>

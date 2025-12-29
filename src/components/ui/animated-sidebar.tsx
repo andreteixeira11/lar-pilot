@@ -27,6 +27,7 @@ import {
   TrendingUp,
   ShoppingCart,
   UserCheck,
+  Star,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -82,6 +83,7 @@ const menuGroups: MenuGroup[] = [
       { title: "Taxa Turística", url: "/taxa-turistica", icon: DollarSign },
       { title: "INE", url: "/ine", icon: BarChart3 },
       { title: "Proprietários", url: "/proprietarios", icon: UserCheck },
+      { title: "Reviews", url: "/reviews", icon: Star },
     ],
   },
 ];

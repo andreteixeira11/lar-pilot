@@ -19,8 +19,8 @@ import {
   FileText,
   FolderOpen,
   LogOut,
-  Home,
   UserCircle,
+  Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ const menuItems = [
   { path: "/proprietario/financeiro", icon: Wallet, labelKey: "sidebar.financial" },
   { path: "/proprietario/relatorios", icon: FileText, labelKey: "sidebar.reports" },
   { path: "/proprietario/documentos", icon: FolderOpen, labelKey: "sidebar.documents" },
+  { path: "/proprietario/reviews", icon: Star, labelKey: "sidebar.reviews" },
 ];
 
 export function OwnerSidebar() {

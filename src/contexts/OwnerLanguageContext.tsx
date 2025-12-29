@@ -58,6 +58,7 @@ const translations: Record<OwnerLanguage, Record<string, string>> = {
     "sidebar.financial": "Financeiro",
     "sidebar.reports": "Relatórios",
     "sidebar.documents": "Documentos",
+    "sidebar.reviews": "Avaliações",
     "sidebar.owner": "Proprietário",
     "sidebar.logout": "Terminar Sessão",
     
@@ -166,6 +167,7 @@ const translations: Record<OwnerLanguage, Record<string, string>> = {
     "sidebar.financial": "Financial",
     "sidebar.reports": "Reports",
     "sidebar.documents": "Documents",
+    "sidebar.reviews": "Reviews",
     "sidebar.owner": "Owner",
     "sidebar.logout": "Logout",
     

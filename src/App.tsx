@@ -54,7 +54,9 @@ import OwnerReservas from "./pages/proprietario/OwnerReservas";
 import OwnerFinanceiro from "./pages/proprietario/OwnerFinanceiro";
 import OwnerRelatorios from "./pages/proprietario/OwnerRelatorios";
 import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
+import OwnerReviews from "./pages/proprietario/OwnerReviews";
 import Proprietarios from "./pages/Proprietarios";
+import Reviews from "./pages/Reviews";
 
 import NotFound from "./pages/NotFound";
 
@@ -97,6 +99,7 @@ const App = () => (
                                 <Route path="/reservas" element={<OwnerReservas />} />
                                 <Route path="/financeiro" element={<OwnerFinanceiro />} />
                                 <Route path="/relatorios" element={<OwnerRelatorios />} />
+                                <Route path="/reviews" element={<OwnerReviews />} />
                                 <Route path="/documentos" element={<OwnerDocumentos />} />
                               </Routes>
                             </main>
@@ -165,6 +168,7 @@ const App = () => (
                             <Route path="/guidebooks" element={<Guidebooks />} />
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
+                            <Route path="/reviews" element={<Reviews />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

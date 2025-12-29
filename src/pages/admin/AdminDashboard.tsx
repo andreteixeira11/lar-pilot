@@ -239,20 +239,20 @@ const AdminDashboard = () => {
     },
   });
 
-  // Fetch reservation trends
+  // Fetch reservation trends by check_in date (not created_at)
   const { data: reservationTrends } = useQuery({
     queryKey: ["admin-reservation-trends"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reservations")
-        .select("created_at, booking_source");
+        .select("check_in, booking_source");
       if (error) throw error;
 
       const now = new Date();
       const months = Array.from({ length: 6 }, (_, i) => {
         const month = subMonths(now, 5 - i);
         return {
-          name: format(month, "MMM", { locale: pt }),
+          name: format(month, "MMM yy", { locale: pt }),
           start: startOfMonth(month),
           end: endOfMonth(month),
           total: 0,
@@ -263,16 +263,16 @@ const AdminDashboard = () => {
       });
 
       data?.forEach((reservation) => {
-        const createdAt = new Date(reservation.created_at);
+        const checkIn = new Date(reservation.check_in);
         const monthIndex = months.findIndex(
-          (m) => createdAt >= m.start && createdAt <= m.end
+          (m) => checkIn >= m.start && checkIn <= m.end
         );
         if (monthIndex !== -1) {
           months[monthIndex].total++;
           const source = (reservation.booking_source || "").toLowerCase();
           if (source.includes("airbnb")) {
             months[monthIndex].airbnb++;
-          } else if (source.includes("booking") || source.includes("booking.com")) {
+          } else if (source.includes("booking")) {
             months[monthIndex].booking++;
           } else {
             months[monthIndex].diretas++;

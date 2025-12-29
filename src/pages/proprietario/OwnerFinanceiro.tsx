@@ -54,7 +54,12 @@ interface FinancialSummary {
 export default function OwnerFinanceiro() {
   const { owner } = useOwnerAuth();
   const { t, language } = useOwnerLanguage();
-  const [selectedMonth, setSelectedMonth] = useState(format(new Date(), "yyyy-MM"));
+  
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  
+  const [selectedYear, setSelectedYear] = useState(currentYear.toString());
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth.toString().padStart(2, "0"));
   const [summary, setSummary] = useState<FinancialSummary>({
     grossRevenue: 0,
     managerCommission: 0,
@@ -74,12 +79,19 @@ export default function OwnerFinanceiro() {
     outros: { label: t("financial.other"), icon: <Sparkles className="w-4 h-4" /> },
   };
 
-  // Generate month options for the last 12 months
+  // Generate year options (current year and 2 previous)
+  const yearOptions = Array.from({ length: 3 }, (_, i) => {
+    const year = currentYear - i;
+    return { value: year.toString(), label: year.toString() };
+  });
+
+  // Generate month options
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
-    const date = subMonths(new Date(), i);
+    const monthNum = i + 1;
+    const date = new Date(parseInt(selectedYear), i, 1);
     return {
-      value: format(date, "yyyy-MM"),
-      label: format(date, "MMMM yyyy", { locale: dateLocale }),
+      value: monthNum.toString().padStart(2, "0"),
+      label: format(date, "MMMM", { locale: dateLocale }),
     };
   });
 
@@ -87,16 +99,18 @@ export default function OwnerFinanceiro() {
     if (owner?.propertyId) {
       loadFinancialData();
     }
-  }, [owner?.propertyId, selectedMonth]);
+  }, [owner?.propertyId, selectedYear, selectedMonth]);
 
   const loadFinancialData = async () => {
     if (!owner?.propertyId) return;
     setIsLoading(true);
 
     try {
-      const [year, month] = selectedMonth.split("-");
-      const startDate = startOfMonth(new Date(parseInt(year), parseInt(month) - 1));
+      const yearNum = parseInt(selectedYear);
+      const monthNum = parseInt(selectedMonth);
+      const startDate = startOfMonth(new Date(yearNum, monthNum - 1));
       const endDate = endOfMonth(startDate);
+      const monthKey = `${selectedYear}-${selectedMonth}`;
 
       // Get reservations for the month
       const { data: reservations } = await supabase
@@ -119,7 +133,7 @@ export default function OwnerFinanceiro() {
         .from("owner_costs")
         .select("*")
         .eq("property_id", owner.propertyId)
-        .eq("month", selectedMonth);
+        .eq("month", monthKey);
 
       const commissionRate = ownerData?.commission_rate || 15;
       const grossRevenue = reservations?.reduce((sum, r) => sum + (r.total_price || 0), 0) || 0;
@@ -154,7 +168,7 @@ export default function OwnerFinanceiro() {
 
   const downloadPDF = () => {
     const doc = new jsPDF();
-    const monthLabel = monthOptions.find((m) => m.value === selectedMonth)?.label || selectedMonth;
+    const monthLabel = `${monthOptions.find((m) => m.value === selectedMonth)?.label || selectedMonth} ${selectedYear}`;
 
     // Header
     doc.setFontSize(20);
@@ -198,7 +212,7 @@ export default function OwnerFinanceiro() {
       });
     }
 
-    doc.save(`${language === "pt" ? "relatorio-financeiro" : "financial-report"}-${selectedMonth}.pdf`);
+    doc.save(`${language === "pt" ? "relatorio-financeiro" : "financial-report"}-${selectedYear}-${selectedMonth}.pdf`);
   };
 
   return (
@@ -212,9 +226,21 @@ export default function OwnerFinanceiro() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-28">
+              <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-40">
               <SelectValue placeholder={language === "pt" ? "Mês" : "Month"} />
             </SelectTrigger>
             <SelectContent>
@@ -317,7 +343,7 @@ export default function OwnerFinanceiro() {
           <CardTitle>{language === "pt" ? "Resumo Mensal" : "Monthly Summary"}</CardTitle>
           <CardDescription>
             {language === "pt" ? "Detalhamento completo das finanças de" : "Complete financial breakdown for"}{" "}
-            {monthOptions.find((m) => m.value === selectedMonth)?.label}
+            {monthOptions.find((m) => m.value === selectedMonth)?.label} {selectedYear}
           </CardDescription>
         </CardHeader>
         <CardContent>

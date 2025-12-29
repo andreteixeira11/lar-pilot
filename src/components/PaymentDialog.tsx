@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreditCard, Smartphone, Copy, Check } from "lucide-react";
-import { IfthenPayService } from "@/lib/ifthenpay";
+import { CreditCard, Smartphone, Copy, Check, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { EmailService } from "@/lib/emailService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -31,10 +31,13 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
   const [paymentMethod, setPaymentMethod] = useState<"multibanco" | "mbway">("multibanco");
   const [phone, setPhone] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
   const [paymentReference, setPaymentReference] = useState<{
-    entidade?: string;
-    referencia?: string;
-    valor?: string;
+    entity?: string;
+    reference?: string;
+    amount?: string;
+    expiryDate?: string;
+    requestId?: string;
   } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const { toast } = useToast();
@@ -43,25 +46,37 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
     setIsProcessing(true);
     
     try {
-      const amount = parseFloat(plan.price);
+      const amount = parseFloat(plan.price).toFixed(2);
       const orderId = `SUB-${Date.now()}`;
 
       if (paymentMethod === "multibanco") {
-        const payment = await IfthenPayService.createMultibancoPayment({
-          amount,
-          orderId,
-          description: `Subscrição ${plan.name}`,
-          email: userEmail,
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'create-multibanco',
+            amount,
+            orderId,
+            description: `Subscrição ${plan.name}`,
+            clientEmail: userEmail,
+            expiryDays: 3,
+          },
         });
 
-        setPaymentReference(payment);
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        setPaymentReference({
+          entity: String(data.entity),
+          reference: String(data.reference).padStart(9, '0'),
+          amount: String(data.amount),
+          expiryDate: data.expiryDate,
+        });
 
         // Send email with payment reference
         await EmailService.sendPaymentReference(userEmail, {
           plan: plan.name,
-          amount,
-          reference: payment.referencia,
-          entidade: payment.entidade,
+          amount: parseFloat(amount),
+          reference: String(data.reference).padStart(9, '0'),
+          entidade: String(data.entity),
         });
 
         toast({
@@ -80,35 +95,89 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
           return;
         }
 
-        await IfthenPayService.createMBWayPayment({
-          amount,
-          orderId,
-          description: `Subscrição ${plan.name}`,
-          email: userEmail,
-          phone,
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'create-mbway',
+            amount,
+            orderId,
+            mobileNumber: phone,
+            description: `Subscrição ${plan.name}`,
+            email: userEmail,
+          },
         });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
 
         toast({
           title: "Pedido enviado!",
           description: "Verifique o seu telemóvel para aprovar o pagamento.",
         });
 
-        // Simulate payment confirmation after 3 seconds
-        setTimeout(() => {
-          onSuccess();
-          onOpenChange(false);
-        }, 3000);
+        // Start polling for payment status
+        setIsPolling(true);
+        pollMBWayStatus(data.requestId);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Payment error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro ao processar o pagamento.";
       toast({
         title: "Erro no pagamento",
-        description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const pollMBWayStatus = async (requestId: string) => {
+    let attempts = 0;
+    const maxAttempts = 60; // 5 minutes (5 seconds interval)
+    
+    const checkStatus = async () => {
+      if (attempts >= maxAttempts) {
+        setIsPolling(false);
+        toast({
+          title: "Tempo expirado",
+          description: "O pagamento MB Way expirou. Por favor, tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'check-mbway-status',
+            requestId,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.isPaid) {
+          setIsPolling(false);
+          toast({
+            title: "Pagamento confirmado!",
+            description: "A sua subscrição foi ativada com sucesso.",
+          });
+          onSuccess();
+          onOpenChange(false);
+          return;
+        }
+
+        // Continue polling
+        attempts++;
+        setTimeout(checkStatus, 5000);
+      } catch (error) {
+        console.error("Error checking MB Way status:", error);
+        attempts++;
+        setTimeout(checkStatus, 5000);
+      }
+    };
+
+    checkStatus();
   };
 
   const copyToClipboard = (text: string, field: string) => {
@@ -121,8 +190,15 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
     });
   };
 
+  const handleClose = () => {
+    if (!isPolling) {
+      setPaymentReference(null);
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Pagamento - {plan.name}</DialogTitle>
@@ -131,7 +207,19 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
           </DialogDescription>
         </DialogHeader>
 
-        {!paymentReference ? (
+        {isPolling ? (
+          <div className="space-y-6 py-8">
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              </div>
+              <h3 className="font-semibold text-lg">A aguardar confirmação</h3>
+              <p className="text-sm text-muted-foreground">
+                Por favor, confirme o pagamento na app MB Way do seu telemóvel.
+              </p>
+            </div>
+          </div>
+        ) : !paymentReference ? (
           <div className="space-y-6 py-4">
             <div className="space-y-4">
               <Label>Método de Pagamento</Label>
@@ -192,7 +280,14 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
               onClick={handlePayment}
               disabled={isProcessing || (paymentMethod === "mbway" && phone.length < 9)}
             >
-              {isProcessing ? "A processar..." : "Pagar"}
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  A processar...
+                </>
+              ) : (
+                "Pagar"
+              )}
             </Button>
           </div>
         ) : (
@@ -211,11 +306,11 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
               <div className="bg-muted p-4 rounded-lg">
                 <div className="text-sm text-muted-foreground mb-1">Entidade</div>
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold font-mono">{paymentReference.entidade}</div>
+                  <div className="text-2xl font-bold font-mono">{paymentReference.entity}</div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard(paymentReference.entidade!, "Entidade")}
+                    onClick={() => copyToClipboard(paymentReference.entity!, "Entidade")}
                   >
                     {copied === "Entidade" ? (
                       <Check className="h-4 w-4 text-primary" />
@@ -229,11 +324,11 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
               <div className="bg-muted p-4 rounded-lg">
                 <div className="text-sm text-muted-foreground mb-1">Referência</div>
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold font-mono">{paymentReference.referencia}</div>
+                  <div className="text-2xl font-bold font-mono">{paymentReference.reference}</div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => copyToClipboard(paymentReference.referencia!, "Referência")}
+                    onClick={() => copyToClipboard(paymentReference.reference!, "Referência")}
                   >
                     {copied === "Referência" ? (
                       <Check className="h-4 w-4 text-primary" />
@@ -246,8 +341,15 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
 
               <div className="bg-muted p-4 rounded-lg">
                 <div className="text-sm text-muted-foreground mb-1">Valor</div>
-                <div className="text-2xl font-bold text-primary">€{paymentReference.valor}</div>
+                <div className="text-2xl font-bold text-primary">€{paymentReference.amount}</div>
               </div>
+
+              {paymentReference.expiryDate && (
+                <div className="bg-muted p-4 rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Validade</div>
+                  <div className="text-lg font-semibold">{paymentReference.expiryDate}</div>
+                </div>
+              )}
             </div>
 
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg space-y-2">
@@ -259,7 +361,7 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
               </ul>
             </div>
 
-            <Button className="w-full" onClick={() => onOpenChange(false)}>
+            <Button className="w-full" onClick={handleClose}>
               Concluir
             </Button>
           </div>

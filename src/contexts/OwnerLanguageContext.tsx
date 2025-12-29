@@ -29,6 +29,13 @@ const currencyLocales: Record<OwnerCurrency, string> = {
   GBP: "en-GB",
 };
 
+// Exchange rates relative to EUR (base currency)
+const exchangeRates: Record<OwnerCurrency, number> = {
+  EUR: 1,
+  USD: 1.10,  // 1 EUR = 1.10 USD
+  GBP: 0.85,  // 1 EUR = 0.85 GBP
+};
+
 const translations: Record<OwnerLanguage, Record<string, string>> = {
   pt: {
     // Login
@@ -275,10 +282,14 @@ export function OwnerLanguageProvider({ children }: { children: ReactNode }) {
   };
 
   const formatCurrency = (value: number): string => {
+    // Convert from EUR (base currency) to selected currency
+    const convertedValue = value * exchangeRates[currency];
     return new Intl.NumberFormat(currencyLocales[currency], {
       style: "currency",
       currency: currency,
-    }).format(value);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(convertedValue);
   };
 
   const t = (key: string): string => {

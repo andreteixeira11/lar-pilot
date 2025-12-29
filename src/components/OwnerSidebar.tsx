@@ -146,9 +146,11 @@ export function OwnerSidebar() {
                 {/* Logo Section */}
                 <div className="p-6 border-b border-border">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                      <Home className="w-5 h-5 text-primary-foreground" />
-                    </div>
+                    <img 
+                      src="/logos/monumenta-logo.svg" 
+                      alt="Monumenta Atlantic" 
+                      className="h-10 w-auto"
+                    />
                     <div className="flex-1 min-w-0">
                       <h2 className="font-semibold text-foreground truncate">
                         {t("sidebar.title")}
@@ -183,9 +185,11 @@ export function OwnerSidebar() {
         {/* Logo Section */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Home className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img 
+              src="/logos/monumenta-logo.svg" 
+              alt="Monumenta Atlantic" 
+              className="h-10 w-auto"
+            />
             <div className="flex-1 min-w-0">
               <h2 className="font-semibold text-foreground truncate">
                 {t("sidebar.title")}

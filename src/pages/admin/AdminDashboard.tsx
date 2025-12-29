@@ -272,7 +272,7 @@ const AdminDashboard = () => {
           const source = (reservation.booking_source || "").toLowerCase();
           if (source.includes("airbnb")) {
             months[monthIndex].airbnb++;
-          } else if (source.includes("booking")) {
+          } else if (source.includes("booking") || source.includes("booking.com")) {
             months[monthIndex].booking++;
           } else {
             months[monthIndex].diretas++;

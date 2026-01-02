@@ -1,11 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { LayoutDashboard, Users, Building2, FileBarChart, ArrowLeft, Menu, X, ChevronLeft, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Users, Building2, FileBarChart, ArrowLeft, Menu, X, ChevronLeft, ShoppingCart, UserPlus, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Leads", url: "/admin/leads", icon: UserPlus },
+  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Vendas", url: "/admin/sales", icon: ShoppingCart },
   { title: "Utilizadores", url: "/admin/users", icon: Users },
   { title: "Propriedades", url: "/admin/properties", icon: Building2 },

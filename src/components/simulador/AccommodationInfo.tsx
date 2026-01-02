@@ -13,11 +13,24 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft } from "lucide-react";
 
+export interface AccommodationFormData {
+  propertyName: string;
+  propertyType: string;
+  address: string;
+  bedrooms: string;
+  bathrooms: string;
+  capacity: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  notes: string;
+}
+
 interface AccommodationInfoProps {
   packageName: string;
   totalCommission: number;
   selectedServices: string[];
-  onOpenProposal: (commission: number, services: string[]) => void;
+  onOpenProposal: (commission: number, services: string[], formData: AccommodationFormData) => void;
   onBack: () => void;
 }
 
@@ -28,7 +41,7 @@ export const AccommodationInfo = ({
   onOpenProposal,
   onBack,
 }: AccommodationInfoProps) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AccommodationFormData>({
     propertyName: "",
     propertyType: "",
     address: "",
@@ -54,7 +67,7 @@ export const AccommodationInfo = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onOpenProposal(totalCommission, selectedServices);
+    onOpenProposal(totalCommission, selectedServices, formData);
   };
 
   const isFormValid =

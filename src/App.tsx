@@ -47,6 +47,8 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminSales from "./pages/admin/AdminSales";
+import AdminLeads from "./pages/admin/AdminLeads";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import OwnerLogin from "./pages/proprietario/OwnerLogin";
 import OwnerResetPassword from "./pages/proprietario/OwnerResetPassword";
 import OwnerDashboard from "./pages/proprietario/OwnerDashboard";
@@ -122,6 +124,8 @@ const App = () => (
                           <main className="flex-1 md:ml-72 bg-background">
                             <Routes>
                               <Route path="/dashboard" element={<AdminDashboard />} />
+                              <Route path="/leads" element={<AdminLeads />} />
+                              <Route path="/analytics" element={<AdminAnalytics />} />
                               <Route path="/sales" element={<AdminSales />} />
                               <Route path="/users" element={<AdminUsers />} />
                               <Route path="/properties" element={<AdminProperties />} />

@@ -3,9 +3,10 @@ import { PackageCard } from "@/components/simulador/PackageCard";
 import { SimulatorSection } from "@/components/simulador/SimulatorSection";
 import { ProposalModal } from "@/components/simulador/ProposalModal";
 import { CookieBanner } from "@/components/simulador/CookieBanner";
-import { AccommodationInfo } from "@/components/simulador/AccommodationInfo";
+import { AccommodationInfo, type AccommodationFormData } from "@/components/simulador/AccommodationInfo";
 import { ProgressIndicator } from "@/components/simulador/ProgressIndicator";
 import { ConfirmationPage } from "@/components/simulador/ConfirmationPage";
+import useAnalytics from "@/hooks/useAnalytics";
 import AnimatedTabs from "@/components/simulador/AnimatedTabs";
 import HeroSectionWithGradient from "@/components/simulador/HeroSectionWithGradient";
 import luxuryVillaImage from "@/assets/luxury-villa-hero.jpg";
@@ -102,14 +103,21 @@ const packages = [
 ];
 
 const Simulador = () => {
+  useAnalytics(); // Track page views
+  
   const [selectedPackage, setSelectedPackage] = useState("basic");
   const [currentStep, setCurrentStep] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [totalCommission, setTotalCommission] = useState(0);
-  const [proposalData, setProposalData] = useState({
+  const [proposalData, setProposalData] = useState<{
+    commission: number;
+    services: string[];
+    formData: AccommodationFormData | null;
+  }>({
     commission: 0,
-    services: [] as string[],
+    services: [],
+    formData: null,
   });
 
   const currentPackage = packages.find((pkg) => pkg.id === selectedPackage);
@@ -126,8 +134,8 @@ const Simulador = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleOpenProposal = (commission: number, services: string[]) => {
-    setProposalData({ commission, services });
+  const handleOpenProposal = (commission: number, services: string[], formData: AccommodationFormData) => {
+    setProposalData({ commission, services, formData });
     setTotalCommission(commission);
     setIsModalOpen(true);
   };
@@ -240,6 +248,7 @@ const Simulador = () => {
         packageName={currentPackage?.name || ""}
         totalCommission={proposalData.commission}
         selectedServices={proposalData.services}
+        formData={proposalData.formData}
         onSuccess={handleProposalSuccess}
       />
 

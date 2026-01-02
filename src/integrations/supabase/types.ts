@@ -1432,6 +1432,114 @@ export type Database = {
         }
         Relationships: []
       }
+      simulator_leads: {
+        Row: {
+          address: string
+          admin_notes: string | null
+          bathrooms: number | null
+          bedrooms: number | null
+          capacity: number | null
+          contacted_at: string | null
+          contacted_by: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          owner_email: string
+          owner_name: string
+          owner_phone: string
+          package_name: string
+          property_name: string
+          property_type: string
+          selected_services: Json | null
+          status: string
+          total_commission: number
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          admin_notes?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          capacity?: number | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_email: string
+          owner_name: string
+          owner_phone: string
+          package_name: string
+          property_name: string
+          property_type: string
+          selected_services?: Json | null
+          status?: string
+          total_commission: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          admin_notes?: string | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          capacity?: number | null
+          contacted_at?: string | null
+          contacted_by?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_email?: string
+          owner_name?: string
+          owner_phone?: string
+          package_name?: string
+          property_name?: string
+          property_type?: string
+          selected_services?: Json | null
+          status?: string
+          total_commission?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_analytics: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          ip_hash: string | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       tourist_tax: {
         Row: {
           created_at: string

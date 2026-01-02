@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,7 +7,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, FileText } from "lucide-react";
+import { CheckCircle, FileText, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { AccommodationFormData } from "./AccommodationInfo";
 
 interface ProposalModalProps {
   isOpen: boolean;
@@ -14,6 +18,7 @@ interface ProposalModalProps {
   packageName: string;
   totalCommission: number;
   selectedServices: string[];
+  formData: AccommodationFormData | null;
   onSuccess: () => void;
 }
 
@@ -23,12 +28,43 @@ export const ProposalModal = ({
   packageName,
   totalCommission,
   selectedServices,
+  formData,
   onSuccess,
 }: ProposalModalProps) => {
-  const handleConfirm = () => {
-    // Here you would typically send the proposal to the backend
-    onClose();
-    onSuccess();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!formData) return;
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from("simulator_leads").insert({
+        package_name: packageName,
+        total_commission: totalCommission,
+        selected_services: selectedServices,
+        property_name: formData.propertyName,
+        property_type: formData.propertyType,
+        address: formData.address,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
+        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+        capacity: formData.capacity ? parseInt(formData.capacity) : null,
+        owner_name: formData.ownerName,
+        owner_email: formData.ownerEmail,
+        owner_phone: formData.ownerPhone,
+        notes: formData.notes || null,
+      });
+
+      if (error) throw error;
+
+      toast.success("Proposta enviada com sucesso!");
+      onClose();
+      onSuccess();
+    } catch (error) {
+      console.error("Error submitting proposal:", error);
+      toast.error("Erro ao enviar proposta. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -82,11 +118,18 @@ export const ProposalModal = ({
         </div>
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
+          <Button variant="outline" onClick={onClose} className="flex-1" disabled={isSubmitting}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} className="flex-1">
-            Confirmar Proposta
+          <Button onClick={handleConfirm} className="flex-1" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                A enviar...
+              </>
+            ) : (
+              "Confirmar Proposta"
+            )}
           </Button>
         </div>
       </DialogContent>

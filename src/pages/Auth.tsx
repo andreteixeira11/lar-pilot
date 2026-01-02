@@ -81,9 +81,11 @@ export default function Auth() {
   const initialPlan = searchParams.get("plan") as SubscriptionPlan | null;
   const showPlans = searchParams.get("showPlans") === "true";
   
+  const isResetPasswordMode = searchParams.get("mode") === "reset-password";
+  
   const [isLogin, setIsLogin] = useState(initialMode);
   const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property" | "reset-password">(
-    showPlans ? "plan" : "auth"
+    isResetPasswordMode ? "reset-password" : showPlans ? "plan" : "auth"
   );
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(initialPlan);
   const [email, setEmail] = useState("");
@@ -122,8 +124,13 @@ export default function Auth() {
   // Get return path from state (set by AdminRoute or ProtectedRoute)
   const from = (location.state as { from?: string })?.from || "/dashboard";
 
-  // Check for password recovery event
+  // Check for password recovery event or URL mode
   useEffect(() => {
+    // If already in reset mode from URL, ensure we stay there
+    if (isResetPasswordMode) {
+      setStep("reset-password");
+    }
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setStep("reset-password");
@@ -131,7 +138,7 @@ export default function Auth() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isResetPasswordMode]);
 
   const handlePlanSelect = (tier: PricingTier, isYearly: boolean) => {
     const planId = tier.name.toLowerCase() as SubscriptionPlan;

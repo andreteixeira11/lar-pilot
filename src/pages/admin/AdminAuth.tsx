@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminAuth() {
   const [email, setEmail] = useState("");
@@ -21,35 +22,71 @@ export default function AdminAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Admin credentials
-    const adminCredentials = [
-      { email: "admin@admin.pt", password: "12345678" },
-      { email: "geral@monumentalatlantic.pt", password: "Monumenta2024!" },
-    ];
+    try {
+      // First, check if the email is in admin_users table
+      const { data: adminUser, error: adminCheckError } = await supabase
+        .from("admin_users")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
 
-    const isValidAdmin = adminCredentials.some(
-      (cred) => cred.email === email && cred.password === password
-    );
+      if (adminCheckError) {
+        console.error("Error checking admin status:", adminCheckError);
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar credenciais.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
 
-    if (isValidAdmin) {
-      localStorage.setItem("adminAuthenticated", "true");
-      
-      toast({
-        title: "Login de administrador efetuado!",
-        description: "Bem-vindo ao painel de administração.",
+      if (!adminUser) {
+        toast({
+          title: "Acesso negado",
+          description: "Este email não tem permissões de administrador.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Authenticate with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      
-      setIsLoading(false);
-      navigate("/admin/dashboard");
-      return;
-    }
 
-    toast({
-      title: "Acesso negado",
-      description: "Credenciais de administrador incorretas.",
-      variant: "destructive",
-    });
-    setIsLoading(false);
+      if (error) {
+        toast({
+          title: "Acesso negado",
+          description: "Credenciais incorretas.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        localStorage.setItem("adminAuthenticated", "true");
+        
+        toast({
+          title: "Login de administrador efetuado!",
+          description: "Bem-vindo ao painel de administração.",
+        });
+        
+        navigate("/admin/dashboard");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao fazer login.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -20,6 +20,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -42,7 +52,8 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -62,6 +73,7 @@ const AdminLeads = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [deleteLeadId, setDeleteLeadId] = useState<string | null>(null);
 
   // Fetch leads
   const { data: leads, isLoading } = useQuery({
@@ -100,6 +112,26 @@ const AdminLeads = () => {
     },
     onError: () => {
       toast.error("Erro ao atualizar lead");
+    },
+  });
+
+  // Delete lead mutation
+  const deleteLeadMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("simulator_leads")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      toast.success("Lead eliminado com sucesso");
+      setDeleteLeadId(null);
+    },
+    onError: () => {
+      toast.error("Erro ao eliminar lead");
     },
   });
 
@@ -263,13 +295,23 @@ const AdminLeads = () => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openLeadDetails(lead)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openLeadDetails(lead)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteLeadId(lead.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
@@ -430,6 +472,27 @@ const AdminLeads = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteLeadId} onOpenChange={() => setDeleteLeadId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Lead</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem a certeza que deseja eliminar este lead? Esta ação não pode ser revertida.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteLeadId && deleteLeadMutation.mutate(deleteLeadId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

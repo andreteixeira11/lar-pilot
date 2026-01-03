@@ -49,6 +49,7 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminSales from "./pages/admin/AdminSales";
 import AdminLeads from "./pages/admin/AdminLeads";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminPlans from "./pages/admin/AdminPlans";
 import OwnerLogin from "./pages/proprietario/OwnerLogin";
 import OwnerResetPassword from "./pages/proprietario/OwnerResetPassword";
 import OwnerDashboard from "./pages/proprietario/OwnerDashboard";
@@ -59,6 +60,9 @@ import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
 import OwnerReviews from "./pages/proprietario/OwnerReviews";
 import Proprietarios from "./pages/Proprietarios";
 import Reviews from "./pages/Reviews";
+import Contactos from "./pages/Contactos";
+import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
+import TermosCondicoes from "./pages/TermosCondicoes";
 
 import NotFound from "./pages/NotFound";
 
@@ -82,6 +86,9 @@ const App = () => (
                   <Route path="/accept-invite" element={<AcceptInvite />} />
                   <Route path="/p/:slug" element={<PublicBookingPage />} />
                   <Route path="/guidebook/:id" element={<PublicGuidebook />} />
+                  <Route path="/contactos" element={<Contactos />} />
+                  <Route path="/privacidade" element={<PoliticaPrivacidade />} />
+                  <Route path="/termos" element={<TermosCondicoes />} />
                   
                   {/* Owner Portal Login */}
                   <Route path="/proprietario/login" element={<OwnerLanguageProvider><OwnerLogin /></OwnerLanguageProvider>} />
@@ -126,6 +133,7 @@ const App = () => (
                               <Route path="/dashboard" element={<AdminDashboard />} />
                               <Route path="/leads" element={<AdminLeads />} />
                               <Route path="/analytics" element={<AdminAnalytics />} />
+                              <Route path="/plans" element={<AdminPlans />} />
                               <Route path="/sales" element={<AdminSales />} />
                               <Route path="/users" element={<AdminUsers />} />
                               <Route path="/properties" element={<AdminProperties />} />

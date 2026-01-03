@@ -231,6 +231,16 @@ const Landing = () => {
               >
                 Gestão de AL
               </a>
+              <a
+                href="/proprietario/login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/proprietario/login");
+                }}
+                className="text-base font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                Área do Proprietário
+              </a>
             </nav>
 
             {/* Menu / Buttons */}
@@ -264,11 +274,21 @@ const Landing = () => {
                       variant="ghost"
                       className="justify-start p-0 h-auto"
                       onClick={() => {
-                        navigate("#");
+                        navigate("/simulador");
                         setMobileMenuOpen(false);
                       }}
                     >
                       Gestão de AL
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="justify-start p-0 h-auto"
+                      onClick={() => {
+                        navigate("/proprietario/login");
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      Área do Proprietário
                     </Button>
                     <div className="border-t pt-4 mt-2">
                       <Button
@@ -487,69 +507,173 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t mt-20 bg-background/90 py-8">
-        <div className="container mx-auto px-4 grid md:grid-cols-4 gap-4 text-center md:text-left">
-          <div>
-            <img src="/logos/monumenta-logo.svg" alt="Monumenta Logo" className="h-20 mb-2" />
-            <p>Gestão profissional de Alojamento Local na Madeira.</p>
+      <footer className="border-t mt-20 bg-card/50 backdrop-blur">
+        <div className="container mx-auto px-4 py-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+            {/* Brand */}
+            <div className="lg:col-span-1">
+              <img src="/logos/monumenta-logo.svg" alt="Monumenta Logo" className="h-16 mb-4" />
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Gestão profissional de Alojamento Local na Madeira. Simplifique as suas operações com a nossa plataforma completa.
+              </p>
+            </div>
+
+            {/* Links Rápidos */}
+            <div>
+              <h6 className="font-semibold mb-4 text-foreground">Links Rápidos</h6>
+              <ul className="space-y-3">
+                <li>
+                  <a 
+                    href="#features" 
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    Funcionalidades
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="#pricing" 
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    Planos e Preços
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/simulador"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/simulador");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Gestão de AL
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/proprietario/login"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/proprietario/login");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Área do Proprietário
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Suporte */}
+            <div>
+              <h6 className="font-semibold mb-4 text-foreground">Suporte</h6>
+              <ul className="space-y-3">
+                <li>
+                  <a 
+                    href="/contactos"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/contactos");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Contactos
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/privacidade"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/privacidade");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Política de Privacidade
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="/termos"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/termos");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Termos e Condições
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Redes Sociais */}
+            <div>
+              <h6 className="font-semibold mb-4 text-foreground">Redes Sociais</h6>
+              <ul className="space-y-3">
+                <li>
+                  <a 
+                    href="https://instagram.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    Instagram
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://facebook.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    Facebook
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://linkedin.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                  >
+                    LinkedIn
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h6 className="font-bold mb-2">Links</h6>
-            <ul className="space-y-1">
-              <li>
-                <Button variant="link" onClick={() => navigate("/")}>
-                  Início
-                </Button>
-              </li>
-              <li>
-                <Button variant="link" onClick={() => navigate("/pricing")}>
-                  Planos
-                </Button>
-              </li>
-              <li>
-                <Button variant="link" onClick={() => navigate("/features")}>
-                  Serviços
-                </Button>
-              </li>
-            </ul>
+
+          {/* Bottom */}
+          <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © 2025 Monumental Atlantic. Todos os direitos reservados.
+            </p>
+            <div className="flex gap-6">
+              <a 
+                href="/privacidade"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/privacidade");
+                }}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                Privacidade
+              </a>
+              <a 
+                href="/termos"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/termos");
+                }}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                Termos
+              </a>
+            </div>
           </div>
-          <div>
-            <h6 className="font-bold mb-2">Suporte</h6>
-            <ul className="space-y-1">
-              <li>
-                <Button variant="link" onClick={() => navigate("/contact")}>
-                  Contacto
-                </Button>
-              </li>
-              <li>
-                <Button variant="link" onClick={() => navigate("/privacy")}>
-                  Política de Privacidade
-                </Button>
-              </li>
-              <li>
-                <Button variant="link" onClick={() => navigate("/terms")}>
-                  Termos e Condições
-                </Button>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h6 className="font-bold mb-2">Redes Sociais</h6>
-            <ul className="space-y-1">
-              <li>
-                <a href="#">Instagram</a>
-              </li>
-              <li>
-                <a href="#">Facebook</a>
-              </li>
-              <li>
-                <a href="#">LinkedIn</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="text-center mt-6">
-          <p>© 2025 Monumental Atlantic. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

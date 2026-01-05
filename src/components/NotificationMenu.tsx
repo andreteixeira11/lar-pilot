@@ -176,7 +176,7 @@ export function NotificationMenu() {
             description: `Valor: €${newOrder.total_amount.toFixed(2)}`,
             action: {
               label: "Ver",
-              onClick: () => navigate("/guidebooks"),
+              onClick: () => navigate("/upsell-orders"),
             },
           });
           loadData();
@@ -357,7 +357,7 @@ export function NotificationMenu() {
                     <div
                       key={order.id}
                       className="border rounded-lg p-3 hover:bg-primary/10 transition-colors cursor-pointer"
-                      onClick={() => navigate("/guidebooks")}
+                      onClick={() => navigate("/upsell-orders")}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2">
@@ -390,7 +390,7 @@ export function NotificationMenu() {
                   <Button
                     variant="ghost"
                     className="w-full justify-center text-sm"
-                    onClick={() => navigate("/guidebooks")}
+                    onClick={() => navigate("/upsell-orders")}
                   >
                     Ver todos os pedidos
                   </Button>

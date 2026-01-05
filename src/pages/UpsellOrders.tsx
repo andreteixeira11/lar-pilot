@@ -127,6 +127,7 @@ const UpsellOrders = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["upsell-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-upsells-count"] });
       toast.success("Estado atualizado com sucesso");
     },
     onError: () => {
@@ -144,6 +145,7 @@ const UpsellOrders = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["upsell-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-upsells-count"] });
       toast.success("Estado de pagamento atualizado");
     },
     onError: () => {

@@ -3,7 +3,7 @@ import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import {
   Select,
   SelectContent,
@@ -25,8 +25,6 @@ import {
   CalendarDays,
   Percent,
   Wallet,
-  CheckCircle,
-  AlertTriangle,
 } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
@@ -61,7 +59,7 @@ export default function OwnerDashboard() {
   });
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [propertyStatus, setPropertyStatus] = useState<"normal" | "attention">("normal");
+  
   const [availableYears, setAvailableYears] = useState<string[]>([currentYear.toString()]);
 
   const dateLocale = language === "pt" ? pt : enUS;
@@ -165,9 +163,6 @@ export default function OwnerDashboard() {
       const managerCommission = totalRevenue * (commissionRate / 100);
       const estimatedProfit = totalRevenue - managerCommission;
 
-      // Determine property status
-      const hasRecentReservations = totalReservations > 0;
-      setPropertyStatus(hasRecentReservations ? "normal" : "attention");
 
       setKpis({
         totalRevenue,
@@ -218,19 +213,6 @@ export default function OwnerDashboard() {
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             {owner?.propertyName}
           </h1>
-          <div className="flex items-center gap-2 mt-1">
-            {propertyStatus === "normal" ? (
-              <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                {t("dashboard.statusNormal")}
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                {t("dashboard.statusAttention")}
-              </Badge>
-            )}
-          </div>
         </div>
 
         <div className="flex gap-2">

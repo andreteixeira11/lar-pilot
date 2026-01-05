@@ -158,6 +158,9 @@ const INE = () => {
           const pais = guest.pais_residencia;
           const noites = guest.reservations.num_nights;
           
+          // Skip guests without country/nationality
+          if (!pais || pais.trim() === '') return;
+          
           if (!countryData[pais]) {
             countryData[pais] = {
               nrHospedes: 0,

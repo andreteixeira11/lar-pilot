@@ -42,6 +42,7 @@ export default function OwnerReservas() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState("all");
+  const [availableYears, setAvailableYears] = useState<string[]>([new Date().getFullYear().toString()]);
 
   const dateLocale = language === "pt" ? pt : enUS;
 
@@ -58,9 +59,36 @@ export default function OwnerReservas() {
 
   useEffect(() => {
     if (owner?.propertyId) {
+      loadAvailableYears();
+    }
+  }, [owner?.propertyId]);
+
+  useEffect(() => {
+    if (owner?.propertyId) {
       loadReservations();
     }
   }, [owner?.propertyId, selectedYear, selectedMonth]);
+
+  const loadAvailableYears = async () => {
+    if (!owner?.propertyId) return;
+    
+    const { data: reservationsData } = await supabase
+      .from("reservations")
+      .select("check_in")
+      .eq("property_id", owner.propertyId);
+    
+    if (reservationsData && reservationsData.length > 0) {
+      const yearsSet = new Set<string>();
+      reservationsData.forEach(r => {
+        const year = new Date(r.check_in).getFullYear().toString();
+        yearsSet.add(year);
+      });
+      // Always include current year
+      yearsSet.add(new Date().getFullYear().toString());
+      const sortedYears = Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+      setAvailableYears(sortedYears);
+    }
+  };
 
   const getDateRange = () => {
     const year = parseInt(selectedYear);
@@ -134,9 +162,9 @@ export default function OwnerReservas() {
               <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2025">2025</SelectItem>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2023">2023</SelectItem>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year}>{year}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           

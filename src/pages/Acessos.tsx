@@ -64,10 +64,29 @@ const Acessos = () => {
 
       if (error) throw error;
 
-      if (data) {
-        const newFormData = { ...formData };
-        const customAccessList: CustomAccess[] = [];
+      // Start with empty form data to avoid stale state issues
+      const newFormData = {
+        airbnbUser: "",
+        airbnbPassword: "",
+        bookingUser: "",
+        bookingPassword: "",
+        taxaTuristicaUser: "",
+        taxaTuristicaPassword: "",
+        sibaUnidadeHoteleira: "",
+        sibaEstabelecimento: "",
+        sibaChaveAtivacao: "",
+        ineCodigoIdentificador: "",
+        ineChaveMestre: "",
+        ineCodigo: "",
+        inePassword: "",
+        livroReclamacoesUser: "",
+        livroReclamacoesPassword: "",
+        portalFinancasNif: "",
+        portalFinancasPassword: "",
+      };
+      const customAccessList: CustomAccess[] = [];
 
+      if (data) {
         data.forEach((credential) => {
           if (credential.platform === 'custom') {
             const creds = credential.credentials as any;
@@ -83,10 +102,10 @@ const Acessos = () => {
             });
           }
         });
-
-        setFormData(newFormData);
-        setCustomAccess(customAccessList);
       }
+
+      setFormData(newFormData);
+      setCustomAccess(customAccessList);
     } catch (error) {
       console.error('Error loading credentials:', error);
     }

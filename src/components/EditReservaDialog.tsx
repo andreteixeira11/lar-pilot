@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { countries } from "@/lib/countries";
+import { CountryCombobox } from "@/components/checkin/CountryCombobox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 
@@ -447,12 +447,12 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <Label>Nacionalidade</Label>
-                        <Input
+                        <CountryCombobox
                           value={guest.nacionalidade}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "nacionalidade", e.target.value)
-                          }
-                          placeholder="Ex: Portuguesa"
+                          onValueChange={(value) => updateGuest(guest.id, "nacionalidade", value)}
+                          placeholder="Selecione..."
+                          searchPlaceholder="Pesquisar país..."
+                          emptyMessage="Nenhum país encontrado"
                         />
                       </div>
                       <div>
@@ -468,12 +468,12 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                     </div>
                     <div>
                       <Label>País de Residência</Label>
-                      <Input
+                      <CountryCombobox
                         value={guest.paisResidencia}
-                        onChange={(e) =>
-                          updateGuest(guest.id, "paisResidencia", e.target.value)
-                        }
-                        placeholder="País"
+                        onValueChange={(value) => updateGuest(guest.id, "paisResidencia", value)}
+                        placeholder="Selecione..."
+                        searchPlaceholder="Pesquisar país..."
+                        emptyMessage="Nenhum país encontrado"
                       />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
@@ -504,12 +504,12 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                       </div>
                       <div>
                         <Label>País Emissor</Label>
-                        <Input
+                        <CountryCombobox
                           value={guest.paisEmissor}
-                          onChange={(e) =>
-                            updateGuest(guest.id, "paisEmissor", e.target.value)
-                          }
-                          placeholder="País"
+                          onValueChange={(value) => updateGuest(guest.id, "paisEmissor", value)}
+                          placeholder="Selecione..."
+                          searchPlaceholder="Pesquisar país..."
+                          emptyMessage="Nenhum país encontrado"
                         />
                       </div>
                     </div>

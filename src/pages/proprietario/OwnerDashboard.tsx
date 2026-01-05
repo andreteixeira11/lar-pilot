@@ -62,10 +62,10 @@ export default function OwnerDashboard() {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [propertyStatus, setPropertyStatus] = useState<"normal" | "attention">("normal");
+  const [availableYears, setAvailableYears] = useState<string[]>([currentYear.toString()]);
 
   const dateLocale = language === "pt" ? pt : enUS;
   
-  const yearOptions = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString());
   const monthOptions = Array.from({ length: 12 }, (_, i) => ({
     value: (i + 1).toString(),
     label: format(new Date(2024, i, 1), "MMMM", { locale: dateLocale }),
@@ -73,9 +73,36 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     if (owner?.propertyId) {
+      loadAvailableYears();
+    }
+  }, [owner?.propertyId]);
+
+  useEffect(() => {
+    if (owner?.propertyId) {
       loadDashboardData();
     }
   }, [owner?.propertyId, selectedYear, selectedMonth]);
+
+  const loadAvailableYears = async () => {
+    if (!owner?.propertyId) return;
+    
+    const { data: reservations } = await supabase
+      .from("reservations")
+      .select("check_in")
+      .eq("property_id", owner.propertyId);
+    
+    if (reservations && reservations.length > 0) {
+      const yearsSet = new Set<string>();
+      reservations.forEach(r => {
+        const year = new Date(r.check_in).getFullYear().toString();
+        yearsSet.add(year);
+      });
+      // Always include current year
+      yearsSet.add(currentYear.toString());
+      const sortedYears = Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+      setAvailableYears(sortedYears);
+    }
+  };
 
   const getDateRange = () => {
     const year = parseInt(selectedYear);
@@ -212,7 +239,7 @@ export default function OwnerDashboard() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {yearOptions.map((year) => (
+              {availableYears.map((year) => (
                 <SelectItem key={year} value={year}>{year}</SelectItem>
               ))}
             </SelectContent>

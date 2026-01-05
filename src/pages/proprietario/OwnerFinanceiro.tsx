@@ -70,6 +70,7 @@ export default function OwnerFinanceiro() {
   });
   const [costs, setCosts] = useState<CostItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [availableYears, setAvailableYears] = useState<string[]>([currentYear.toString()]);
 
   const dateLocale = language === "pt" ? pt : enUS;
 
@@ -78,12 +79,6 @@ export default function OwnerFinanceiro() {
     manutencao: { label: t("financial.maintenance"), icon: <Wrench className="w-4 h-4" /> },
     outros: { label: t("financial.other"), icon: <Sparkles className="w-4 h-4" /> },
   };
-
-  // Generate year options (current year and 2 previous)
-  const yearOptions = Array.from({ length: 3 }, (_, i) => {
-    const year = currentYear - i;
-    return { value: year.toString(), label: year.toString() };
-  });
 
   // Generate month options
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
@@ -97,9 +92,36 @@ export default function OwnerFinanceiro() {
 
   useEffect(() => {
     if (owner?.propertyId) {
+      loadAvailableYears();
+    }
+  }, [owner?.propertyId]);
+
+  useEffect(() => {
+    if (owner?.propertyId) {
       loadFinancialData();
     }
   }, [owner?.propertyId, selectedYear, selectedMonth]);
+
+  const loadAvailableYears = async () => {
+    if (!owner?.propertyId) return;
+    
+    const { data: reservationsData } = await supabase
+      .from("reservations")
+      .select("check_in")
+      .eq("property_id", owner.propertyId);
+    
+    if (reservationsData && reservationsData.length > 0) {
+      const yearsSet = new Set<string>();
+      reservationsData.forEach(r => {
+        const year = new Date(r.check_in).getFullYear().toString();
+        yearsSet.add(year);
+      });
+      // Always include current year
+      yearsSet.add(currentYear.toString());
+      const sortedYears = Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a));
+      setAvailableYears(sortedYears);
+    }
+  };
 
   const loadFinancialData = async () => {
     if (!owner?.propertyId) return;
@@ -232,10 +254,8 @@ export default function OwnerFinanceiro() {
               <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
             </SelectTrigger>
             <SelectContent>
-              {yearOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year}>{year}</SelectItem>
               ))}
             </SelectContent>
           </Select>

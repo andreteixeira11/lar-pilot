@@ -200,64 +200,37 @@ const Guidebooks = () => {
         description="Crie guias personalizados para os seus hóspedes em 5 idiomas"
       />
 
-      {/* Features Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Smartphone className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Mobile-First</p>
-                <p className="text-xs text-muted-foreground">100% otimizado para telemóveis</p>
-              </div>
+      {/* Upselling Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            Upselling de Serviços
+          </CardTitle>
+          <CardDescription>
+            Aumente a sua receita vendendo serviços adicionais diretamente no guidebook
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg border">
+              <Coffee className="h-6 w-6 text-primary mb-2" />
+              <h4 className="font-medium">Pequeno-almoço</h4>
+              <p className="text-sm text-muted-foreground">Ofereça cestas de pequeno-almoço</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Languages className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">5 Idiomas</p>
-                <p className="text-xs text-muted-foreground">PT, EN, DE, ES, FR</p>
-              </div>
+            <div className="p-4 rounded-lg border">
+              <Globe className="h-6 w-6 text-primary mb-2" />
+              <h4 className="font-medium">Tours & Experiências</h4>
+              <p className="text-sm text-muted-foreground">Venda passeios e atividades locais</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <ShoppingCart className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Upselling</p>
-                <p className="text-xs text-muted-foreground">Venda serviços adicionais</p>
-              </div>
+            <div className="p-4 rounded-lg border">
+              <Car className="h-6 w-6 text-primary mb-2" />
+              <h4 className="font-medium">Transfers</h4>
+              <p className="text-sm text-muted-foreground">Ofereça transporte de/para aeroporto</p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Palette className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Personalizável</p>
-                <p className="text-xs text-muted-foreground">Cores e design adaptável</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Guidebooks List */}
       <div className="mt-8">
@@ -407,57 +380,6 @@ const Guidebooks = () => {
         )}
       </div>
 
-      {/* Section Types Info */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Secções Disponíveis</CardTitle>
-          <CardDescription>
-            Personalize o conteúdo de cada secção do seu guidebook
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {SECTION_TYPES.map((section) => (
-              <div key={section.type} className="flex items-center gap-3 p-3 rounded-lg border">
-                <section.icon className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">{section.label}</span>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upsell Info */}
-      <Card className="mt-4">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-5 w-5" />
-            Upselling de Serviços
-          </CardTitle>
-          <CardDescription>
-            Aumente a sua receita vendendo serviços adicionais diretamente no guidebook
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-lg border">
-              <Coffee className="h-6 w-6 text-primary mb-2" />
-              <h4 className="font-medium">Pequeno-almoço</h4>
-              <p className="text-sm text-muted-foreground">Ofereça cestas de pequeno-almoço</p>
-            </div>
-            <div className="p-4 rounded-lg border">
-              <Globe className="h-6 w-6 text-primary mb-2" />
-              <h4 className="font-medium">Tours & Experiências</h4>
-              <p className="text-sm text-muted-foreground">Venda passeios e atividades locais</p>
-            </div>
-            <div className="p-4 rounded-lg border">
-              <Car className="h-6 w-6 text-primary mb-2" />
-              <h4 className="font-medium">Transfers</h4>
-              <p className="text-sm text-muted-foreground">Ofereça transporte de/para aeroporto</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

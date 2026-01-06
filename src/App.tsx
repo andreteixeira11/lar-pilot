@@ -41,6 +41,7 @@ import Faturacao from "./pages/Faturacao";
 import Guidebooks from "./pages/Guidebooks";
 import UpsellOrders from "./pages/UpsellOrders";
 import PublicGuidebook from "./pages/PublicGuidebook";
+import Ajuda from "./pages/Ajuda";
 import AdminAuth from "./pages/admin/AdminAuth";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
@@ -179,6 +180,7 @@ const App = () => (
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="/reviews" element={<Reviews />} />
+                            <Route path="/ajuda" element={<Ajuda />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

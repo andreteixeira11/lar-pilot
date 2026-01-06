@@ -14,6 +14,7 @@ import {
   BookOpen,
   ShoppingCart,
   ChevronDown,
+  HelpCircle,
 } from "lucide-react";
 import {
   Sidebar,
@@ -112,6 +113,11 @@ export function AppSidebar() {
                       {state !== "collapsed" && (
                         <>
                           <span className="flex-1">Guidebooks</span>
+                          {pendingUpsells > 0 && (
+                            <Badge variant="destructive" className="h-5 min-w-5 px-1.5 text-xs mr-1">
+                              {pendingUpsells}
+                            </Badge>
+                          )}
                           <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
                         </>
                       )}
@@ -157,6 +163,24 @@ export function AppSidebar() {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
+
+              {/* Help Center */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to="/ajuda"
+                    end
+                    className={({ isActive }) =>
+                      isActive
+                        ? "bg-primary/10 text-primary font-medium rounded-xl"
+                        : "hover:bg-primary/10 hover:text-primary rounded-xl transition-colors"
+                    }
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    {state !== "collapsed" && <span>Central de Ajuda</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

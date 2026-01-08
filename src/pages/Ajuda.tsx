@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Search, Building2, Calendar, ClipboardCheck, Key, DollarSign, BarChart3, CalendarDays, FileText, BookOpen, Users, CreditCard, Settings, ChevronRight, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Search, Building2, Calendar, ClipboardCheck, Key, DollarSign, BarChart3, CalendarDays, FileText, BookOpen, Users, CreditCard, Settings, ChevronRight, ExternalLink, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 const categories = [
   {
@@ -147,6 +149,7 @@ const categories = [
 ];
 
 export default function Ajuda() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -168,6 +171,23 @@ export default function Ajuda() {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/logos/monumenta-logo.svg" 
+              alt="Monumenta Atlantic" 
+              className="h-10 w-auto cursor-pointer"
+              onClick={() => navigate("/")}
+            />
+          </div>
+          <Button variant="outline" onClick={() => navigate("/auth?mode=login")}>
+            Entrar
+          </Button>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-primary/10 to-background py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">

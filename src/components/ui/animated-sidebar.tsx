@@ -64,7 +64,6 @@ const menuGroups: MenuGroup[] = [
       { title: "Calendário", url: "/reservas", icon: CalendarIcon },
       { title: "Check-ins", url: "/checkins", icon: ClipboardCheck },
       { title: "Reservas Diretas", url: "/reservas-diretas", icon: Globe },
-      { title: "Pedidos Upsell", url: "/upsell-orders", icon: ShoppingCart },
     ],
   },
   {
@@ -86,12 +85,14 @@ const menuGroups: MenuGroup[] = [
       { title: "Reviews", url: "/reviews", icon: Star },
     ],
   },
-];
-
-const standaloneItems: MenuItem[] = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Acessos", url: "/acessos", icon: Key },
-  { title: "Guidebooks", url: "/guidebooks", icon: BookOpen },
+  {
+    title: "Guidebooks",
+    icon: BookOpen,
+    items: [
+      { title: "Os Meus Guidebooks", url: "/guidebooks", icon: BookOpen },
+      { title: "Pedidos Upsell", url: "/upsell-orders", icon: ShoppingCart },
+    ],
+  },
 ];
 
 const CollapsibleMenuGroup = ({
@@ -247,7 +248,7 @@ export const AnimatedSidebar = () => {
         />
       ))}
 
-      {/* Standalone Items */}
+      {/* 7. Acessos */}
       <NavLink
         to="/acessos"
         onClick={onItemClick}
@@ -263,27 +264,6 @@ export const AnimatedSidebar = () => {
         <Key className="h-5 w-5" />
         <span>Acessos</span>
       </NavLink>
-
-      {/* Guidebooks - Premium Feature */}
-      <NavLink
-        to="/guidebooks"
-        onClick={onItemClick}
-        className={({ isActive }) =>
-          cn(
-            "flex gap-3 items-center w-full py-3 px-4 rounded-xl transition-colors",
-            isActive
-              ? "bg-primary/10 text-primary font-medium shadow-sm"
-              : "hover:bg-primary/10 hover:text-primary text-foreground"
-          )
-        }
-      >
-        <BookOpen className="h-5 w-5" />
-        <span>Guidebooks</span>
-        <span className="ml-auto text-xs bg-yellow-500/20 text-yellow-600 px-2 py-0.5 rounded-full">
-          Premium
-        </span>
-      </NavLink>
-
     </>
   );
 

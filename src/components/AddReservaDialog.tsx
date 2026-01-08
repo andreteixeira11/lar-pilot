@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, X, Copy, Check } from "lucide-react";
+import { useState, useRef } from "react";
+import { Plus, X, Copy, Check, Upload, FileText } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +20,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProperty } from "@/contexts/PropertyContext";
 import { DatePicker } from "@/components/ui/date-picker";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
+import { pt } from "date-fns/locale";
 import { CountryCombobox } from "@/components/reserva/CountryCombobox";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 interface Guest {
   id: string;
   nomeCompleto: string;
@@ -43,8 +44,12 @@ interface AddReservaDialogProps {
 export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const { selectedProperty } = useProperty();
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("manual");
   const [checkInDate, setCheckInDate] = useState<Date>();
   const [checkOutDate, setCheckOutDate] = useState<Date>();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     hospede: "",
     email: "",
@@ -77,6 +82,37 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   ]);
   const [createdReservationToken, setCreatedReservationToken] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Parse Booking PDF content
+  const parseBookingPDF = async (file: File) => {
+    setIsParsing(true);
+    try {
+      // Read the file as text (for basic parsing - in production would use a proper PDF parser)
+      const text = await file.text();
+      
+      // For now, we'll show the user that upload is not yet fully implemented
+      // In a full implementation, this would parse the PDF server-side
+      toast.info("Funcionalidade de importação PDF em desenvolvimento. Por favor, preencha manualmente os dados da reserva Booking.");
+      setActiveTab("manual");
+      setFormData(prev => ({ ...prev, plataforma: "Booking" }));
+    } catch (error) {
+      toast.error("Erro ao processar o ficheiro PDF");
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast.error("Por favor, selecione um ficheiro PDF");
+        return;
+      }
+      setUploadedFile(file);
+      parseBookingPDF(file);
+    }
+  };
 
   const calculateNoites = () => {
     if (checkInDate && checkOutDate) {
@@ -234,9 +270,63 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <ScrollArea className="max-h-[calc(90vh-8rem)] pr-4">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Informações da Reserva</h3>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="manual" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Manual
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="gap-2">
+                <Upload className="h-4 w-4" />
+                Importar Booking
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="space-y-6">
+              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Importar Reserva Booking</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Faça upload do PDF de confirmação da reserva Booking.com para preencher automaticamente os dados
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isParsing}
+                >
+                  {isParsing ? "A processar..." : "Selecionar PDF"}
+                </Button>
+                {uploadedFile && (
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Ficheiro: {uploadedFile.name}
+                  </p>
+                )}
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2">Dados extraídos do Booking:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Nome do hóspede</li>
+                  <li>• Datas de check-in e check-out</li>
+                  <li>• Número de hóspedes</li>
+                  <li>• Valor total da reserva</li>
+                  <li>• Taxa de limpeza e taxa turística</li>
+                  <li>• Comissão da plataforma</li>
+                </ul>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="manual">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Informações da Reserva</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="hospede">Nome do Hóspede Principal *</Label>
@@ -605,6 +695,8 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               {!createdReservationToken && <Button type="submit">Adicionar Reserva</Button>}
             </div>
           </form>
+            </TabsContent>
+          </Tabs>
         </ScrollArea>
       </DialogContent>
     </Dialog>

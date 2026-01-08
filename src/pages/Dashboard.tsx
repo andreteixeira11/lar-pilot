@@ -206,8 +206,98 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-6 mt-6">
+        {/* Two columns layout - Próximas Reservas e Obrigações Fiscais */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Next Reservations */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                Próximas Reservas
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/reservas")}>
+                Ver todas <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {nextReservations.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  Nenhuma reserva futura
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {nextReservations.map((reserva) => (
+                    <div
+                      key={reserva.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+                      onClick={() => navigate("/reservas")}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{reserva.hospede}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(reserva.checkIn), "dd MMM", { locale: pt })} - {reserva.noites} noites
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">€{reserva.valor}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {reserva.plataforma}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Fiscal Obligations */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Obrigações Fiscais Pendentes
+              </CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/calendario-fiscal")}>
+                Ver todas <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {!fiscalTasks || fiscalTasks.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">
+                  Nenhuma obrigação pendente
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {fiscalTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-start justify-between p-3 rounded-xl bg-muted/50"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium">{task.titulo}</p>
+                        <p className="text-sm text-muted-foreground">{task.descricao}</p>
+                      </div>
+                      <Badge
+                        variant={task.prioridade === "alta" ? "destructive" : "secondary"}
+                      >
+                        {task.prazo}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Stats Cards - Row 1 */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
@@ -235,18 +325,6 @@ const Dashboard = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-2">
-                  <BedDouble className="h-5 w-5 text-blue-600" />
-                </div>
-                <p className="text-xs text-muted-foreground">Noites Mês</p>
-                <p className="text-xl font-bold">{monthlyNights}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
                 <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-2">
                   <Percent className="h-5 w-5 text-purple-600" />
                 </div>
@@ -259,84 +337,11 @@ const Dashboard = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center mb-2">
-                  <Users className="h-5 w-5 text-orange-600" />
-                </div>
-                <p className="text-xs text-muted-foreground">Hóspedes Mês</p>
-                <p className="text-xl font-bold">{monthlyGuests}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
                 <div className="h-10 w-10 rounded-xl bg-teal-500/10 flex items-center justify-center mb-2">
                   <Calendar className="h-5 w-5 text-teal-600" />
                 </div>
                 <p className="text-xs text-muted-foreground">Reservas Mês</p>
                 <p className="text-xl font-bold">{monthlyReservationCount}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* ADR Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="md:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Tarifa Média Diária (ADR)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <Euro className="h-8 w-8 text-primary" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-primary">€{avgDailyRate}</p>
-                  <p className="text-sm text-muted-foreground">por noite (este mês)</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="md:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Evolução de Noites Ocupadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[120px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={revenueChartData}>
-                    <defs>
-                      <linearGradient id="colorNoites" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis 
-                      dataKey="name" 
-                      className="text-xs fill-muted-foreground"
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`${value} noites`, "Noites"]}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="noites" 
-                      stroke="hsl(var(--primary))" 
-                      fillOpacity={1} 
-                      fill="url(#colorNoites)" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -432,143 +437,6 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Reservations by Platform */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
-              Reservas por Plataforma (últimos 6 meses)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[200px]">
-              {reservationsBarData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={reservationsBarData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" className="text-xs fill-muted-foreground" tickLine={false} axisLine={false} />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      className="text-xs fill-muted-foreground"
-                      tickLine={false}
-                      axisLine={false}
-                      width={80}
-                    />
-                    <Tooltip 
-                      formatter={(value: number) => [`${value} reservas`, "Reservas"]}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar 
-                      dataKey="reservas" 
-                      fill="hsl(var(--primary))" 
-                      radius={[0, 4, 4, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  Sem dados de reservas
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Two columns layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Next Reservations */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                Próximas Reservas
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/reservas")}>
-                Ver todas <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {nextReservations.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Nenhuma reserva futura
-                </p>
-              ) : (
-                <div className="space-y-4">
-                  {nextReservations.map((reserva) => (
-                    <div
-                      key={reserva.id}
-                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                      onClick={() => navigate("/reservas")}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium">{reserva.hospede}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(reserva.checkIn), "dd MMM", { locale: pt })} - {reserva.noites} noites
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">€{reserva.valor}</p>
-                        <Badge variant="outline" className="text-xs">
-                          {reserva.plataforma}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Fiscal Obligations */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                Obrigações Fiscais Pendentes
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/calendario-fiscal")}>
-                Ver todas <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {!fiscalTasks || fiscalTasks.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Nenhuma obrigação pendente
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  {fiscalTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-start justify-between p-3 rounded-xl bg-muted/50"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{task.titulo}</p>
-                        <p className="text-sm text-muted-foreground">{task.descricao}</p>
-                      </div>
-                      <Badge
-                        variant={task.prioridade === "alta" ? "destructive" : "secondary"}
-                      >
-                        {task.prazo}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

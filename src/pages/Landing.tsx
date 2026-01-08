@@ -571,6 +571,18 @@ const Landing = () => {
               <ul className="space-y-3">
                 <li>
                   <a 
+                    href="/ajuda"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/ajuda");
+                    }}
+                    className="text-muted-foreground hover:text-primary transition-colors text-sm cursor-pointer"
+                  >
+                    Central de Ajuda
+                  </a>
+                </li>
+                <li>
+                  <a 
                     href="/contactos"
                     onClick={(e) => {
                       e.preventDefault();

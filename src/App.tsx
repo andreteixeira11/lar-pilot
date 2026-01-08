@@ -90,6 +90,7 @@ const App = () => (
                   <Route path="/contactos" element={<Contactos />} />
                   <Route path="/privacidade" element={<PoliticaPrivacidade />} />
                   <Route path="/termos" element={<TermosCondicoes />} />
+                  <Route path="/ajuda" element={<Ajuda />} />
                   
                   {/* Owner Portal Login */}
                   <Route path="/proprietario/login" element={<OwnerLanguageProvider><OwnerLogin /></OwnerLanguageProvider>} />
@@ -180,7 +181,6 @@ const App = () => (
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="/reviews" element={<Reviews />} />
-                            <Route path="/ajuda" element={<Ajuda />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

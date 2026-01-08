@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Plus, X, Copy, Check, Upload, FileText } from "lucide-react";
+import { Plus, X, Copy, Check, Upload, FileText, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import { format, parse } from "date-fns";
 import { pt } from "date-fns/locale";
 import { CountryCombobox } from "@/components/reserva/CountryCombobox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 interface Guest {
   id: string;
   nomeCompleto: string;
@@ -45,10 +46,12 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const { selectedProperty } = useProperty();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("manual");
+  const [uploadPlatform, setUploadPlatform] = useState<"Booking" | "Airbnb">("Booking");
   const [checkInDate, setCheckInDate] = useState<Date>();
   const [checkOutDate, setCheckOutDate] = useState<Date>();
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
+  const [parseSuccess, setParseSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     hospede: "",
@@ -83,19 +86,98 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const [createdReservationToken, setCreatedReservationToken] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // Parse Booking PDF content
-  const parseBookingPDF = async (file: File) => {
+  // Parse PDF content using edge function
+  const parsePDF = async (file: File, platform: "Booking" | "Airbnb") => {
     setIsParsing(true);
+    setParseSuccess(false);
     try {
-      // Read the file as text (for basic parsing - in production would use a proper PDF parser)
-      const text = await file.text();
+      // Convert file to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+
+      const { data, error } = await supabase.functions.invoke('parse-booking-pdf', {
+        body: { pdfBase64: base64, platform }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        toast.error("Erro ao processar o PDF. Tente novamente.");
+        return;
+      }
+
+      if (data.error) {
+        console.error('Parse error:', data.error);
+        toast.error("Não foi possível extrair os dados do PDF.");
+        return;
+      }
+
+      const extracted = data.data;
+      console.log('Extracted data:', extracted);
+
+      // Update form with extracted data
+      setFormData(prev => ({
+        ...prev,
+        hospede: extracted.guestName || prev.hospede,
+        email: extracted.email || prev.email,
+        plataforma: platform,
+        valorTotalEstadia: extracted.accommodationPrice || extracted.totalPrice || 0,
+        valorTotalLimpeza: extracted.cleaningFee || 0,
+        taxaTuristica: extracted.touristTax || 0,
+        numHospedes: extracted.numGuests || 1,
+      }));
+
+      // Set dates
+      if (extracted.checkIn) {
+        try {
+          setCheckInDate(new Date(extracted.checkIn));
+        } catch (e) {
+          console.error('Error parsing checkIn date:', e);
+        }
+      }
+      if (extracted.checkOut) {
+        try {
+          setCheckOutDate(new Date(extracted.checkOut));
+        } catch (e) {
+          console.error('Error parsing checkOut date:', e);
+        }
+      }
+
+      // Calculate IVA breakdown for estadia
+      if (extracted.accommodationPrice || extracted.totalPrice) {
+        const total = extracted.accommodationPrice || extracted.totalPrice;
+        const { base, iva } = calculateIVABreakdown(total, 'estadia');
+        setFormData(prev => ({
+          ...prev,
+          valorBaseEstadia: base,
+          ivaEstadia: iva
+        }));
+      }
+
+      // Calculate IVA breakdown for limpeza
+      if (extracted.cleaningFee) {
+        const { base, iva } = calculateIVABreakdown(extracted.cleaningFee, 'limpeza');
+        setFormData(prev => ({
+          ...prev,
+          valorBaseLimpeza: base,
+          ivaLimpeza: iva
+        }));
+      }
+
+      setParseSuccess(true);
+      toast.success(`Dados da reserva ${platform} extraídos com sucesso!`);
       
-      // For now, we'll show the user that upload is not yet fully implemented
-      // In a full implementation, this would parse the PDF server-side
-      toast.info("Funcionalidade de importação PDF em desenvolvimento. Por favor, preencha manualmente os dados da reserva Booking.");
-      setActiveTab("manual");
-      setFormData(prev => ({ ...prev, plataforma: "Booking" }));
+      // Switch to manual tab to review/edit data
+      setTimeout(() => {
+        setActiveTab("manual");
+      }, 1500);
+
     } catch (error) {
+      console.error('Error parsing PDF:', error);
       toast.error("Erro ao processar o ficheiro PDF");
     } finally {
       setIsParsing(false);
@@ -110,7 +192,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
         return;
       }
       setUploadedFile(file);
-      parseBookingPDF(file);
+      parsePDF(file, uploadPlatform);
     }
   };
 
@@ -278,11 +360,33 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
               </TabsTrigger>
               <TabsTrigger value="upload" className="gap-2">
                 <Upload className="h-4 w-4" />
-                Importar Booking
+                Importar PDF
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload" className="space-y-6">
+              {/* Platform Selection */}
+              <div className="flex gap-2 justify-center">
+                <Button
+                  type="button"
+                  variant={uploadPlatform === "Booking" ? "default" : "outline"}
+                  onClick={() => setUploadPlatform("Booking")}
+                  className="gap-2"
+                >
+                  <img src="/logos/booking.svg" alt="Booking" className="h-4 w-4" />
+                  Booking.com
+                </Button>
+                <Button
+                  type="button"
+                  variant={uploadPlatform === "Airbnb" ? "default" : "outline"}
+                  onClick={() => setUploadPlatform("Airbnb")}
+                  className="gap-2"
+                >
+                  <img src="/logos/airbnb.svg" alt="Airbnb" className="h-4 w-4" />
+                  Airbnb
+                </Button>
+              </div>
+
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
                 <input
                   ref={fileInputRef}
@@ -291,34 +395,52 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   onChange={handleFileUpload}
                   className="hidden"
                 />
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Importar Reserva Booking</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Faça upload do PDF de confirmação da reserva Booking.com para preencher automaticamente os dados
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isParsing}
-                >
-                  {isParsing ? "A processar..." : "Selecionar PDF"}
-                </Button>
-                {uploadedFile && (
+                {isParsing ? (
+                  <>
+                    <Loader2 className="h-12 w-12 mx-auto text-primary mb-4 animate-spin" />
+                    <h3 className="text-lg font-semibold mb-2">A extrair dados...</h3>
+                    <p className="text-sm text-muted-foreground">
+                      A analisar o PDF da reserva {uploadPlatform}
+                    </p>
+                  </>
+                ) : parseSuccess ? (
+                  <>
+                    <Check className="h-12 w-12 mx-auto text-green-600 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2 text-green-600">Dados extraídos!</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Reveja os dados no formulário manual
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Importar Reserva {uploadPlatform}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Faça upload do PDF de confirmação da reserva {uploadPlatform} para preencher automaticamente os dados
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Selecionar PDF
+                    </Button>
+                  </>
+                )}
+                {uploadedFile && !isParsing && (
                   <p className="text-sm text-muted-foreground mt-4">
                     Ficheiro: {uploadedFile.name}
                   </p>
                 )}
               </div>
               <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">Dados extraídos do Booking:</h4>
+                <h4 className="font-medium mb-2">Dados extraídos automaticamente:</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Nome do hóspede</li>
                   <li>• Datas de check-in e check-out</li>
                   <li>• Número de hóspedes</li>
                   <li>• Valor total da reserva</li>
                   <li>• Taxa de limpeza e taxa turística</li>
-                  <li>• Comissão da plataforma</li>
                 </ul>
               </div>
             </TabsContent>

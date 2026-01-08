@@ -296,107 +296,110 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Stats Cards - Row 1 */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
-                  <Euro className="h-5 w-5 text-primary" />
+        {/* Stats Cards 2x2 + Evolução de Noites Ocupadas side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Stats Cards 2x2 */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center mb-2">
+                    <Euro className="h-5 w-5 text-primary" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Faturação Mês</p>
+                  <p className="text-xl font-bold text-primary">€{monthlyRevenue.toFixed(0)}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Faturação Mês</p>
-                <p className="text-xl font-bold text-primary">€{monthlyRevenue.toFixed(0)}</p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2">
-                  <Target className="h-5 w-5 text-green-600" />
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center mb-2">
+                    <Target className="h-5 w-5 text-green-600" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Faturação Ano</p>
+                  <p className="text-xl font-bold">€{yearlyRevenue.toFixed(0)}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Faturação Ano</p>
-                <p className="text-xl font-bold">€{yearlyRevenue.toFixed(0)}</p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-2">
-                  <Percent className="h-5 w-5 text-purple-600" />
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-2">
+                    <Percent className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Ocupação</p>
+                  <p className="text-xl font-bold">{occupancyRate}%</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Ocupação</p>
-                <p className="text-xl font-bold">{occupancyRate}%</p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-center text-center">
-                <div className="h-10 w-10 rounded-xl bg-teal-500/10 flex items-center justify-center mb-2">
-                  <Calendar className="h-5 w-5 text-teal-600" />
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                  <div className="h-10 w-10 rounded-xl bg-teal-500/10 flex items-center justify-center mb-2">
+                    <Calendar className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Reservas Mês</p>
+                  <p className="text-xl font-bold">{monthlyReservationCount}</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Reservas Mês</p>
-                <p className="text-xl font-bold">{monthlyReservationCount}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Evolução de Noites Ocupadas */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BedDouble className="h-5 w-5 text-primary" />
+                Evolução de Noites Ocupadas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={revenueChartData}>
+                    <defs>
+                      <linearGradient id="colorNoites" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="name" 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      className="text-xs fill-muted-foreground"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip 
+                      formatter={(value: number) => [`${value} noites`, "Noites"]}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="noites" 
+                      stroke="hsl(var(--primary))" 
+                      fillOpacity={1} 
+                      fill="url(#colorNoites)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Evolução de Noites Ocupadas */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BedDouble className="h-5 w-5 text-primary" />
-              Evolução de Noites Ocupadas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[180px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueChartData}>
-                  <defs>
-                    <linearGradient id="colorNoites" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
-                    className="text-xs fill-muted-foreground"
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    className="text-xs fill-muted-foreground"
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [`${value} noites`, "Noites"]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="noites" 
-                    stroke="hsl(var(--primary))" 
-                    fillOpacity={1} 
-                    fill="url(#colorNoites)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

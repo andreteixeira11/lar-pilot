@@ -6,6 +6,7 @@ import { Calendar, User, List, CalendarDays } from "lucide-react";
 import { AddReservaDialog } from "@/components/AddReservaDialog";
 import { EditReservaDialog } from "@/components/EditReservaDialog";
 import { ReservaDetailsDialog } from "@/components/ReservaDetailsDialog";
+import { ReservationCalendarGrid } from "@/components/reservas/ReservationCalendarGrid";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,20 +18,6 @@ import {
 } from "@/components/ui/select";
 import { useProperty } from "@/contexts/PropertyContext";
 import { useReserva } from "@/contexts/ReservaContext";
-import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-  isSameMonth,
-  isSameDay,
-  addMonths,
-  subMonths,
-  isWithinInterval,
-  parseISO,
-} from "date-fns";
-import { pt } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Reservas = () => {
   const { selectedPropertyId } = useProperty();
@@ -43,7 +30,6 @@ const Reservas = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
-  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   // Listen for property changes
   useEffect(() => {
@@ -86,51 +72,11 @@ const Reservas = () => {
     return matchesProperty && matchesPlatform && matchesYear && matchesMonth;
   });
 
-  // Calendar helpers
-  const monthStart = startOfMonth(calendarMonth);
-  const monthEnd = endOfMonth(calendarMonth);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
-
-  const getReservationsForDay = (day: Date) => {
-    return reservas.filter((reserva) => {
-      if (reserva.propertyId !== selectedPropertyId) return false;
-      const checkIn = parseISO(reserva.checkIn);
-      const checkOut = parseISO(reserva.checkOut);
-      return isWithinInterval(day, { start: checkIn, end: checkOut }) || isSameDay(day, checkIn) || isSameDay(day, checkOut);
-    });
-  };
-
-  const getPlatformInfo = (plataforma: string) => {
-    switch (plataforma) {
-      case "Airbnb":
-        return { bg: "bg-rose-500", text: "text-white", icon: "/logos/airbnb.svg", label: "Airbnb" };
-      case "Booking":
-        return { bg: "bg-blue-600", text: "text-white", icon: "/logos/booking.svg", label: "Booking" };
-      default:
-        return { bg: "bg-primary", text: "text-primary-foreground", icon: null, label: "Direto" };
-    }
-  };
-
-  const getReservationStyle = (reserva: any, day: Date) => {
-    const checkIn = parseISO(reserva.checkIn);
-    const checkOut = parseISO(reserva.checkOut);
-    const isStart = isSameDay(day, checkIn);
-    const isEnd = isSameDay(day, checkOut);
-    const platform = getPlatformInfo(reserva.plataforma);
-    
-    return {
-      className: `${platform.bg} ${platform.text} ${isStart ? "rounded-l-lg ml-1" : ""} ${isEnd ? "rounded-r-lg mr-1" : ""} px-1.5 py-1 text-xs cursor-pointer hover:opacity-90 transition-opacity`,
-      isStart,
-      isEnd,
-      platform,
-    };
-  };
-
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Controlo de Reservas"
-        description="Gerir todas as reservas da propriedade"
+        description="Crie, edite e visualize reservas feitas em qualquer canal. Altere preços e bloqueie disponibilidades. Tudo em um painel simples."
         actions={
           <div className="flex gap-2">
             <div className="flex rounded-xl border border-border overflow-hidden">
@@ -291,110 +237,11 @@ const Reservas = () => {
       )}
 
       {viewMode === "calendar" && (
-        <Card className="mt-6">
-          <CardHeader>
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <CardTitle className="text-lg min-w-[180px] text-center">
-                {format(calendarMonth, "MMMM yyyy", { locale: pt })}
-              </CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-1">
-              {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((day) => (
-                <div
-                  key={day}
-                  className="text-center text-sm font-medium text-muted-foreground py-2"
-                >
-                  {day}
-                </div>
-              ))}
-              {/* Empty cells for days before month start */}
-              {Array.from({ length: (monthStart.getDay() + 6) % 7 }).map((_, i) => (
-                <div key={`empty-${i}`} className="h-24 bg-muted/30 rounded-lg" />
-              ))}
-              {days.map((day) => {
-                const dayReservations = getReservationsForDay(day);
-                const isToday = isSameDay(day, new Date());
-                
-                return (
-                  <div
-                    key={day.toISOString()}
-                    className={`h-24 border rounded-lg p-1 overflow-hidden ${
-                      isToday ? "border-primary bg-primary/5" : "border-border"
-                    }`}
-                  >
-                    <div
-                      className={`text-xs font-medium mb-1 ${
-                        isToday ? "text-primary" : "text-foreground"
-                      }`}
-                    >
-                      {format(day, "d")}
-                    </div>
-                    <div className="space-y-1 overflow-hidden flex-1">
-                      {dayReservations.slice(0, 2).map((reserva) => {
-                        const style = getReservationStyle(reserva, day);
-                        return (
-                          <div
-                            key={reserva.id}
-                            className={style.className}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReservaClick(reserva);
-                            }}
-                            title={`${reserva.hospede} - ${reserva.plataforma}`}
-                          >
-                            <div className="flex items-center gap-1 min-w-0">
-                              {style.isStart && (
-                                <span className="font-medium text-[10px] bg-white/20 px-1 rounded">
-                                  IN
-                                </span>
-                              )}
-                              {style.isEnd && (
-                                <span className="font-medium text-[10px] bg-black/20 px-1 rounded">
-                                  OUT
-                                </span>
-                              )}
-                              <span className="truncate flex-1 font-medium">
-                                {style.isStart ? reserva.hospede : (style.isEnd ? reserva.hospede : "")}
-                              </span>
-                              {style.platform.icon && style.isStart && (
-                                <img 
-                                  src={style.platform.icon} 
-                                  alt={style.platform.label} 
-                                  className="h-3 w-3 object-contain brightness-0 invert opacity-80"
-                                />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {dayReservations.length > 2 && (
-                        <div className="text-[10px] text-muted-foreground font-medium">
-                          +{dayReservations.length - 2} mais
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <ReservationCalendarGrid
+          reservas={reservas}
+          selectedPropertyId={selectedPropertyId}
+          onReservationClick={handleReservaClick}
+        />
       )}
 
       <ReservaDetailsDialog

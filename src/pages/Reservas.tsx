@@ -241,6 +241,7 @@ const Reservas = () => {
           reservas={reservas}
           selectedPropertyId={selectedPropertyId}
           onReservationClick={handleReservaClick}
+          onReservationUpdate={(id, updates) => handleUpdateReserva(id, updates)}
         />
       )}
 

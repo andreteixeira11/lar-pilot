@@ -89,6 +89,41 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_dates: {
+        Row: {
+          blocked_date: string
+          created_at: string
+          id: string
+          property_id: string
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          blocked_date: string
+          created_at?: string
+          id?: string
+          property_id: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          blocked_date?: string
+          created_at?: string
+          id?: string
+          property_id?: string
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocked_dates_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkin_form_templates: {
         Row: {
           created_at: string

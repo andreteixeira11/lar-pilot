@@ -4,6 +4,7 @@ import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -19,9 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CalendarDays, Users, Moon, Euro } from "lucide-react";
+import { CalendarDays, Users, Moon, Euro, LayoutGrid, List } from "lucide-react";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
+import { OwnerReservationCalendar } from "@/components/proprietario/OwnerReservationCalendar";
 
 interface Reservation {
   id: string;
@@ -33,6 +35,7 @@ interface Reservation {
   total_price: number | null;
   status: string;
   booking_source: string | null;
+  guest_phone?: string | null;
 }
 
 export default function OwnerReservas() {
@@ -43,6 +46,7 @@ export default function OwnerReservas() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState("all");
   const [availableYears, setAvailableYears] = useState<string[]>([new Date().getFullYear().toString()]);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("calendar");
 
   const dateLocale = language === "pt" ? pt : enUS;
 
@@ -156,7 +160,27 @@ export default function OwnerReservas() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* View mode toggle */}
+          <div className="flex border rounded-lg overflow-hidden">
+            <Button 
+              variant={viewMode === "calendar" ? "default" : "ghost"} 
+              size="sm"
+              onClick={() => setViewMode("calendar")}
+              className="rounded-none"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant={viewMode === "list" ? "default" : "ghost"} 
+              size="sm"
+              onClick={() => setViewMode("list")}
+              className="rounded-none"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          
           <Select value={selectedYear} onValueChange={setSelectedYear}>
             <SelectTrigger className="w-28">
               <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
@@ -224,64 +248,74 @@ export default function OwnerReservas() {
         </Card>
       </div>
 
-      {/* Reservations Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{language === "pt" ? "Lista de Reservas" : "Reservation List"}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground">
-              {t("common.loading")}
-            </div>
-          ) : reservations.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">
-              <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>{t("reservations.noReservations")}</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("reservations.checkIn")}</TableHead>
-                    <TableHead>{t("reservations.checkOut")}</TableHead>
-                    <TableHead className="text-center">{t("reservations.nights")}</TableHead>
-                    <TableHead className="text-center">{t("reservations.guest")}</TableHead>
-                    <TableHead className="text-right">{t("reservations.value")}</TableHead>
-                    <TableHead>{t("reservations.status")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reservations.map((reservation) => {
-                    const status = statusLabels[reservation.status] || statusLabels.pendente;
-                    return (
-                      <TableRow key={reservation.id}>
-                        <TableCell className="font-medium">
-                          {formatDate(reservation.check_in)}
-                        </TableCell>
-                        <TableCell>{formatDate(reservation.check_out)}</TableCell>
-                        <TableCell className="text-center">
-                          {reservation.num_nights}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {reservation.num_guests}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(reservation.total_price || 0)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={status.variant}>{status.label}</Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Calendar View */}
+      {viewMode === "calendar" && owner?.propertyId && (
+        <OwnerReservationCalendar
+          propertyId={owner.propertyId}
+          reservations={reservations}
+        />
+      )}
+
+      {/* List View */}
+      {viewMode === "list" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === "pt" ? "Lista de Reservas" : "Reservation List"}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="py-8 text-center text-muted-foreground">
+                {t("common.loading")}
+              </div>
+            ) : reservations.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground">
+                <CalendarDays className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>{t("reservations.noReservations")}</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("reservations.checkIn")}</TableHead>
+                      <TableHead>{t("reservations.checkOut")}</TableHead>
+                      <TableHead className="text-center">{t("reservations.nights")}</TableHead>
+                      <TableHead className="text-center">{t("reservations.guest")}</TableHead>
+                      <TableHead className="text-right">{t("reservations.value")}</TableHead>
+                      <TableHead>{t("reservations.status")}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {reservations.map((reservation) => {
+                      const status = statusLabels[reservation.status] || statusLabels.pendente;
+                      return (
+                        <TableRow key={reservation.id}>
+                          <TableCell className="font-medium">
+                            {formatDate(reservation.check_in)}
+                          </TableCell>
+                          <TableCell>{formatDate(reservation.check_out)}</TableCell>
+                          <TableCell className="text-center">
+                            {reservation.num_nights}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {reservation.num_guests}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(reservation.total_price || 0)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={status.variant}>{status.label}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,8 @@ import {
   Sparkles,
   Plus,
   KeyRound,
+  Building2,
+  X,
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -78,6 +81,17 @@ interface PropertyOwner {
   created_at: string;
   property?: {
     name: string;
+  };
+}
+
+interface OwnerProperty {
+  id: string;
+  owner_id: string;
+  property_id: string;
+  property?: {
+    id: string;
+    name: string;
+    address: string;
   };
 }
 
@@ -116,6 +130,7 @@ export default function Proprietarios() {
   const { toast } = useToast();
 
   const [owners, setOwners] = useState<PropertyOwner[]>([]);
+  const [ownerProperties, setOwnerProperties] = useState<OwnerProperty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOwner, setSelectedOwner] = useState<PropertyOwner | null>(null);
   const [ownerDocuments, setOwnerDocuments] = useState<OwnerDocument[]>([]);
@@ -124,12 +139,12 @@ export default function Proprietarios() {
   // Add owner dialog
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newOwner, setNewOwner] = useState({
-    property_id: "",
     name: "",
     email: "",
     phone: "",
     password: "",
     commission_rate: 15,
+    selectedProperties: [] as string[],
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -137,6 +152,9 @@ export default function Proprietarios() {
   // Edit owner dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editOwner, setEditOwner] = useState<PropertyOwner | null>(null);
+
+  // Manage properties dialog
+  const [managePropertiesDialogOpen, setManagePropertiesDialogOpen] = useState(false);
 
   // Add document dialog
   const [docDialogOpen, setDocDialogOpen] = useState(false);
@@ -164,6 +182,7 @@ export default function Proprietarios() {
     if (selectedOwner) {
       loadOwnerDocuments(selectedOwner.id);
       loadOwnerCosts(selectedOwner.property_id);
+      loadOwnerProperties(selectedOwner.id);
     }
   }, [selectedOwner]);
 
@@ -183,6 +202,18 @@ export default function Proprietarios() {
       setOwners(data as PropertyOwner[]);
     }
     setIsLoading(false);
+  };
+
+  const loadOwnerProperties = async (ownerId: string) => {
+    const { data } = await supabase
+      .from("owner_properties")
+      .select(`
+        *,
+        property:properties(id, name, address)
+      `)
+      .eq("owner_id", ownerId);
+
+    setOwnerProperties(data || []);
   };
 
   const loadOwnerDocuments = async (ownerId: string) => {
@@ -206,10 +237,10 @@ export default function Proprietarios() {
   };
 
   const handleAddOwner = async () => {
-    if (!newOwner.property_id || !newOwner.name || !newOwner.email || !newOwner.password) {
+    if (!newOwner.name || !newOwner.email || !newOwner.password || newOwner.selectedProperties.length === 0) {
       toast({
         title: "Erro",
-        description: "Preencha todos os campos obrigatórios.",
+        description: "Preencha todos os campos obrigatórios e selecione pelo menos uma propriedade.",
         variant: "destructive",
       });
       return;
@@ -217,18 +248,20 @@ export default function Proprietarios() {
 
     setIsSubmitting(true);
 
-    const { error } = await supabase.from("property_owners").insert({
-      property_id: newOwner.property_id,
+    // Use the first selected property as the primary property
+    const primaryPropertyId = newOwner.selectedProperties[0];
+
+    const { data: ownerData, error } = await supabase.from("property_owners").insert({
+      property_id: primaryPropertyId,
       name: newOwner.name,
       email: newOwner.email,
       phone: newOwner.phone || null,
       password_hash: newOwner.password, // Will be hashed by trigger
       commission_rate: newOwner.commission_rate,
-    });
-
-    setIsSubmitting(false);
+    }).select().single();
 
     if (error) {
+      setIsSubmitting(false);
       toast({
         title: "Erro",
         description: error.message.includes("unique")
@@ -239,18 +272,30 @@ export default function Proprietarios() {
       return;
     }
 
+    // Add additional properties to owner_properties junction table
+    if (ownerData && newOwner.selectedProperties.length > 0) {
+      const ownerPropertiesInsert = newOwner.selectedProperties.map(propertyId => ({
+        owner_id: ownerData.id,
+        property_id: propertyId,
+      }));
+
+      await supabase.from("owner_properties").insert(ownerPropertiesInsert);
+    }
+
+    setIsSubmitting(false);
+
     toast({
       title: "Proprietário adicionado",
       description: "O proprietário pode agora aceder ao portal.",
     });
 
     setNewOwner({
-      property_id: "",
       name: "",
       email: "",
       phone: "",
       password: "",
       commission_rate: 15,
+      selectedProperties: [],
     });
     setAddDialogOpen(false);
     loadOwners();
@@ -285,6 +330,9 @@ export default function Proprietarios() {
   };
 
   const handleDeleteOwner = async (ownerId: string) => {
+    // First delete from owner_properties
+    await supabase.from("owner_properties").delete().eq("owner_id", ownerId);
+
     const { error } = await supabase
       .from("property_owners")
       .delete()
@@ -304,6 +352,45 @@ export default function Proprietarios() {
       setSelectedOwner(null);
     }
     loadOwners();
+  };
+
+  const handleAddPropertyToOwner = async (propertyId: string) => {
+    if (!selectedOwner) return;
+
+    const { error } = await supabase.from("owner_properties").insert({
+      owner_id: selectedOwner.id,
+      property_id: propertyId,
+    });
+
+    if (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível adicionar a propriedade.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({ title: "Propriedade adicionada" });
+    loadOwnerProperties(selectedOwner.id);
+  };
+
+  const handleRemovePropertyFromOwner = async (ownerPropertyId: string) => {
+    const { error } = await supabase.from("owner_properties").delete().eq("id", ownerPropertyId);
+
+    if (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover a propriedade.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({ title: "Propriedade removida" });
+    if (selectedOwner) {
+      loadOwnerProperties(selectedOwner.id);
+    }
   };
 
   const handleUploadDocument = async () => {
@@ -497,6 +584,20 @@ export default function Proprietarios() {
       .slice(0, 2);
   };
 
+  const togglePropertySelection = (propertyId: string) => {
+    setNewOwner(prev => ({
+      ...prev,
+      selectedProperties: prev.selectedProperties.includes(propertyId)
+        ? prev.selectedProperties.filter(id => id !== propertyId)
+        : [...prev.selectedProperties, propertyId]
+    }));
+  };
+
+  // Get properties not yet assigned to the selected owner
+  const availablePropertiesForOwner = properties.filter(
+    p => !ownerProperties.some(op => op.property_id === p.id)
+  );
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <PageHeader
@@ -543,33 +644,41 @@ export default function Proprietarios() {
                       Adicionar
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-lg">
                     <DialogHeader>
                       <DialogTitle>Adicionar Proprietário</DialogTitle>
                       <DialogDescription>
                         Crie credenciais de acesso ao portal para o proprietário.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                       <div className="space-y-2">
-                        <Label>Propriedade *</Label>
-                        <Select
-                          value={newOwner.property_id}
-                          onValueChange={(v) =>
-                            setNewOwner({ ...newOwner, property_id: v })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecionar propriedade" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {properties.map((p) => (
-                              <SelectItem key={p.id} value={p.id}>
+                        <Label>Propriedades *</Label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Selecione uma ou mais propriedades para este proprietário
+                        </p>
+                        <div className="border rounded-lg p-3 space-y-2 max-h-40 overflow-y-auto">
+                          {properties.map((p) => (
+                            <div key={p.id} className="flex items-center gap-2">
+                              <Checkbox
+                                id={`prop-${p.id}`}
+                                checked={newOwner.selectedProperties.includes(p.id)}
+                                onCheckedChange={() => togglePropertySelection(p.id)}
+                              />
+                              <label
+                                htmlFor={`prop-${p.id}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                              >
                                 {p.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        {newOwner.selectedProperties.length > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            {newOwner.selectedProperties.length} propriedade(s) selecionada(s)
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label>Nome *</Label>
@@ -724,7 +833,7 @@ export default function Proprietarios() {
                         </CardDescription>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                         <DialogTrigger asChild>
                           <Button
@@ -828,11 +937,112 @@ export default function Proprietarios() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="documents" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
+                  <Tabs defaultValue="properties" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="properties">Propriedades</TabsTrigger>
                       <TabsTrigger value="documents">Documentos</TabsTrigger>
                       <TabsTrigger value="costs">Custos</TabsTrigger>
                     </TabsList>
+
+                    {/* Properties Tab */}
+                    <TabsContent value="properties" className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-muted-foreground">
+                          Propriedades associadas a este proprietário
+                        </p>
+                        <Dialog open={managePropertiesDialogOpen} onOpenChange={setManagePropertiesDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Adicionar Propriedade
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Adicionar Propriedade</DialogTitle>
+                              <DialogDescription>
+                                Selecione uma propriedade para associar ao proprietário.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-2 py-4">
+                              {availablePropertiesForOwner.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                  Todas as propriedades já estão associadas.
+                                </p>
+                              ) : (
+                                availablePropertiesForOwner.map((property) => (
+                                  <div
+                                    key={property.id}
+                                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted cursor-pointer"
+                                    onClick={() => {
+                                      handleAddPropertyToOwner(property.id);
+                                      setManagePropertiesDialogOpen(false);
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                                      <div>
+                                        <p className="font-medium">{property.name}</p>
+                                        <p className="text-sm text-muted-foreground">{property.address}</p>
+                                      </div>
+                                    </div>
+                                    <Plus className="h-4 w-4 text-primary" />
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+
+                      {ownerProperties.length === 0 ? (
+                        <div className="py-8 text-center text-muted-foreground">
+                          <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>Sem propriedades associadas</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {ownerProperties.map((op) => (
+                            <div
+                              key={op.id}
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <Building2 className="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                  <p className="font-medium">{op.property?.name}</p>
+                                  <p className="text-sm text-muted-foreground">{op.property?.address}</p>
+                                </div>
+                              </div>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="text-destructive">
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Remover propriedade?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      O proprietário deixará de ter acesso a esta propriedade.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleRemovePropertyFromOwner(op.id)}
+                                      className="bg-destructive text-destructive-foreground"
+                                    >
+                                      Remover
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
 
                     {/* Documents Tab */}
                     <TabsContent value="documents" className="space-y-4">

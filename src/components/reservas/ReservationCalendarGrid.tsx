@@ -144,6 +144,7 @@ function DroppableDayCell({
   isWeekend,
   isCurrentMonth,
   price,
+  isDynamicPrice,
   isBlocked,
   onBlock,
   onUnblock,
@@ -154,6 +155,7 @@ function DroppableDayCell({
   isWeekend: boolean;
   isCurrentMonth: boolean;
   price?: number;
+  isDynamicPrice?: boolean;
   isBlocked: boolean;
   onBlock: () => void;
   onUnblock: () => void;
@@ -187,7 +189,10 @@ function DroppableDayCell({
             {isBlocked && <Lock className="h-3 w-3 text-destructive" />}
           </div>
           {price !== undefined && !isBlocked && (
-            <div className="text-[10px] text-muted-foreground mt-0.5">€{price}</div>
+            <div className={`text-[10px] mt-0.5 font-medium ${isDynamicPrice ? "text-amber-600" : "text-muted-foreground"}`}>
+              €{price}
+              {isDynamicPrice && <span className="ml-0.5 text-[8px]">✦</span>}
+            </div>
           )}
           {children}
         </div>
@@ -278,6 +283,14 @@ export function ReservationCalendarGrid({
   const [activeReserva, setActiveReserva] = useState<Reservation | null>(null);
   const [basePricePerNight, setBasePricePerNight] = useState<number | undefined>();
   const [dynamicPricing, setDynamicPricing] = useState<{ start_date: string; end_date: string; price_per_night: number }[]>([]);
+  
+  // Check if date has dynamic pricing
+  const hasDynamicPricing = (date: Date): boolean => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return dynamicPricing.some(
+      (rule) => dateStr >= rule.start_date && dateStr <= rule.end_date
+    );
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -536,6 +549,7 @@ export function ReservationCalendarGrid({
                   const isWeekend = getDay(day) === 0 || getDay(day) === 6;
                   const isCurrentMonth = day.getMonth() === calendarMonth.getMonth();
                   const price = getPriceForDate(day);
+                  const isDynamic = hasDynamicPricing(day);
                   const blocked = isDateBlocked(day);
 
                   return (
@@ -546,6 +560,7 @@ export function ReservationCalendarGrid({
                       isWeekend={isWeekend}
                       isCurrentMonth={isCurrentMonth}
                       price={price}
+                      isDynamicPrice={isDynamic}
                       isBlocked={blocked}
                       onBlock={() => handleBlockDate(day)}
                       onUnblock={() => handleUnblockDate(day)}
@@ -590,7 +605,7 @@ export function ReservationCalendarGrid({
         </DndContext>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 p-3 border-t bg-muted/10 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-4 p-3 border-t bg-muted/10 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#003580]" />
             <span>Booking</span>
@@ -606,6 +621,10 @@ export function ReservationCalendarGrid({
           <div className="flex items-center gap-1.5">
             <Lock className="h-3 w-3 text-destructive" />
             <span>Bloqueado</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-amber-600 font-medium">€✦</span>
+            <span>Preço Dinâmico</span>
           </div>
         </div>
       </CardContent>

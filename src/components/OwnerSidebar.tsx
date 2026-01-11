@@ -162,11 +162,18 @@ export function OwnerSidebar() {
                 </div>
 
                 {/* Property Selector - Mobile */}
-                {owner && owner.properties && owner.properties.length > 1 && (
-                  <div className="px-4 py-3 border-b border-border">
+                <div className="px-4 py-3 border-b border-border">
+                  {owner && owner.properties && owner.properties.length > 1 ? (
                     <OwnerPropertySelector />
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        <LayoutDashboard className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="font-medium truncate">{owner?.propertyName}</span>
+                    </div>
+                  )}
+                </div>
 
                 {/* Language Selector */}
                 <div className="px-4 py-3 border-b border-border">
@@ -205,11 +212,18 @@ export function OwnerSidebar() {
         </div>
 
         {/* Property Selector - Desktop */}
-        {owner && owner.properties && owner.properties.length > 1 && (
-          <div className="px-4 py-3 border-b border-border">
+        <div className="px-4 py-3 border-b border-border">
+          {owner && owner.properties && owner.properties.length > 1 ? (
             <OwnerPropertySelector />
-          </div>
-        )}
+          ) : (
+            <div className="flex items-center gap-2 text-sm">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <LayoutDashboard className="h-4 w-4 text-primary" />
+              </div>
+              <span className="font-medium truncate">{owner?.propertyName}</span>
+            </div>
+          )}
+        </div>
 
         {/* Language Selector */}
         <div className="px-4 py-3 border-b border-border">

@@ -1,12 +1,19 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface OwnerProperty {
+  id: string;
+  name: string;
+  address: string;
+}
+
 interface OwnerSession {
   ownerId: string;
   ownerName: string;
   propertyId: string;
   propertyName: string;
   token: string;
+  properties: OwnerProperty[];
 }
 
 interface OwnerAuthContextType {
@@ -14,6 +21,7 @@ interface OwnerAuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => void;
+  switchProperty: (propertyId: string) => void;
 }
 
 const OwnerAuthContext = createContext<OwnerAuthContextType | undefined>(undefined);
@@ -33,7 +41,12 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
         // Validate session is not expired
         validateSession(session.token).then(isValid => {
           if (isValid) {
-            setOwner(session);
+            // Reload properties to get latest list
+            loadOwnerProperties(session.ownerId).then(properties => {
+              const updatedSession = { ...session, properties };
+              setOwner(updatedSession);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSession));
+            });
           } else {
             localStorage.removeItem(STORAGE_KEY);
           }
@@ -59,6 +72,48 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
     return !error && !!data;
   };
 
+  const loadOwnerProperties = async (ownerId: string): Promise<OwnerProperty[]> => {
+    // First get the legacy property from property_owners
+    const { data: ownerData } = await supabase
+      .from("property_owners")
+      .select("property_id, properties(id, name, address)")
+      .eq("id", ownerId)
+      .single();
+
+    // Then get properties from junction table
+    const { data: junctionData } = await supabase
+      .from("owner_properties")
+      .select("property_id, properties(id, name, address)")
+      .eq("owner_id", ownerId);
+
+    const propertiesMap = new Map<string, OwnerProperty>();
+
+    // Add legacy property if exists
+    if (ownerData?.properties) {
+      const prop = ownerData.properties as any;
+      propertiesMap.set(prop.id, {
+        id: prop.id,
+        name: prop.name,
+        address: prop.address
+      });
+    }
+
+    // Add properties from junction table
+    if (junctionData) {
+      junctionData.forEach((item: any) => {
+        if (item.properties) {
+          propertiesMap.set(item.properties.id, {
+            id: item.properties.id,
+            name: item.properties.name,
+            address: item.properties.address
+          });
+        }
+      });
+    }
+
+    return Array.from(propertiesMap.values());
+  };
+
   const login = async (email: string, password: string): Promise<{ error: string | null }> => {
     try {
       // Call the verify function
@@ -77,6 +132,9 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
       }
 
       const ownerData = data[0];
+
+      // Load all properties for this owner
+      const properties = await loadOwnerProperties(ownerData.owner_id);
 
       // Create session token
       const token = crypto.randomUUID() + crypto.randomUUID();
@@ -103,6 +161,11 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
         propertyId: ownerData.property_id,
         propertyName: ownerData.property_name,
         token: token,
+        properties: properties.length > 0 ? properties : [{
+          id: ownerData.property_id,
+          name: ownerData.property_name,
+          address: ""
+        }],
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
@@ -128,8 +191,23 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
     setOwner(null);
   };
 
+  const switchProperty = (propertyId: string) => {
+    if (!owner) return;
+    
+    const selectedProperty = owner.properties.find(p => p.id === propertyId);
+    if (selectedProperty) {
+      const updatedSession: OwnerSession = {
+        ...owner,
+        propertyId: selectedProperty.id,
+        propertyName: selectedProperty.name,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSession));
+      setOwner(updatedSession);
+    }
+  };
+
   return (
-    <OwnerAuthContext.Provider value={{ owner, isLoading, login, logout }}>
+    <OwnerAuthContext.Provider value={{ owner, isLoading, login, logout, switchProperty }}>
       {children}
     </OwnerAuthContext.Provider>
   );

@@ -5,6 +5,7 @@ import { useOwnerAuth } from "@/contexts/OwnerAuthContext";
 import { useOwnerLanguage } from "@/contexts/OwnerLanguageContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { OwnerLanguageSelector } from "@/components/OwnerLanguageSelector";
+import { OwnerPropertySelector } from "@/components/proprietario/OwnerPropertySelector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,23 +146,27 @@ export function OwnerSidebar() {
             >
               <div className="flex flex-col h-full">
                 {/* Logo Section */}
-                <div className="p-6 border-b border-border">
+                <div className="p-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <img 
                       src="/logos/monumenta-logo.svg" 
                       alt="Monumenta Atlantic" 
-                      className="h-10 w-auto"
+                      className="h-8 w-auto"
                     />
                     <div className="flex-1 min-w-0">
-                      <h2 className="font-semibold text-foreground truncate">
+                      <h2 className="font-semibold text-foreground truncate text-sm">
                         {t("sidebar.title")}
                       </h2>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {owner?.propertyName}
-                      </p>
                     </div>
                   </div>
                 </div>
+
+                {/* Property Selector - Mobile */}
+                {owner && owner.properties && owner.properties.length > 1 && (
+                  <div className="px-4 py-3 border-b border-border">
+                    <OwnerPropertySelector />
+                  </div>
+                )}
 
                 {/* Language Selector */}
                 <div className="px-4 py-3 border-b border-border">
@@ -184,23 +189,27 @@ export function OwnerSidebar() {
       {/* Desktop Sidebar */}
       <div className="hidden md:flex flex-col fixed top-0 left-0 h-full w-72 bg-background border-r border-border">
         {/* Logo Section */}
-        <div className="p-6 border-b border-border">
+        <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <img 
               src="/logos/monumenta-logo.svg" 
               alt="Monumenta Atlantic" 
-              className="h-10 w-auto"
+              className="h-8 w-auto"
             />
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-foreground truncate">
+              <h2 className="font-semibold text-foreground truncate text-sm">
                 {t("sidebar.title")}
               </h2>
-              <p className="text-xs text-muted-foreground truncate">
-                {owner?.propertyName}
-              </p>
             </div>
           </div>
         </div>
+
+        {/* Property Selector - Desktop */}
+        {owner && owner.properties && owner.properties.length > 1 && (
+          <div className="px-4 py-3 border-b border-border">
+            <OwnerPropertySelector />
+          </div>
+        )}
 
         {/* Language Selector */}
         <div className="px-4 py-3 border-b border-border">

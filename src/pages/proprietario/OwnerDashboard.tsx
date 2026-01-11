@@ -206,18 +206,18 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 pt-16 md:pt-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">
             {owner?.propertyName}
           </h1>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-24">
+            <SelectTrigger className="w-20 md:w-24">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -227,7 +227,7 @@ export default function OwnerDashboard() {
             </SelectContent>
           </Select>
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-28 md:w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -240,70 +240,70 @@ export default function OwnerDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 md:p-6 md:pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               {t("dashboard.totalRevenue")}
             </CardTitle>
-            <TrendingUp className="w-4 h-4 text-primary" />
+            <TrendingUp className="w-4 h-4 text-primary hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+            <div className="text-lg md:text-2xl font-bold">
               {isLoading ? "..." : formatCurrency(kpis.totalRevenue)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 hidden md:block">
               {t("dashboard.grossValue")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 md:p-6 md:pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               {t("dashboard.reservations")}
             </CardTitle>
-            <CalendarDays className="w-4 h-4 text-primary" />
+            <CalendarDays className="w-4 h-4 text-primary hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+            <div className="text-lg md:text-2xl font-bold">
               {isLoading ? "..." : kpis.totalReservations}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 hidden md:block">
               {t("dashboard.totalReservations")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 md:p-6 md:pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
               {t("dashboard.occupancyRate")}
             </CardTitle>
-            <Percent className="w-4 h-4 text-primary" />
+            <Percent className="w-4 h-4 text-primary hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+            <div className="text-lg md:text-2xl font-bold">
               {isLoading ? "..." : `${kpis.occupancyRate}%`}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 hidden md:block">
               {t("dashboard.nightsOccupied")}
             </p>
           </CardContent>
         </Card>
 
         <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-primary">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3 md:p-6 md:pb-2">
+            <CardTitle className="text-xs md:text-sm font-medium text-primary">
               {t("dashboard.estimatedProfit")}
             </CardTitle>
-            <Wallet className="w-4 h-4 text-primary" />
+            <Wallet className="w-4 h-4 text-primary hidden sm:block" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
+          <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
+            <div className="text-lg md:text-2xl font-bold text-primary">
               {isLoading ? "..." : formatCurrency(kpis.estimatedProfit)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 hidden md:block">
               {t("dashboard.afterCommission")} {kpis.commissionRate}%
             </p>
           </CardContent>
@@ -316,7 +316,7 @@ export default function OwnerDashboard() {
           <CardTitle>{t("dashboard.revenueEvolution")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-80">
+          <div className="h-60 md:h-80">
             {isLoading ? (
               <div className="h-full flex items-center justify-center text-muted-foreground">
                 {t("dashboard.loading")}

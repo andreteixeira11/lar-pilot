@@ -160,6 +160,25 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
         };
         setReservas([newReserva, ...reservas]);
         toast.success('Reserva adicionada com sucesso!');
+
+        // Send notification to property owners
+        try {
+          await supabase.functions.invoke('send-new-reservation-notification', {
+            body: {
+              reservationId: data.id,
+              propertyId: data.property_id,
+              guestName: data.guest_name,
+              checkIn: data.check_in,
+              checkOut: data.check_out,
+              numGuests: data.num_guests,
+              totalPrice: data.total_price,
+              bookingSource: data.booking_source,
+            }
+          });
+        } catch (notifyError) {
+          console.error('Error sending owner notification:', notifyError);
+          // Don't show error to user - notification is non-critical
+        }
       }
     } catch (error) {
       console.error('Erro ao adicionar reserva:', error);

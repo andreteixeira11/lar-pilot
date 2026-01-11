@@ -150,12 +150,12 @@ export default function OwnerReservas() {
   const totalRevenue = reservations.reduce((sum, r) => sum + (r.total_price || 0), 0);
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 pt-16 md:pt-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("reservations.title")}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{t("reservations.title")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             {t("reservations.subtitle")}
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function OwnerReservas() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center gap-2">

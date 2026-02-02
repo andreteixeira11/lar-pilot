@@ -122,7 +122,7 @@ export default function Auth() {
   const { toast } = useToast();
   
   // Get return path from state (set by AdminRoute or ProtectedRoute)
-  const from = (location.state as { from?: string })?.from || "/dashboard";
+  const from = (location.state as { from?: string })?.from || "/overview";
 
   // Check for password recovery event or URL mode
   useEffect(() => {

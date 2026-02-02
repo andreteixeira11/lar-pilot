@@ -195,13 +195,71 @@ export default function Reviews() {
       : 0,
   }));
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
-      />
-    ));
+  const renderStars = (rating: number, platform: string = "airbnb") => {
+    const maxStars = platform === "booking" ? 10 : 5;
+    const displayRating = platform === "booking" ? rating : rating;
+    
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex gap-0.5">
+          {Array.from({ length: Math.min(maxStars, 5) }).map((_, i) => {
+            const threshold = platform === "booking" ? (i + 1) * 2 : i + 1;
+            const isFilled = displayRating >= threshold;
+            const isHalf = platform === "booking" && displayRating >= threshold - 1 && displayRating < threshold;
+            return (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${isFilled ? "fill-yellow-400 text-yellow-400" : isHalf ? "fill-yellow-400/50 text-yellow-400" : "text-muted-foreground"}`}
+              />
+            );
+          })}
+        </div>
+        {platform === "booking" && (
+          <span className="text-sm font-medium text-muted-foreground ml-1">
+            {rating}/10
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const renderRatingInput = (currentRating: number, onChange: (rating: number) => void, platform: string) => {
+    const isBooking = platform === "booking";
+    const maxRating = isBooking ? 10 : 5;
+    
+    if (isBooking) {
+      return (
+        <div className="flex items-center gap-2">
+          <Input
+            type="number"
+            min={1}
+            max={10}
+            step={0.1}
+            value={currentRating}
+            onChange={(e) => onChange(Math.min(10, Math.max(1, parseFloat(e.target.value) || 1)))}
+            className="w-20"
+          />
+          <span className="text-sm text-muted-foreground">/ 10</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button
+            key={rating}
+            type="button"
+            onClick={() => onChange(rating)}
+            className="p-1"
+          >
+            <Star
+              className={`w-6 h-6 ${rating <= currentRating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
+            />
+          </button>
+        ))}
+      </div>
+    );
   };
 
   const getPlatformInfo = (platform: string) => {
@@ -261,21 +319,19 @@ export default function Reviews() {
               </div>
 
               <div className="space-y-2">
-                <Label>Classificação</Label>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((rating) => (
-                    <button
-                      key={rating}
-                      type="button"
-                      onClick={() => setNewReview({ ...newReview, rating })}
-                      className="p-1"
-                    >
-                      <Star
-                        className={`w-6 h-6 ${rating <= newReview.rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
-                      />
-                    </button>
-                  ))}
-                </div>
+                <Label>
+                  Classificação {newReview.platform === "booking" ? "(1-10)" : "(1-5)"}
+                </Label>
+                {renderRatingInput(
+                  newReview.rating,
+                  (rating) => setNewReview({ ...newReview, rating }),
+                  newReview.platform
+                )}
+                {newReview.platform === "booking" && (
+                  <p className="text-xs text-muted-foreground">
+                    Booking.com utiliza escala de 1-10
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -416,9 +472,7 @@ export default function Reviews() {
                       </TableCell>
                       <TableCell className="font-medium">{review.guest_name}</TableCell>
                       <TableCell>
-                        <div className="flex gap-0.5">
-                          {renderStars(Number(review.rating))}
-                        </div>
+                        {renderStars(Number(review.rating), review.platform)}
                       </TableCell>
                       <TableCell className="hidden md:table-cell max-w-xs truncate">
                         {review.review_text || "-"}
@@ -466,8 +520,8 @@ export default function Reviews() {
           
           <div className="py-4">
             <div className="mb-4 p-4 bg-muted rounded-lg">
-              <div className="flex gap-0.5 mb-2">
-                {selectedReview && renderStars(Number(selectedReview.rating))}
+              <div className="mb-2">
+                {selectedReview && renderStars(Number(selectedReview.rating), selectedReview.platform)}
               </div>
               <p className="text-sm">{selectedReview?.review_text || "Sem comentário"}</p>
             </div>

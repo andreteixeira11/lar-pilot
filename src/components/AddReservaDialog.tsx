@@ -462,7 +462,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email do Hóspede *</Label>
+                  <Label htmlFor="email">Email do Hóspede</Label>
                   <Input
                     id="email"
                     type="email"
@@ -471,7 +471,6 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="email@exemplo.com"
-                    required
                   />
                 </div>
               </div>

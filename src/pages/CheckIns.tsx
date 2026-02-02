@@ -57,8 +57,7 @@ export default function CheckIns() {
           )
         `)
         .eq("property_id", selectedProperty.id)
-        .gte("check_in", new Date().toISOString().split("T")[0])
-        .order("check_in", { ascending: true });
+        .order("check_in", { ascending: false });
 
       if (error) throw error;
       return data || [];
@@ -211,76 +210,190 @@ export default function CheckIns() {
 
       <Tabs defaultValue="reservations" className="mt-8">
         <TabsList>
-          <TabsTrigger value="reservations">Reservas</TabsTrigger>
-          <TabsTrigger value="templates">Templates de Formulários</TabsTrigger>
+          <TabsTrigger value="reservations">Próximos</TabsTrigger>
+          <TabsTrigger value="past">Anteriores</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
 
         <TabsContent value="reservations" className="mt-6 space-y-4">
-          {reservations?.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Não há reservas futuras com check-in pendente</p>
-            </CardContent>
-          </Card>
-        ) : (
-          reservations?.map((reservation) => {
-            const checkinStatus = getCheckinStatus(reservation);
-            const isSending = sendingId === reservation.id;
-            const hasGuestDetails = (reservation.reservation_guests?.length || 0) > 0;
+          {(() => {
+            const today = new Date().toISOString().split("T")[0];
+            const futureReservations = reservations?.filter(r => r.check_in >= today) || [];
+            
+            if (futureReservations.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Não há reservas futuras com check-in pendente</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+            
+            return futureReservations.map((reservation) => {
+              const checkinStatus = getCheckinStatus(reservation);
+              const isSending = sendingId === reservation.id;
+              const hasGuestDetails = (reservation.reservation_guests?.length || 0) > 0;
 
-            return (
-              <Card 
-                key={reservation.id} 
-                className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleViewDetails(reservation)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <User className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{reservation.guest_name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <Mail className="h-3 w-3" />
-                            <span>{reservation.guest_email}</span>
+              return (
+                <Card 
+                  key={reservation.id} 
+                  className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleViewDetails(reservation)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <User className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{reservation.guest_name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <Mail className="h-3 w-3" />
+                              <span>{reservation.guest_email}</span>
+                            </div>
                           </div>
                         </div>
+
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {format(new Date(reservation.check_in), "dd MMM yyyy", { locale: pt })}
+                            </span>
+                          </div>
+                          <Badge variant="outline">
+                            {reservation.num_guests} hóspede{reservation.num_guests !== 1 ? "s" : ""}
+                          </Badge>
+                          <Badge variant={checkinStatus.color as any}>
+                            {checkinStatus.status === "completo" ? (
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                            ) : (
+                              <Clock className="h-3 w-3 mr-1" />
+                            )}
+                            {checkinStatus.label}
+                          </Badge>
+                        </div>
+
+                        {hasGuestDetails && (
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-medium">Hóspedes registados:</span>{" "}
+                            {reservation.reservation_guests.map((g: any) => g.nome_completo).join(", ")}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">
-                            {format(new Date(reservation.check_in), "dd MMM yyyy", { locale: pt })}
-                          </span>
-                        </div>
-                        <Badge variant="outline">
-                          {reservation.num_guests} hóspede{reservation.num_guests !== 1 ? "s" : ""}
-                        </Badge>
-                        <Badge variant={checkinStatus.color as any}>
-                          {checkinStatus.status === "completo" ? (
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                          ) : (
-                            <Clock className="h-3 w-3 mr-1" />
-                          )}
-                          {checkinStatus.label}
-                        </Badge>
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
+                        {hasGuestDetails && (
+                          <Button
+                            onClick={() => handleViewDetails(reservation)}
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Ver Detalhes
+                          </Button>
+                        )}
+                        <Button
+                          onClick={() => handleCopyLink(reservation.id, reservation.checkin_token)}
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copiar Link
+                        </Button>
+                        <Button
+                          onClick={() => handleSendCheckin(reservation.id, reservation.guest_email)}
+                          disabled={isSending}
+                          className="w-full sm:w-auto"
+                          variant={checkinStatus.status === "completo" ? "outline" : "default"}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          {isSending ? "A enviar..." : checkinStatus.status === "completo" ? "Reenviar" : "Enviar Email"}
+                        </Button>
                       </div>
-
-                      {hasGuestDetails && (
-                        <div className="text-sm text-muted-foreground">
-                          <span className="font-medium">Hóspedes registados:</span>{" "}
-                          {reservation.reservation_guests.map((g: any) => g.nome_completo).join(", ")}
-                        </div>
-                      )}
                     </div>
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()}
+        </TabsContent>
 
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
-                      {hasGuestDetails && (
+        <TabsContent value="past" className="mt-6 space-y-4">
+          {(() => {
+            const today = new Date().toISOString().split("T")[0];
+            const pastReservations = reservations?.filter(r => r.check_in < today) || [];
+            
+            if (pastReservations.length === 0) {
+              return (
+                <Card>
+                  <CardContent className="py-12 text-center text-muted-foreground">
+                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Não há check-ins anteriores</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+            
+            return pastReservations.map((reservation) => {
+              const checkinStatus = getCheckinStatus(reservation);
+              const hasGuestDetails = (reservation.reservation_guests?.length || 0) > 0;
+
+              return (
+                <Card 
+                  key={reservation.id} 
+                  className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => handleViewDetails(reservation)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{reservation.guest_name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <Mail className="h-3 w-3" />
+                              <span>{reservation.guest_email}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {format(new Date(reservation.check_in), "dd MMM yyyy", { locale: pt })}
+                            </span>
+                          </div>
+                          <Badge variant="outline">
+                            {reservation.num_guests} hóspede{reservation.num_guests !== 1 ? "s" : ""}
+                          </Badge>
+                          <Badge variant={checkinStatus.color as any}>
+                            {checkinStatus.status === "completo" ? (
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                            ) : (
+                              <Clock className="h-3 w-3 mr-1" />
+                            )}
+                            {checkinStatus.label}
+                          </Badge>
+                        </div>
+
+                        {hasGuestDetails && (
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-medium">Hóspedes registados:</span>{" "}
+                            {reservation.reservation_guests.map((g: any) => g.nome_completo).join(", ")}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
                         <Button
                           onClick={() => handleViewDetails(reservation)}
                           variant="outline"
@@ -289,31 +402,13 @@ export default function CheckIns() {
                           <Eye className="h-4 w-4 mr-2" />
                           Ver Detalhes
                         </Button>
-                      )}
-                      <Button
-                        onClick={() => handleCopyLink(reservation.id, reservation.checkin_token)}
-                        variant="outline"
-                        className="w-full sm:w-auto"
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copiar Link
-                      </Button>
-                      <Button
-                        onClick={() => handleSendCheckin(reservation.id, reservation.guest_email)}
-                        disabled={isSending}
-                        className="w-full sm:w-auto"
-                        variant={checkinStatus.status === "completo" ? "outline" : "default"}
-                      >
-                        <Send className="h-4 w-4 mr-2" />
-                        {isSending ? "A enviar..." : checkinStatus.status === "completo" ? "Reenviar" : "Enviar Email"}
-                      </Button>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
+                  </CardContent>
+                </Card>
+              );
+            });
+          })()}
         </TabsContent>
 
         <TabsContent value="templates" className="mt-6">

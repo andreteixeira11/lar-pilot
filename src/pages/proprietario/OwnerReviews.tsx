@@ -76,13 +76,31 @@ export default function OwnerReviews() {
       : 0,
   }));
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }).map((_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
-      />
-    ));
+  const renderStars = (rating: number, platform: string = "airbnb") => {
+    const isBooking = platform === "booking";
+    
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => {
+            const threshold = isBooking ? (i + 1) * 2 : i + 1;
+            const isFilled = rating >= threshold;
+            const isHalf = isBooking && rating >= threshold - 1 && rating < threshold;
+            return (
+              <Star
+                key={i}
+                className={`w-4 h-4 ${isFilled ? "fill-yellow-400 text-yellow-400" : isHalf ? "fill-yellow-400/50 text-yellow-400" : "text-muted-foreground"}`}
+              />
+            );
+          })}
+        </div>
+        {isBooking && (
+          <span className="text-sm font-medium text-muted-foreground ml-1">
+            {rating}/10
+          </span>
+        )}
+      </div>
+    );
   };
 
   const getPlatformInfo = (platform: string) => {
@@ -206,9 +224,9 @@ export default function OwnerReviews() {
                         <span className="font-medium">{review.guest_name}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex gap-0.5">
-                          {renderStars(Number(review.rating))}
-                        </div>
+                      <div className="flex items-center gap-2">
+                        {renderStars(Number(review.rating), review.platform)}
+                      </div>
                         <span className="text-sm text-muted-foreground">
                           {format(new Date(review.review_date), "dd/MM/yyyy", { locale: dateLocale })}
                         </span>

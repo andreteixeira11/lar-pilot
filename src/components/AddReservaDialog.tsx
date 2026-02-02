@@ -86,6 +86,59 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   const [createdReservationToken, setCreatedReservationToken] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  // Reset form when dialog opens
+  const resetForm = () => {
+    setActiveTab("manual");
+    setUploadPlatform("Booking");
+    setCheckInDate(undefined);
+    setCheckOutDate(undefined);
+    setUploadedFile(null);
+    setIsParsing(false);
+    setParseSuccess(false);
+    setFormData({
+      hospede: "",
+      email: "",
+      checkIn: "",
+      checkOut: "",
+      plataforma: "Airbnb",
+      valorTotalEstadia: 0,
+      valorBaseEstadia: 0,
+      ivaEstadia: 0,
+      valorTotalLimpeza: 0,
+      valorBaseLimpeza: 0,
+      ivaLimpeza: 0,
+      taxaTuristica: 0,
+      status: "pendente",
+      numHospedes: 1,
+    });
+    setGuests([
+      {
+        id: "1",
+        nomeCompleto: "",
+        dataNascimento: "",
+        localNascimento: "",
+        nacionalidade: "",
+        localResidencia: "",
+        paisResidencia: "",
+        tipoDocumento: "cc",
+        numeroDocumento: "",
+        paisEmissor: "",
+      },
+    ]);
+    setCreatedReservationToken(null);
+    setLinkCopied(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (isOpen) {
+      resetForm();
+    }
+    setOpen(isOpen);
+  };
+
   // Parse PDF content using edge function
   const parsePDF = async (file: File, platform: "Booking" | "Airbnb") => {
     setIsParsing(true);
@@ -343,7 +396,7 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="h-4 w-4" />

@@ -513,14 +513,14 @@ export function ReservationCalendarGrid({
   return (
     <Card className="mt-6 overflow-hidden">
       <CardHeader className="border-b bg-muted/30 py-3">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}>
+        <div className="flex items-center justify-center gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <CardTitle className="text-lg capitalize">
+          <CardTitle className="text-lg capitalize min-w-[180px] text-center">
             {format(calendarMonth, "MMMM yyyy", { locale: pt })}
           </CardTitle>
-          <Button variant="ghost" size="icon" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}>
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>

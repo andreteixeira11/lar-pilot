@@ -22,30 +22,25 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
   AreaChart,
   Area,
 } from "recharts";
 import { AddPropertyDialog } from "@/components/AddPropertyDialog";
 import { useState } from "react";
-
-const COLORS = ["hsl(var(--primary))", "#FF5A5F", "#003580", "#10B981", "#F59E0B", "#8B5CF6"];
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { OverviewCalendar } from "@/components/overview/OverviewCalendar";
 
 const OverviewDashboard = () => {
   const navigate = useNavigate();
   const { properties, setSelectedPropertyId } = useProperty();
   const { reservas } = useReserva();
   const [showAddProperty, setShowAddProperty] = useState(false);
+  const [revenuePropertyFilter, setRevenuePropertyFilter] = useState<string>("all");
   
   const today = new Date();
   const monthStart = startOfMonth(today);
@@ -113,27 +108,21 @@ const OverviewDashboard = () => {
     ? (totalMonthlyRevenue / totalMonthlyNights).toFixed(2) 
     : 0;
 
-  // Revenue by property for pie chart
-  const revenueByProperty = properties.map(property => {
-    const propertyReservations = reservas.filter(r => 
-      r.propertyId === property.id && 
-      r.status === "confirmada" &&
-      isAfter(new Date(r.checkIn), subMonths(today, 6))
-    );
-    const revenue = propertyReservations.reduce((total, r) => total + (r.valor || 0), 0);
-    return { name: property.name, value: revenue };
-  }).filter(p => p.value > 0);
 
-  // Revenue trend last 6 months
+  // Revenue trend last 6 months - with property filter
   const revenueChartData = Array.from({ length: 6 }, (_, i) => {
     const month = subMonths(today, 5 - i);
     const monthStartDate = startOfMonth(month);
     const monthEndDate = endOfMonth(month);
 
+    const propertyIdsToFilter = revenuePropertyFilter === "all" 
+      ? allPropertyIds 
+      : [revenuePropertyFilter];
+
     const monthReservations = reservas.filter((r) => {
       const checkIn = new Date(r.checkIn);
       return (
-        allPropertyIds.includes(r.propertyId) &&
+        propertyIdsToFilter.includes(r.propertyId) &&
         r.status === "confirmada" &&
         isAfter(checkIn, monthStartDate) &&
         isBefore(checkIn, monthEndDate)
@@ -270,10 +259,25 @@ const OverviewDashboard = () => {
         {/* Revenue Trend */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Evolução Faturação (Total)
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Evolução Faturação
+              </CardTitle>
+              <Select value={revenuePropertyFilter} onValueChange={setRevenuePropertyFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Todas as propriedades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as propriedades</SelectItem>
+                  {properties.map((property) => (
+                    <SelectItem key={property.id} value={property.id}>
+                      {property.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
@@ -319,52 +323,8 @@ const OverviewDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Revenue by Property */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              Receita por Propriedade
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              {revenueByProperty.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={revenueByProperty}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name.substring(0, 15)}${name.length > 15 ? '...' : ''} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={90}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {revenueByProperty.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value: number) => [`€${value.toFixed(2)}`, "Receita"]}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
-                  Sem dados de reservas
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Calendar for all properties */}
+        <OverviewCalendar properties={properties} reservas={reservas} />
       </div>
 
       {/* Properties List */}

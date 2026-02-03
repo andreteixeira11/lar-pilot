@@ -184,6 +184,22 @@ export const AddReservaDialog = ({ onAdd }: AddReservaDialogProps) => {
         numHospedes: extracted.numGuests || 1,
       }));
 
+      // Update first guest with extracted country for INE/nationality
+      if (extracted.guestCountry || extracted.guestName) {
+        setGuests(prevGuests => {
+          const updatedGuests = [...prevGuests];
+          if (updatedGuests.length > 0) {
+            updatedGuests[0] = {
+              ...updatedGuests[0],
+              nomeCompleto: extracted.guestName || updatedGuests[0].nomeCompleto,
+              nacionalidade: extracted.guestCountry || updatedGuests[0].nacionalidade,
+              paisResidencia: extracted.guestCountry || updatedGuests[0].paisResidencia,
+            };
+          }
+          return updatedGuests;
+        });
+      }
+
       // Set dates
       if (extracted.checkIn) {
         try {

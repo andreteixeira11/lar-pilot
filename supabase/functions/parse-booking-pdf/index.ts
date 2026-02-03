@@ -33,6 +33,7 @@ Extract the following information from the PDF content and return it as valid JS
 {
   "guestName": "string - Full name of the main guest",
   "email": "string - Guest email if available, otherwise empty string",
+  "guestCountry": "string - Country of the guest (look for 'Guest information' section, nationality, or country field). Return the country name in Portuguese (e.g., 'Portugal', 'Espanha', 'França', 'Reino Unido', 'Alemanha', 'Brasil', 'Estados Unidos')",
   "checkIn": "string - Check-in date in YYYY-MM-DD format",
   "checkOut": "string - Check-out date in YYYY-MM-DD format",
   "numGuests": "number - Total number of guests",
@@ -50,6 +51,8 @@ Important:
 - All prices should be numbers only (no currency symbols)
 - If a value is not found, use reasonable defaults (0 for numbers, empty string for text)
 - Parse dates carefully - convert from DD/MM/YYYY or other formats to YYYY-MM-DD
+- For guestCountry, look in the "Guest information" section which usually shows country with a flag icon
+- Translate the country name to Portuguese (e.g., "Spain" -> "Espanha", "Germany" -> "Alemanha", "United Kingdom" -> "Reino Unido", "France" -> "França", "Italy" -> "Itália", "Netherlands" -> "Países Baixos", "Belgium" -> "Bélgica", "United States" -> "Estados Unidos", "Brazil" -> "Brasil")
 - Return ONLY valid JSON, no additional text`;
 
     console.log(`Parsing ${platformName} PDF with AI...`);

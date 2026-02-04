@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { X, Upload, FileText, Loader2, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,8 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CountryCombobox } from "@/components/checkin/CountryCombobox";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
-import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Guest {
   id: string;
@@ -62,8 +60,6 @@ interface EditReservaDialogProps {
 export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: EditReservaDialogProps) => {
   const [checkInDate, setCheckInDate] = useState<Date>();
   const [checkOutDate, setCheckOutDate] = useState<Date>();
-  const [isParsing, setIsParsing] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     hospede: "",
     checkIn: "",
@@ -90,9 +86,6 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
       paisEmissor: "",
     },
   ]);
-
-  // Check if first guest is missing country info
-  const isMissingCountryInfo = guests.length > 0 && !guests[0].nacionalidade && !guests[0].paisResidencia;
 
   useEffect(() => {
     if (reserva && open) {
@@ -179,67 +172,6 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
     setGuests(guests.map((g) => (g.id === id ? { ...g, [field]: value } : g)));
   };
 
-  // Re-parse PDF to extract guest country
-  const handleReuploadPDF = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    if (file.type !== 'application/pdf') {
-      toast.error("Por favor, selecione um ficheiro PDF");
-      return;
-    }
-
-    setIsParsing(true);
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(arrayBuffer).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          ''
-        )
-      );
-
-      const { data, error } = await supabase.functions.invoke('parse-booking-pdf', {
-        body: { pdfBase64: base64, platform: formData.plataforma }
-      });
-
-      if (error || data.error) {
-        console.error('Parse error:', error || data.error);
-        toast.error("Não foi possível extrair os dados do PDF.");
-        return;
-      }
-
-      const extracted = data.data;
-      console.log('Re-extracted data:', extracted);
-
-      // Update first guest with extracted country
-      if (extracted.guestCountry) {
-        setGuests(prevGuests => {
-          const updatedGuests = [...prevGuests];
-          if (updatedGuests.length > 0) {
-            updatedGuests[0] = {
-              ...updatedGuests[0],
-              nacionalidade: extracted.guestCountry,
-              paisResidencia: extracted.guestCountry,
-            };
-          }
-          return updatedGuests;
-        });
-        toast.success(`País do hóspede extraído: ${extracted.guestCountry}`);
-      } else {
-        toast.info("Não foi possível encontrar o país do hóspede no PDF.");
-      }
-
-    } catch (error) {
-      console.error('Error parsing PDF:', error);
-      toast.error("Erro ao processar o ficheiro PDF");
-    } finally {
-      setIsParsing(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,46 +397,6 @@ export const EditReservaDialog = ({ reserva, open, onOpenChange, onUpdate }: Edi
                 </Button>
               </div>
 
-              {/* Alert for missing country info with PDF re-upload option */}
-              {isMissingCountryInfo && (formData.plataforma === "Booking" || formData.plataforma === "Airbnb") && (
-                <Alert className="border-amber-200 bg-amber-50">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="flex flex-col gap-3">
-                    <span className="text-amber-800">
-                      O país do hóspede não está preenchido. Faça re-upload do PDF para extrair automaticamente ou preencha manualmente.
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf"
-                        onChange={handleReuploadPDF}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isParsing}
-                        className="gap-2"
-                      >
-                        {isParsing ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            A extrair...
-                          </>
-                        ) : (
-                          <>
-                            <Upload className="h-4 w-4" />
-                            Re-upload PDF {formData.plataforma}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
 
               {guests.map((guest, index) => (
                 <Card key={guest.id}>

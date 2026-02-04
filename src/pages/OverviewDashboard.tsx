@@ -279,47 +279,46 @@ const OverviewDashboard = () => {
               </Select>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueChartData}>
-                  <defs>
-                    <linearGradient id="colorFaturacao" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    dataKey="name" 
-                    className="text-xs fill-muted-foreground"
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    className="text-xs fill-muted-foreground"
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `€${value}`}
-                  />
-                  <Tooltip 
-                    formatter={(value: number) => [`€${value.toFixed(2)}`, "Faturação"]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="faturacao" 
-                    stroke="hsl(var(--primary))" 
-                    fillOpacity={1} 
-                    fill="url(#colorFaturacao)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+          <CardContent className="p-0 pb-6 px-6">
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={revenueChartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorFaturacao" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="name" 
+                  className="text-xs fill-muted-foreground"
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis 
+                  className="text-xs fill-muted-foreground"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => `€${value}`}
+                  width={60}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [`€${value.toFixed(2)}`, "Faturação"]}
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="faturacao" 
+                  stroke="hsl(var(--primary))" 
+                  fillOpacity={1} 
+                  fill="url(#colorFaturacao)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 

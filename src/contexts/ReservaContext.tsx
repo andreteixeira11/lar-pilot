@@ -94,6 +94,35 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const sendOwnerNotification = async (reservationData: {
+    id: string;
+    property_id: string;
+    guest_name: string;
+    check_in: string;
+    check_out: string;
+    num_guests: number;
+    total_price: number | null;
+    booking_source: string | null;
+  }) => {
+    try {
+      await supabase.functions.invoke('send-new-reservation-notification', {
+        body: {
+          reservationId: reservationData.id,
+          propertyId: reservationData.property_id,
+          guestName: reservationData.guest_name,
+          checkIn: reservationData.check_in,
+          checkOut: reservationData.check_out,
+          numGuests: reservationData.num_guests,
+          totalPrice: reservationData.total_price,
+          bookingSource: reservationData.booking_source,
+        }
+      });
+    } catch (notifyError) {
+      console.error('Error sending owner notification:', notifyError);
+      // Don't show error to user - notification is non-critical
+    }
+  };
+
   const addReserva = async (reserva: Reserva & { hospedes?: any[]; guest_email?: string; checkin_token?: string }) => {
     try {
       // Generate token if not provided
@@ -162,23 +191,16 @@ export const ReservaProvider = ({ children }: { children: ReactNode }) => {
         toast.success('Reserva adicionada com sucesso!');
 
         // Send notification to property owners
-        try {
-          await supabase.functions.invoke('send-new-reservation-notification', {
-            body: {
-              reservationId: data.id,
-              propertyId: data.property_id,
-              guestName: data.guest_name,
-              checkIn: data.check_in,
-              checkOut: data.check_out,
-              numGuests: data.num_guests,
-              totalPrice: data.total_price,
-              bookingSource: data.booking_source,
-            }
-          });
-        } catch (notifyError) {
-          console.error('Error sending owner notification:', notifyError);
-          // Don't show error to user - notification is non-critical
-        }
+        await sendOwnerNotification({
+          id: data.id,
+          property_id: data.property_id,
+          guest_name: data.guest_name,
+          check_in: data.check_in,
+          check_out: data.check_out,
+          num_guests: data.num_guests,
+          total_price: data.total_price,
+          booking_source: data.booking_source,
+        });
       }
     } catch (error) {
       console.error('Erro ao adicionar reserva:', error);

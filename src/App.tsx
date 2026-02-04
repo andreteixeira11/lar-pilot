@@ -64,7 +64,6 @@ import Reviews from "./pages/Reviews";
 import Contactos from "./pages/Contactos";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import TermosCondicoes from "./pages/TermosCondicoes";
-import GestorCanais from "./pages/GestorCanais";
 
 import NotFound from "./pages/NotFound";
 
@@ -182,7 +181,6 @@ const App = () => (
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="/reviews" element={<Reviews />} />
-                            <Route path="/gestor-canais" element={<GestorCanais />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

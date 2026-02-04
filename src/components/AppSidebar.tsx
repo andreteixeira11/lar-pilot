@@ -418,24 +418,6 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {/* 8. Gestor de Canais */}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/gestor-canais"
-                    end
-                    className={({ isActive }) =>
-                      isActive
-                        ? "bg-primary/10 text-primary font-medium rounded-xl"
-                        : "hover:bg-primary/10 hover:text-primary rounded-xl transition-colors"
-                    }
-                  >
-                    <Link2 className="h-4 w-4" />
-                    {state !== "collapsed" && <span>Gestor de Canais</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
               {/* Central de Ajuda */}
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>

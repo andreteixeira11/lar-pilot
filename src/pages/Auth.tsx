@@ -6,18 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Check, Home, Sparkles, Crown, ArrowLeft, CreditCard, Smartphone, Building2, DollarSign, Eye, EyeOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Home, Building2, Crown, ArrowLeft, CreditCard, Smartphone, Loader2, Mail, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
 import { PricingSection, PricingTier } from "@/components/blocks/pricing-section";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 type SubscriptionPlan = "basic" | "pro" | "premium";
-type PaymentMethod = "card" | "mbway" | "multibanco" | "paypal";
+type PaymentMethod = "multibanco" | "mbway";
 
 const pricingTiers: PricingTier[] = [
   {
@@ -84,10 +83,11 @@ export default function Auth() {
   const isResetPasswordMode = searchParams.get("mode") === "reset-password";
   
   const [isLogin, setIsLogin] = useState(initialMode);
-  const [step, setStep] = useState<"auth" | "plan" | "profile" | "payment" | "property" | "reset-password">(
+  const [step, setStep] = useState<"auth" | "plan" | "email" | "verify-email" | "profile" | "payment" | "waiting-payment" | "reset-password">(
     isResetPasswordMode ? "reset-password" : showPlans ? "plan" : "auth"
   );
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(initialPlan);
+  const [isYearlyPlan, setIsYearlyPlan] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -96,37 +96,53 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [nif, setNif] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("multibanco");
   const [mbwayPhone, setMbwayPhone] = useState("");
-  const [paypalEmail, setPaypalEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // Property form fields
-  const [propertyName, setPropertyName] = useState("");
-  const [propertyAddress, setPropertyAddress] = useState("");
-  const [propertyDescription, setPropertyDescription] = useState("");
-  const [propertyCapacity, setPropertyCapacity] = useState(4);
-  const [propertyBedrooms, setPropertyBedrooms] = useState(2);
-  const [propertyBathrooms, setPropertyBathrooms] = useState(1);
-  const [propertyCheckIn, setPropertyCheckIn] = useState("15:00");
-  const [propertyCheckOut, setPropertyCheckOut] = useState("11:00");
-  const [propertyWifi, setPropertyWifi] = useState("");
-  const [propertyParking, setPropertyParking] = useState("");
+  // Email verification
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [canResend, setCanResend] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
+  
+  // Payment state
+  const [paymentReference, setPaymentReference] = useState<{
+    entity?: string;
+    reference?: string;
+    amount?: string;
+    expiryDate?: string;
+    requestId?: string;
+  } | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
   
   const { login, signup } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   
-  // Get return path from state (set by AdminRoute or ProtectedRoute)
   const from = (location.state as { from?: string })?.from || "/overview";
+
+  // Resend timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (step === "verify-email" && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, resendTimer]);
 
   // Check for password recovery event or URL mode
   useEffect(() => {
-    // If already in reset mode from URL, ensure we stay there
     if (isResetPasswordMode) {
       setStep("reset-password");
     }
@@ -143,7 +159,8 @@ export default function Auth() {
   const handlePlanSelect = (tier: PricingTier, isYearly: boolean) => {
     const planId = tier.name.toLowerCase() as SubscriptionPlan;
     setSelectedPlan(planId);
-    setStep("profile");
+    setIsYearlyPlan(isYearly);
+    setStep("email");
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
@@ -215,44 +232,274 @@ export default function Auth() {
     navigate(from);
   };
 
-  const handleProfileSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep("payment");
-  };
-
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setStep("property");
-  };
-
-  const handlePropertySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleFinalSignup();
-  };
-
-  const handleFinalSignup = async () => {
-    setIsLoading(true);
-    
-    const { error } = await signup(email, password, name, phone, nif, selectedPlan || "basic");
-    
-    if (error) {
+  const handleSendVerificationCode = async () => {
+    if (!email) {
       toast({
-        title: "Erro no registo",
-        description: error.message === "User already registered" 
-          ? "Este email já está registado. Faça login." 
-          : error.message,
+        title: "Email obrigatório",
+        description: "Por favor, introduza o seu email.",
         variant: "destructive",
       });
-      setIsLoading(false);
+      return;
+    }
+
+    setIsSendingCode(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+        body: { action: 'send', email },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      toast({
+        title: "Código enviado!",
+        description: "Verifique o seu email para o código de verificação.",
+      });
+
+      setStep("verify-email");
+      setResendTimer(60);
+      setCanResend(false);
+    } catch (error: unknown) {
+      console.error("Error sending code:", error);
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro ao enviar o código.";
+      toast({
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (verificationCode.length !== 6) {
+      toast({
+        title: "Código incompleto",
+        description: "Por favor, introduza o código de 6 dígitos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsVerifyingCode(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-verification-code', {
+        body: { action: 'verify', email, code: verificationCode },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      toast({
+        title: "Email verificado!",
+        description: "O seu email foi verificado com sucesso.",
+      });
+
+      setStep("profile");
+    } catch (error: unknown) {
+      console.error("Error verifying code:", error);
+      const errorMessage = error instanceof Error ? error.message : "Código inválido.";
+      toast({
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!canResend) return;
+    await handleSendVerificationCode();
+  };
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password.length < 6) {
+      toast({
+        title: "Erro",
+        description: "A palavra-passe deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
       return;
     }
     
-    toast({
-      title: "Conta criada com sucesso!",
-      description: "Pode agora aceder à plataforma.",
-    });
-    setIsLoading(false);
-    navigate("/overview");
+    setStep("payment");
+  };
+
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
+      const price = isYearlyPlan ? selectedPlanData?.price.yearly : selectedPlanData?.price.monthly;
+      const amount = price?.toFixed(2) || "0.00";
+      const orderId = `SUB-${Date.now()}`;
+
+      if (paymentMethod === "multibanco") {
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'create-multibanco',
+            amount,
+            orderId,
+            description: `Subscrição ${selectedPlanData?.name}`,
+            clientEmail: email,
+            expiryDays: 3,
+          },
+        });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        setPaymentReference({
+          entity: String(data.entity),
+          reference: String(data.reference).padStart(9, '0'),
+          amount: String(data.amount),
+          expiryDate: data.expiryDate,
+        });
+
+        // Create the user with pending status
+        const { error: signupError } = await signup(email, password, name, phone, nif, selectedPlan || "basic");
+        
+        if (signupError) {
+          throw signupError;
+        }
+
+        // Save payment record with pending status
+        const { error: paymentError } = await supabase.from('payments').insert({
+          user_id: (await supabase.auth.getUser()).data.user?.id || '',
+          amount: parseFloat(amount),
+          payment_method: 'multibanco',
+          payment_status: 'pending',
+          subscription_plan: selectedPlan || 'basic',
+          multibanco_entity: String(data.entity),
+          multibanco_reference: String(data.reference).padStart(9, '0'),
+          transaction_id: orderId,
+        });
+
+        if (paymentError) {
+          console.error('Error saving payment:', paymentError);
+        }
+
+        toast({
+          title: "Referência gerada!",
+          description: "Use os dados abaixo para efetuar o pagamento.",
+        });
+
+        setStep("waiting-payment");
+      } else if (paymentMethod === "mbway") {
+        if (!mbwayPhone || mbwayPhone.length < 9) {
+          toast({
+            title: "Número inválido",
+            description: "Por favor, introduza um número de telefone válido.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'create-mbway',
+            amount,
+            orderId,
+            mobileNumber: mbwayPhone,
+            description: `Subscrição ${selectedPlanData?.name}`,
+            email,
+          },
+        });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        toast({
+          title: "Pedido enviado!",
+          description: "Verifique o seu telemóvel para aprovar o pagamento.",
+        });
+
+        // Start polling for payment status
+        setIsPolling(true);
+        setStep("waiting-payment");
+        pollMBWayStatus(data.requestId);
+      }
+    } catch (error: unknown) {
+      console.error("Payment error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Ocorreu um erro ao processar o pagamento.";
+      toast({
+        title: "Erro no pagamento",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const pollMBWayStatus = async (requestId: string) => {
+    let attempts = 0;
+    const maxAttempts = 60;
+    
+    const checkStatus = async () => {
+      if (attempts >= maxAttempts) {
+        setIsPolling(false);
+        toast({
+          title: "Tempo expirado",
+          description: "O pagamento MB Way expirou. Por favor, tente novamente.",
+          variant: "destructive",
+        });
+        setStep("payment");
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: 'check-mbway-status',
+            requestId,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.isPaid) {
+          setIsPolling(false);
+          
+          // Create the user and activate subscription
+          const { error: signupError } = await signup(email, password, name, phone, nif, selectedPlan || "basic");
+          
+          if (signupError) {
+            toast({
+              title: "Erro no registo",
+              description: signupError.message,
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          toast({
+            title: "Pagamento confirmado!",
+            description: "A sua conta foi criada com sucesso.",
+          });
+          navigate("/overview");
+          return;
+        }
+
+        attempts++;
+        setTimeout(checkStatus, 5000);
+      } catch (error) {
+        console.error("Error checking MB Way status:", error);
+        attempts++;
+        setTimeout(checkStatus, 5000);
+      }
+    };
+
+    checkStatus();
   };
 
   // Password reset page
@@ -353,22 +600,12 @@ export default function Auth() {
                         Esqueceu a palavra-passe?
                       </button>
                     </div>
-                    <div className="relative">
-                      <Input
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <PasswordInput
+                      id="login-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "A entrar..." : "Entrar"}
@@ -432,7 +669,155 @@ export default function Auth() {
     );
   }
 
-  // Profile step
+  // Email step (before verification)
+  if (step === "email") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit -ml-2 mb-2"
+              onClick={() => setStep("plan")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Verificar Email</CardTitle>
+            <CardDescription className="text-center">
+              Introduza o seu email para receber o código de verificação
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={handleSendVerificationCode}
+                disabled={isSendingCode || !email}
+              >
+                {isSendingCode ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    A enviar...
+                  </>
+                ) : (
+                  <>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Enviar Código de Verificação
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Verify email step
+  if (step === "verify-email") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit -ml-2 mb-2"
+              onClick={() => setStep("email")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/logos/monumenta-logo.svg" 
+                alt="Monumenta Atlantic" 
+                className="h-16 w-auto"
+              />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Introduza o Código</CardTitle>
+            <CardDescription className="text-center">
+              Enviámos um código de 6 dígitos para <strong>{email}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={verificationCode}
+                  onChange={(value) => setVerificationCode(value)}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              
+              <Button 
+                className="w-full" 
+                onClick={handleVerifyCode}
+                disabled={isVerifyingCode || verificationCode.length !== 6}
+              >
+                {isVerifyingCode ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    A verificar...
+                  </>
+                ) : (
+                  "Verificar Código"
+                )}
+              </Button>
+
+              <div className="text-center">
+                {canResend ? (
+                  <Button
+                    variant="link"
+                    onClick={handleResendCode}
+                    disabled={isSendingCode}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Reenviar código
+                  </Button>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Reenviar código em {resendTimer}s
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Profile step (after email verification)
   if (step === "profile") {
     const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
     
@@ -444,7 +829,7 @@ export default function Auth() {
               variant="ghost"
               size="sm"
               className="w-fit -ml-2 mb-2"
-              onClick={() => setStep("plan")}
+              onClick={() => setStep("verify-email")}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
@@ -475,22 +860,11 @@ export default function Auth() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="signup-email">Email *</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="phone">Telemóvel *</Label>
                 <Input
                   id="phone"
                   type="tel"
-                  placeholder="+351 900 000 000"
+                  placeholder="912345678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -512,7 +886,7 @@ export default function Auth() {
                 <Label htmlFor="signup-password">Palavra-passe *</Label>
                 <PasswordInput
                   id="signup-password"
-                  placeholder="Introduza a palavra-passe"
+                  placeholder="Mínimo 6 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -520,25 +894,23 @@ export default function Auth() {
                 />
               </div>
               <Button type="submit" className="w-full">
-                Continuar
+                Continuar para Pagamento
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
-            <p>Ao continuar, concorda com os nossos termos e condições</p>
-          </CardFooter>
         </Card>
       </div>
     );
   }
 
-  // Payment step (now comes BEFORE property)
+  // Payment step
   if (step === "payment") {
     const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
+    const price = isYearlyPlan ? selectedPlanData?.price.yearly : selectedPlanData?.price.monthly;
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-        <Card className="w-full max-w-2xl">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
             <Button
               variant="ghost"
@@ -558,7 +930,7 @@ export default function Auth() {
             </div>
             <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
             <CardDescription className="text-center">
-              Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{selectedPlanData?.price.monthly}/mês
+              Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{price}/{isYearlyPlan ? 'ano' : 'mês'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -569,7 +941,7 @@ export default function Auth() {
                   <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                     <RadioGroupItem value="multibanco" id="multibanco" />
                     <Label htmlFor="multibanco" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <Building2 className="h-5 w-5" />
+                      <CreditCard className="h-5 w-5" />
                       <div>
                         <div className="font-medium">Multibanco</div>
                         <div className="text-xs text-muted-foreground">Referência MB</div>
@@ -582,17 +954,7 @@ export default function Auth() {
                       <Smartphone className="h-5 w-5" />
                       <div>
                         <div className="font-medium">MB Way</div>
-                        <div className="text-xs text-muted-foreground">Pagamento via telemóvel</div>
-                      </div>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
-                    <RadioGroupItem value="card" id="card" />
-                    <Label htmlFor="card" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <CreditCard className="h-5 w-5" />
-                      <div>
-                        <div className="font-medium">Cartão de Crédito</div>
-                        <div className="text-xs text-muted-foreground">Visa, Mastercard</div>
+                        <div className="text-xs text-muted-foreground">Pagamento instantâneo</div>
                       </div>
                     </Label>
                   </div>
@@ -605,54 +967,41 @@ export default function Auth() {
                   <Input
                     id="mbway-phone"
                     type="tel"
-                    placeholder="+351 900 000 000"
+                    placeholder="912345678"
                     value={mbwayPhone}
-                    onChange={(e) => setMbwayPhone(e.target.value)}
+                    onChange={(e) => setMbwayPhone(e.target.value.replace(/\D/g, ""))}
+                    maxLength={9}
                     required
                   />
                 </div>
               )}
 
-              {paymentMethod === "card" && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="card-number">Número do Cartão</Label>
-                    <Input
-                      id="card-number"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="card-expiry">Validade</Label>
-                      <Input
-                        id="card-expiry"
-                        placeholder="MM/AA"
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="card-cvv">CVV</Label>
-                      <Input
-                        id="card-cvv"
-                        placeholder="123"
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
-                        required
-                        maxLength={3}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-semibold">Plano:</span>
+                  <span>{selectedPlanData?.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-semibold">Valor:</span>
+                  <span className="text-lg font-bold text-primary">€{price}</span>
+                </div>
+              </div>
 
-              <Button type="submit" className="w-full">
-                {paymentMethod === "multibanco" ? "Gerar Referência" : "Continuar"}
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading || (paymentMethod === "mbway" && mbwayPhone.length < 9)}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    A processar...
+                  </>
+                ) : paymentMethod === "multibanco" ? (
+                  "Gerar Referência"
+                ) : (
+                  "Pagar com MB Way"
+                )}
               </Button>
             </form>
           </CardContent>
@@ -661,21 +1010,12 @@ export default function Auth() {
     );
   }
 
-  // Property step (now comes AFTER payment)
-  if (step === "property") {
+  // Waiting for payment confirmation
+  if (step === "waiting-payment") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-        <Card className="w-full max-w-2xl">
+        <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-fit -ml-2 mb-2"
-              onClick={() => setStep("payment")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
-            </Button>
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
@@ -683,306 +1023,79 @@ export default function Auth() {
                 className="h-16 w-auto"
               />
             </div>
-            <CardTitle className="text-2xl font-bold text-center">Adicione a Sua Propriedade</CardTitle>
-            <CardDescription className="text-center">
-              Configure os dados da sua primeira propriedade
-            </CardDescription>
+            {isPolling ? (
+              <>
+                <CardTitle className="text-2xl font-bold text-center">A Aguardar Confirmação</CardTitle>
+                <CardDescription className="text-center">
+                  Por favor, confirme o pagamento na app MB Way do seu telemóvel
+                </CardDescription>
+              </>
+            ) : paymentReference ? (
+              <>
+                <CardTitle className="text-2xl font-bold text-center">Referência de Pagamento</CardTitle>
+                <CardDescription className="text-center">
+                  Use os dados abaixo para efetuar o pagamento por Multibanco
+                </CardDescription>
+              </>
+            ) : null}
           </CardHeader>
           <CardContent>
-            <form onSubmit={handlePropertySubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="propertyName">Nome da Propriedade *</Label>
-                  <Input
-                    id="propertyName"
-                    value={propertyName}
-                    onChange={(e) => setPropertyName(e.target.value)}
-                    placeholder="Ex: Casa da Praia"
-                    required
-                  />
+            {isPolling ? (
+              <div className="space-y-6 py-8">
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="propertyCapacity">Capacidade</Label>
-                  <Input
-                    id="propertyCapacity"
-                    type="number"
-                    value={propertyCapacity}
-                    onChange={(e) => setPropertyCapacity(Number(e.target.value))}
-                    min="1"
-                  />
+                <p className="text-sm text-center text-muted-foreground">
+                  Aguardando confirmação do pagamento...
+                </p>
+              </div>
+            ) : paymentReference ? (
+              <div className="space-y-4">
+                <div className="bg-muted p-4 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Entidade</p>
+                  <p className="text-2xl font-bold font-mono">{paymentReference.entity}</p>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="propertyAddress">Morada *</Label>
-                <Input
-                  id="propertyAddress"
-                  value={propertyAddress}
-                  onChange={(e) => setPropertyAddress(e.target.value)}
-                  placeholder="Rua, número, cidade"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="propertyDescription">Descrição</Label>
-                <Textarea
-                  id="propertyDescription"
-                  value={propertyDescription}
-                  onChange={(e) => setPropertyDescription(e.target.value)}
-                  placeholder="Breve descrição da propriedade"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="propertyBedrooms">Quartos</Label>
-                  <Input
-                    id="propertyBedrooms"
-                    type="number"
-                    value={propertyBedrooms}
-                    onChange={(e) => setPropertyBedrooms(Number(e.target.value))}
-                    min="0"
-                  />
+                <div className="bg-muted p-4 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Referência</p>
+                  <p className="text-2xl font-bold font-mono">{paymentReference.reference}</p>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="propertyBathrooms">Casas de Banho</Label>
-                  <Input
-                    id="propertyBathrooms"
-                    type="number"
-                    value={propertyBathrooms}
-                    onChange={(e) => setPropertyBathrooms(Number(e.target.value))}
-                    min="0"
-                  />
+                <div className="bg-muted p-4 rounded-lg text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Valor</p>
+                  <p className="text-2xl font-bold text-primary">€{paymentReference.amount}</p>
                 </div>
-              </div>
+                {paymentReference.expiryDate && (
+                  <div className="bg-muted p-4 rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground mb-1">Validade</p>
+                    <p className="text-lg font-semibold">{paymentReference.expiryDate}</p>
+                  </div>
+                )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="propertyCheckIn">Check-in</Label>
-                  <Input
-                    id="propertyCheckIn"
-                    type="time"
-                    value={propertyCheckIn}
-                    onChange={(e) => setPropertyCheckIn(e.target.value)}
-                  />
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg space-y-2">
+                  <p className="text-sm font-semibold">Informação importante:</p>
+                  <ul className="text-sm space-y-1 text-muted-foreground">
+                    <li>• O pagamento pode demorar até 24h a ser processado</li>
+                    <li>• Após confirmação, receberá um email de ativação</li>
+                    <li>• Só terá acesso à plataforma após confirmação do pagamento</li>
+                  </ul>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="propertyCheckOut">Check-out</Label>
-                  <Input
-                    id="propertyCheckOut"
-                    type="time"
-                    value={propertyCheckOut}
-                    onChange={(e) => setPropertyCheckOut(e.target.value)}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="propertyWifi">Password WiFi</Label>
-                <Input
-                  id="propertyWifi"
-                  value={propertyWifi}
-                  onChange={(e) => setPropertyWifi(e.target.value)}
-                  placeholder="Opcional"
-                />
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => navigate("/auth")}
+                >
+                  Voltar ao Início
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="propertyParking">Informações de Estacionamento</Label>
-                <Input
-                  id="propertyParking"
-                  value={propertyParking}
-                  onChange={(e) => setPropertyParking(e.target.value)}
-                  placeholder="Opcional"
-                />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Continuar para Pagamento
-              </Button>
-            </form>
+            ) : null}
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  // Payment step
-  const selectedPlanData = pricingTiers.find((p) => p.name.toLowerCase() === selectedPlan);
-  
-  const paymentMethods = [
-    { id: "card" as PaymentMethod, name: "Cartão de Crédito", icon: CreditCard },
-    { id: "mbway" as PaymentMethod, name: "MB WAY", icon: Smartphone },
-    { id: "multibanco" as PaymentMethod, name: "Multibanco", icon: Building2 },
-    { id: "paypal" as PaymentMethod, name: "PayPal", icon: DollarSign },
-  ];
-  
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-fit -ml-2 mb-2"
-            onClick={() => setStep("profile")}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-            <div className="flex justify-center mb-4">
-              <img 
-                src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
-                className="h-16 w-auto"
-              />
-            </div>
-          <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
-          <CardDescription className="text-center">
-            Plano {selectedPlanData?.name} - €{selectedPlanData?.price.monthly}/mês
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={(e) => { e.preventDefault(); handleFinalSignup(); }} className="space-y-6">
-            <div className="space-y-3">
-              <Label>Selecione o método de pagamento</Label>
-              <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}>
-                <div className="grid grid-cols-2 gap-3">
-                  {paymentMethods.map((method) => {
-                    const Icon = method.icon;
-                    return (
-                      <Label
-                        key={method.id}
-                        htmlFor={method.id}
-                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                          paymentMethod === method.id
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                      >
-                        <RadioGroupItem value={method.id} id={method.id} className="sr-only" />
-                        <Icon className="h-6 w-6 mb-2" />
-                        <span className="text-sm font-medium text-center">{method.name}</span>
-                      </Label>
-                    );
-                  })}
-                </div>
-              </RadioGroup>
-            </div>
-
-            {paymentMethod === "card" && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cardNumber">Número do Cartão *</Label>
-                  <Input
-                    id="cardNumber"
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    required
-                    maxLength={19}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="cardExpiry">Validade *</Label>
-                    <Input
-                      id="cardExpiry"
-                      type="text"
-                      placeholder="MM/AA"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      required
-                      maxLength={5}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cardCvv">CVV *</Label>
-                    <Input
-                      id="cardCvv"
-                      type="text"
-                      placeholder="123"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      required
-                      maxLength={3}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {paymentMethod === "mbway" && (
-              <div className="space-y-2">
-                <Label htmlFor="mbwayPhone">Número de Telemóvel *</Label>
-                <Input
-                  id="mbwayPhone"
-                  type="tel"
-                  placeholder="+351 900 000 000"
-                  value={mbwayPhone}
-                  onChange={(e) => setMbwayPhone(e.target.value)}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Irá receber uma notificação no seu telemóvel para confirmar o pagamento.
-                </p>
-              </div>
-            )}
-
-            {paymentMethod === "multibanco" && (
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <p className="text-sm font-medium">Após confirmar, irá receber:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Entidade</li>
-                  <li>• Referência</li>
-                  <li>• Montante a pagar</li>
-                </ul>
-                <p className="text-xs text-muted-foreground mt-3">
-                  As referências serão enviadas por email e têm validade de 48 horas.
-                </p>
-              </div>
-            )}
-
-            {paymentMethod === "paypal" && (
-              <div className="space-y-2">
-                <Label htmlFor="paypalEmail">Email PayPal *</Label>
-                <Input
-                  id="paypalEmail"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={paypalEmail}
-                  onChange={(e) => setPaypalEmail(e.target.value)}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Será redirecionado para o PayPal para concluir o pagamento.
-                </p>
-              </div>
-            )}
-
-            <div className="bg-muted p-4 rounded-lg">
-              <div className="flex justify-between text-sm mb-2">
-                <span>Plano {selectedPlanData?.name}</span>
-                <span className="font-semibold">€{selectedPlanData?.price.monthly}/mês</span>
-              </div>
-              <div className="flex justify-between text-sm font-bold pt-2 border-t">
-                <span>Total</span>
-                <span>€{selectedPlanData?.price.monthly}/mês</span>
-              </div>
-            </div>
-            
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "A processar..." : "Confirmar e Criar Conta"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
-          <p>Pagamento seguro. Os seus dados estão protegidos.</p>
-        </CardFooter>
-      </Card>
-    </div>
-  );
+  // Default fallback
+  return null;
 }

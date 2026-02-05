@@ -28,10 +28,13 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.ifthenpay-payment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.parse-booking-pdf]
 verify_jwt = true
 
 [functions.send-new-reservation-notification]
 verify_jwt = true
+
+[functions.send-verification-code]
+verify_jwt = false

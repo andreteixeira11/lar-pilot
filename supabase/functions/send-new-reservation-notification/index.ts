@@ -198,7 +198,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       return resend.emails.send({
-        from: "Monumenta <noreply@monumenta.pt>",
+        from: "Monumenta <noreply@monumentalatlantic.pt>",
         to: [owner.email],
         subject: `🎉 Nova reserva - ${guestName} | ${propertyName}`,
         html,

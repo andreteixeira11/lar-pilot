@@ -81,7 +81,7 @@ export function AppSidebar() {
           <div className="px-6 py-4 border-b border-sidebar-border flex items-center justify-center">
             <img 
               src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Atlantic" 
+              alt="Monumental Atlantic" 
               className="h-16 w-auto"
             />
           </div>

@@ -512,7 +512,7 @@ const Landing = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand */}
             <div className="lg:col-span-1">
-              <img src="/logos/monumenta-logo.svg" alt="Monumenta Logo" className="h-16 mb-4" />
+              <img src="/logos/monumenta-logo.svg" alt="Monumental Atlantic Logo" className="h-16 mb-4" />
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Gestão profissional de Alojamento Local na Madeira. Simplifique as suas operações com a nossa plataforma completa.
               </p>

@@ -72,9 +72,9 @@ serve(async (req: Request): Promise<Response> => {
           "Authorization": `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "Monumenta Atlantic <noreply@monumentalatlantic.pt>",
+          from: "Monumental Atlantic <noreply@monumentalatlantic.pt>",
           to: [email],
-          subject: "Código de Verificação - Monumenta Atlantic",
+          subject: "Código de Verificação - Monumental Atlantic",
           html: `
             <!DOCTYPE html>
             <html>
@@ -86,7 +86,7 @@ serve(async (req: Request): Promise<Response> => {
               <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
                 <div style="background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                   <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://atlantic.lovable.app/logos/monumenta-logo.svg" alt="Monumenta Atlantic" style="height: 60px;">
+                    <img src="https://atlantic.lovable.app/logos/monumenta-logo.svg" alt="Monumental Atlantic" style="height: 60px;">
                   </div>
                   
                   <h1 style="color: #1a1a1a; font-size: 24px; text-align: center; margin-bottom: 20px;">
@@ -115,7 +115,7 @@ serve(async (req: Request): Promise<Response> => {
                 </div>
                 
                 <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
-                  © ${new Date().getFullYear()} Monumenta Atlantic. Todos os direitos reservados.
+                  © ${new Date().getFullYear()} Monumental Atlantic. Todos os direitos reservados.
                 </p>
               </div>
             </body>

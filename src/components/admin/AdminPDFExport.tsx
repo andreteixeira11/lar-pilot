@@ -29,7 +29,7 @@ export const AdminPDFExport = ({ data }: AdminPDFExportProps) => {
     // Header
     doc.setFontSize(20);
     doc.setTextColor(26, 122, 110);
-    doc.text("Monumenta Atlantic", pageWidth / 2, 20, { align: "center" });
+    doc.text("Monumental Atlantic", pageWidth / 2, 20, { align: "center" });
     
     doc.setFontSize(16);
     doc.setTextColor(0, 0, 0);

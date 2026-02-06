@@ -664,7 +664,7 @@ export default function Ajuda() {
           <div className="flex items-center gap-4">
             <img 
               src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Atlantic" 
+              alt="Monumental Atlantic" 
               className="h-10 w-auto cursor-pointer"
               onClick={() => navigate("/")}
             />

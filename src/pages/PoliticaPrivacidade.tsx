@@ -18,7 +18,7 @@ const PoliticaPrivacidade = () => {
             </Button>
             <img 
               src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Atlantic" 
+              alt="Monumental Atlantic" 
               className="h-10 cursor-pointer" 
               onClick={() => navigate("/")}
             />

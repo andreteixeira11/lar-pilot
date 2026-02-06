@@ -511,7 +511,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-20 w-auto"
               />
             </div>
@@ -562,7 +562,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-20 w-auto"
               />
             </div>
@@ -644,7 +644,7 @@ export default function Auth() {
           <div className="flex justify-center">
             <img 
               src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Atlantic" 
+              alt="Monumental Atlantic" 
               className="h-20 w-auto"
             />
           </div>
@@ -687,7 +687,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
             </div>
@@ -751,7 +751,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
             </div>
@@ -837,7 +837,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
             </div>
@@ -924,7 +924,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
             </div>
@@ -1019,7 +1019,7 @@ export default function Auth() {
             <div className="flex justify-center mb-4">
               <img 
                 src="/logos/monumenta-logo.svg" 
-                alt="Monumenta Atlantic" 
+                alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
             </div>

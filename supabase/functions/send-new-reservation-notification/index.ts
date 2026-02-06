@@ -183,7 +183,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
 
                 <center>
-                  <a href="${Deno.env.get("SITE_URL") || "https://monumenta.pt"}/proprietario/reservas" class="button">
+                  <a href="${Deno.env.get("SITE_URL") || "https://monumentalatlantic.pt"}/proprietario/reservas" class="button">
                     Ver no Portal
                   </a>
                 </center>
@@ -198,7 +198,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       return resend.emails.send({
-        from: "Monumenta <noreply@monumentalatlantic.pt>",
+        from: "Monumental Atlantic <noreply@monumentalatlantic.pt>",
         to: [owner.email],
         subject: `🎉 Nova reserva - ${guestName} | ${propertyName}`,
         html,

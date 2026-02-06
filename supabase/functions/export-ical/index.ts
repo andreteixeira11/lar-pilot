@@ -14,7 +14,7 @@ function formatDateForICal(date: Date): string {
 }
 
 function generateUID(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@monumenta.pt`;
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@monumentalatlantic.pt`;
 }
 
 serve(async (req: Request) => {
@@ -87,7 +87,7 @@ serve(async (req: Request) => {
     let icalContent = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Monumenta//Direct Booking//PT",
+      "PRODID:-//Monumental Atlantic//Direct Booking//PT",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       `X-WR-CALNAME:${propertyName}`,

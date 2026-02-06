@@ -179,7 +179,7 @@ export const GuidebookPreview = ({
 
           {/* Footer */}
           <div className="p-6 text-center text-xs text-muted-foreground border-t mt-4">
-            <p>Powered by Monumenta</p>
+            <p>Powered by Monumental Atlantic</p>
           </div>
         </ScrollArea>
       </div>

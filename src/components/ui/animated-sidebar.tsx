@@ -297,7 +297,7 @@ export const AnimatedSidebar = () => {
                 <div className="p-6 border-b border-border flex items-center justify-center">
                   <img
                     src="/logos/monumenta-logo.svg"
-                    alt="Monumenta Atlantic"
+                    alt="Monumental Atlantic"
                     className="h-16 w-auto"
                   />
                 </div>
@@ -390,7 +390,7 @@ export const AnimatedSidebar = () => {
         <div className="p-6 border-b border-border flex items-center justify-center">
           <img
             src="/logos/monumenta-logo.svg"
-            alt="Monumenta Atlantic"
+            alt="Monumental Atlantic"
             className="h-16 w-auto"
           />
         </div>

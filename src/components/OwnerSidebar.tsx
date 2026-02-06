@@ -150,7 +150,7 @@ export function OwnerSidebar() {
                   <div className="flex items-center gap-3">
                     <img 
                       src="/logos/monumenta-logo.svg" 
-                      alt="Monumenta Atlantic" 
+                      alt="Monumental Atlantic" 
                       className="h-8 w-auto"
                     />
                     <div className="flex-1 min-w-0">
@@ -200,7 +200,7 @@ export function OwnerSidebar() {
           <div className="flex items-center gap-3">
             <img 
               src="/logos/monumenta-logo.svg" 
-              alt="Monumenta Atlantic" 
+              alt="Monumental Atlantic" 
               className="h-8 w-auto"
             />
             <div className="flex-1 min-w-0">

@@ -69,7 +69,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <p>Pode visualizar e descarregar este documento no Portal do Proprietário.</p>
                 <center>
-                  <a href="${Deno.env.get("SITE_URL") || "https://monumenta.pt"}/proprietario" class="button">Ver no Portal</a>
+                  <a href="${Deno.env.get("SITE_URL") || "https://monumentalatlantic.pt"}/proprietario" class="button">Ver no Portal</a>
                 </center>
               </div>
               <div class="footer">
@@ -104,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <li>Lucro estimado</li>
                 </ul>
                 <center>
-                  <a href="${Deno.env.get("SITE_URL") || "https://monumenta.pt"}/proprietario/relatorios" class="button">Ver Relatório</a>
+                  <a href="${Deno.env.get("SITE_URL") || "https://monumentalatlantic.pt"}/proprietario/relatorios" class="button">Ver Relatório</a>
                 </center>
               </div>
               <div class="footer">
@@ -150,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Monumenta <noreply@monumenta.pt>",
+      from: "Monumental Atlantic <noreply@monumentalatlantic.pt>",
       to: [ownerEmail],
       subject,
       html,

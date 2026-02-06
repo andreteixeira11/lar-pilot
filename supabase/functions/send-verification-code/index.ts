@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-// Simple in-memory store for verification codes
-const verificationCodes = new Map<string, { code: string; expiresAt: number }>();
 
 interface VerificationRequest {
   action: "send" | "verify";
@@ -24,10 +22,15 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const { action, email, code }: VerificationRequest = await req.json();
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!email) {
       throw new Error("Email é obrigatório");
     }
+
+    // Create Supabase client with service role for database access
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     if (action === "send") {
       if (!RESEND_API_KEY) {
@@ -36,10 +39,28 @@ serve(async (req: Request): Promise<Response> => {
 
       // Generate a 6-digit code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-      // Store the code
-      verificationCodes.set(email.toLowerCase(), { code: verificationCode, expiresAt });
+      // Delete any existing codes for this email
+      await supabase
+        .from("email_verification_codes")
+        .delete()
+        .eq("email", email.toLowerCase());
+
+      // Store the code in the database
+      const { error: insertError } = await supabase
+        .from("email_verification_codes")
+        .insert({
+          email: email.toLowerCase(),
+          code: verificationCode,
+          expires_at: expiresAt.toISOString(),
+          verified: false,
+        });
+
+      if (insertError) {
+        console.error("Error storing verification code:", insertError);
+        throw new Error("Erro ao guardar código de verificação");
+      }
 
       console.log(`Sending verification code to ${email}`);
 
@@ -122,9 +143,18 @@ serve(async (req: Request): Promise<Response> => {
         throw new Error("Código é obrigatório");
       }
 
-      const stored = verificationCodes.get(email.toLowerCase());
+      // Fetch the stored code from database
+      const { data: storedCode, error: fetchError } = await supabase
+        .from("email_verification_codes")
+        .select("*")
+        .eq("email", email.toLowerCase())
+        .eq("verified", false)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-      if (!stored) {
+      if (fetchError || !storedCode) {
+        console.log("No code found for email:", email);
         return new Response(
           JSON.stringify({ success: false, error: "Código não encontrado. Solicite um novo código." }),
           {
@@ -134,8 +164,14 @@ serve(async (req: Request): Promise<Response> => {
         );
       }
 
-      if (Date.now() > stored.expiresAt) {
-        verificationCodes.delete(email.toLowerCase());
+      // Check if code has expired
+      if (new Date() > new Date(storedCode.expires_at)) {
+        // Delete expired code
+        await supabase
+          .from("email_verification_codes")
+          .delete()
+          .eq("id", storedCode.id);
+
         return new Response(
           JSON.stringify({ success: false, error: "Código expirado. Solicite um novo código." }),
           {
@@ -145,7 +181,8 @@ serve(async (req: Request): Promise<Response> => {
         );
       }
 
-      if (stored.code !== code) {
+      // Check if code matches
+      if (storedCode.code !== code) {
         return new Response(
           JSON.stringify({ success: false, error: "Código inválido. Verifique e tente novamente." }),
           {
@@ -155,8 +192,13 @@ serve(async (req: Request): Promise<Response> => {
         );
       }
 
-      // Code is valid - remove it from store
-      verificationCodes.delete(email.toLowerCase());
+      // Code is valid - mark as verified and delete
+      await supabase
+        .from("email_verification_codes")
+        .delete()
+        .eq("id", storedCode.id);
+
+      console.log("Email verified successfully:", email);
 
       return new Response(
         JSON.stringify({ success: true, verified: true }),

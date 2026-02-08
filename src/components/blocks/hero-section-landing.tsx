@@ -103,7 +103,7 @@ export function HeroSection({
                   action.variant === "glow" &&
                     "relative overflow-hidden bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.5)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.7)] transition-shadow",
                   action.variant === "outline" &&
-                    "border-white/50 text-white hover:bg-white/10 hover:text-white"
+                    "border-primary bg-white/90 text-primary hover:bg-white hover:text-primary"
                 )}
               >
                 {action.text}

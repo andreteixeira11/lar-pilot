@@ -54,8 +54,8 @@ export function HeroSection({
         style={{ backgroundImage: `url(${image.src})` }}
       />
       
-      {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
+      {/* Primary color overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/60 to-background" />
 
       {/* Background glow */}
       <Glow variant="top" className="opacity-20" />

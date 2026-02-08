@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -78,13 +78,13 @@ export function AppSidebar() {
     <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
       <SidebarContent>
         {state !== "collapsed" && (
-          <div className="px-6 py-4 border-b border-sidebar-border flex items-center justify-center">
+          <Link to="/" className="px-6 py-4 border-b border-sidebar-border flex items-center justify-center hover:opacity-80 transition-opacity">
             <img 
               src="/logos/monumenta-logo.svg" 
               alt="Monumental Atlantic" 
               className="h-16 w-auto"
             />
-          </div>
+          </Link>
         )}
 
         <SidebarGroup>

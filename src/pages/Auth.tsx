@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -508,13 +508,13 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-20 w-auto"
               />
-            </div>
+            </Link>
             <CardTitle className="text-2xl font-bold text-center">Redefinir Palavra-passe</CardTitle>
             <CardDescription className="text-center">
               Introduza a sua nova palavra-passe
@@ -559,13 +559,13 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-20 w-auto"
               />
-            </div>
+            </Link>
             <CardDescription className="text-center">
               Aceda ou crie a sua conta
             </CardDescription>
@@ -641,13 +641,13 @@ export default function Auth() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <div className="w-full max-w-6xl space-y-4">
-          <div className="flex justify-center">
+          <Link to="/" className="flex justify-center hover:opacity-80 transition-opacity">
             <img 
               src="/logos/monumenta-logo.svg" 
               alt="Monumental Atlantic" 
               className="h-20 w-auto"
             />
-          </div>
+          </Link>
           <div className="flex justify-start max-w-5xl mx-auto px-4">
             <Button
               variant="ghost"
@@ -684,13 +684,13 @@ export default function Auth() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
-            </div>
+            </Link>
             <CardTitle className="text-2xl font-bold text-center">Verificar Email</CardTitle>
             <CardDescription className="text-center">
               Introduza o seu email para receber o código de verificação
@@ -748,13 +748,13 @@ export default function Auth() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
-            </div>
+            </Link>
             <CardTitle className="text-2xl font-bold text-center">Introduza o Código</CardTitle>
             <CardDescription className="text-center">
               Enviámos um código de 6 dígitos para <strong>{email}</strong>
@@ -834,13 +834,13 @@ export default function Auth() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
-            </div>
+            </Link>
             <CardTitle className="text-2xl font-bold text-center">Complete o Seu Perfil</CardTitle>
             <CardDescription className="text-center">
               Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span>
@@ -921,13 +921,13 @@ export default function Auth() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
-            </div>
+            </Link>
             <CardTitle className="text-2xl font-bold text-center">Método de Pagamento</CardTitle>
             <CardDescription className="text-center">
               Plano: <span className="font-semibold text-foreground">{selectedPlanData?.name}</span> - €{price}/{isYearlyPlan ? 'ano' : 'mês'}
@@ -1016,13 +1016,13 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-secondary/10 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <div className="flex justify-center mb-4">
+            <Link to="/" className="flex justify-center mb-4 hover:opacity-80 transition-opacity">
               <img 
                 src="/logos/monumenta-logo.svg" 
                 alt="Monumental Atlantic" 
                 className="h-16 w-auto"
               />
-            </div>
+            </Link>
             {isPolling ? (
               <>
                 <CardTitle className="text-2xl font-bold text-center">A Aguardar Confirmação</CardTitle>

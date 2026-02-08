@@ -146,7 +146,7 @@ export function OwnerSidebar() {
             >
               <div className="flex flex-col h-full">
                 {/* Logo Section */}
-                <div className="p-4 border-b border-border">
+                <Link to="/" className="p-4 border-b border-border hover:opacity-80 transition-opacity">
                   <div className="flex items-center gap-3">
                     <img 
                       src="/logos/monumenta-logo.svg" 
@@ -159,7 +159,7 @@ export function OwnerSidebar() {
                       </h2>
                     </div>
                   </div>
-                </div>
+                </Link>
 
                 {/* Property Selector - Mobile */}
                 <div className="px-4 py-3 border-b border-border">
@@ -196,7 +196,7 @@ export function OwnerSidebar() {
       {/* Desktop Sidebar */}
       <div className="hidden md:flex flex-col fixed top-0 left-0 h-full w-72 bg-background border-r border-border">
         {/* Logo Section */}
-        <div className="p-4 border-b border-border">
+        <Link to="/" className="p-4 border-b border-border hover:opacity-80 transition-opacity">
           <div className="flex items-center gap-3">
             <img 
               src="/logos/monumenta-logo.svg" 
@@ -209,7 +209,7 @@ export function OwnerSidebar() {
               </h2>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Property Selector - Desktop */}
         <div className="px-4 py-3 border-b border-border">

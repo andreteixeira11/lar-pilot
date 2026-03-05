@@ -34,7 +34,7 @@ import { AddPropertyDialog } from "@/components/AddPropertyDialog";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OverviewCalendar } from "@/components/overview/OverviewCalendar";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { Tooltip as UITooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const OverviewDashboard = () => {
   const navigate = useNavigate();

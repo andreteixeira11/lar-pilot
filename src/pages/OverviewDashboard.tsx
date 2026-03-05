@@ -34,6 +34,7 @@ import { AddPropertyDialog } from "@/components/AddPropertyDialog";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { OverviewCalendar } from "@/components/overview/OverviewCalendar";
+import { Tooltip as UITooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 const OverviewDashboard = () => {
   const navigate = useNavigate();
@@ -368,18 +369,39 @@ const OverviewDashboard = () => {
                   </div>
 
                   <div className="hidden md:flex items-center gap-8">
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Faturação</p>
-                      <p className="font-semibold text-green-600">€{property.monthRevenue.toFixed(0)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Ocupação</p>
-                      <p className="font-semibold">{property.occupancy}%</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">Reservas</p>
-                      <p className="font-semibold">{property.reservationCount}</p>
-                    </div>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-xs text-muted-foreground">Faturação</p>
+                          <p className="font-semibold text-green-600">€{property.monthRevenue.toFixed(0)}</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Receita total de reservas confirmadas no mês atual</p>
+                      </TooltipContent>
+                    </UITooltip>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-xs text-muted-foreground">Ocupação</p>
+                          <p className="font-semibold">{property.occupancy}%</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Percentagem de noites ocupadas em relação ao total de dias do mês</p>
+                      </TooltipContent>
+                    </UITooltip>
+                    <UITooltip>
+                      <TooltipTrigger asChild>
+                        <div className="text-center cursor-help">
+                          <p className="text-xs text-muted-foreground">Reservas</p>
+                          <p className="font-semibold">{property.reservationCount}</p>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Número de reservas confirmadas com check-in no mês atual</p>
+                      </TooltipContent>
+                    </UITooltip>
                     <div className="text-center min-w-[120px]">
                       <p className="text-xs text-muted-foreground">Próx. Check-in</p>
                       {property.nextCheckIn ? (

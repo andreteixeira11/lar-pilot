@@ -21,6 +21,13 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { pt, enUS } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MonthlyData {
   month: string;
@@ -47,6 +54,8 @@ const CHART_COLORS = [
 export default function OwnerRelatorios() {
   const { owner } = useOwnerAuth();
   const { t, language } = useOwnerLanguage();
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [availableYears, setAvailableYears] = useState<string[]>([new Date().getFullYear().toString()]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [yearlyStats, setYearlyStats] = useState<YearlyStats>({
     totalRevenue: 0,
@@ -61,18 +70,38 @@ export default function OwnerRelatorios() {
 
   useEffect(() => {
     if (owner?.propertyId) {
-      loadReportData();
+      loadAvailableYears();
     }
   }, [owner?.propertyId]);
+
+  useEffect(() => {
+    if (owner?.propertyId) {
+      loadReportData();
+    }
+  }, [owner?.propertyId, selectedYear]);
+
+  const loadAvailableYears = async () => {
+    if (!owner?.propertyId) return;
+    const { data } = await supabase
+      .from("reservations")
+      .select("check_in")
+      .eq("property_id", owner.propertyId);
+    if (data && data.length > 0) {
+      const yearsSet = new Set<string>();
+      data.forEach(r => yearsSet.add(new Date(r.check_in).getFullYear().toString()));
+      yearsSet.add(new Date().getFullYear().toString());
+      setAvailableYears(Array.from(yearsSet).sort((a, b) => parseInt(b) - parseInt(a)));
+    }
+  };
 
   const loadReportData = async () => {
     if (!owner?.propertyId) return;
     setIsLoading(true);
 
     try {
-      const currentYear = new Date().getFullYear();
-      const yearStart = new Date(currentYear, 0, 1);
-      const yearEnd = new Date(currentYear, 11, 31);
+      const yearNum = parseInt(selectedYear);
+      const yearStart = new Date(yearNum, 0, 1);
+      const yearEnd = new Date(yearNum, 11, 31);
 
       // Get all reservations for the year
       const { data: reservations } = await supabase
@@ -86,7 +115,7 @@ export default function OwnerRelatorios() {
       // Build monthly data
       const months: MonthlyData[] = [];
       for (let i = 0; i < 12; i++) {
-        const monthDate = new Date(currentYear, i, 1);
+        const monthDate = new Date(yearNum, i, 1);
         const monthStart = startOfMonth(monthDate);
         const monthEnd = endOfMonth(monthDate);
 
@@ -225,11 +254,23 @@ export default function OwnerRelatorios() {
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("reports.title")}</h1>
-        <p className="text-muted-foreground mt-1">
-          {t("reports.subtitle")}
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t("reports.title")}</h1>
+          <p className="text-muted-foreground mt-1">
+            {t("reports.subtitle")}
+          </p>
+        </div>
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-28">
+            <SelectValue placeholder={language === "pt" ? "Ano" : "Year"} />
+          </SelectTrigger>
+          <SelectContent>
+            {availableYears.map((year) => (
+              <SelectItem key={year} value={year}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Download Buttons */}

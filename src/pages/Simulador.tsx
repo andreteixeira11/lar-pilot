@@ -124,14 +124,12 @@ const Simulador = () => {
 
   const handlePackageAdvance = () => {
     setCurrentStep(2);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handlePersonalizationAdvance = (commission: number, services: string[]) => {
     setTotalCommission(commission);
     setSelectedServices(services);
     setCurrentStep(3);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleOpenProposal = (commission: number, services: string[], formData: AccommodationFormData) => {
@@ -142,7 +140,6 @@ const Simulador = () => {
 
   const handleProposalSuccess = () => {
     setCurrentStep(4);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleBackToHome = () => {
@@ -150,7 +147,6 @@ const Simulador = () => {
     setSelectedPackage("basic");
     setSelectedServices([]);
     setTotalCommission(0);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const tabs = packages.map((pkg) => ({
@@ -188,7 +184,9 @@ const Simulador = () => {
 
         {/* Logo centrado no topo do hero */}
         <div className="absolute top-6 w-full flex justify-center z-20">
-          <img src={monumentaLogo} alt="Monumenta Logo" className="h-16 w-auto drop-shadow-lg" />
+          <a href="/" className="inline-block">
+            <img src={monumentaLogo} alt="Monumenta Logo" className="h-16 w-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] brightness-0 invert" />
+          </a>
         </div>
       </div>
 

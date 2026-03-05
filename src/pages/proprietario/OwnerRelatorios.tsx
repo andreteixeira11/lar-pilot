@@ -115,7 +115,7 @@ export default function OwnerRelatorios() {
       // Build monthly data
       const months: MonthlyData[] = [];
       for (let i = 0; i < 12; i++) {
-        const monthDate = new Date(currentYear, i, 1);
+        const monthDate = new Date(yearNum, i, 1);
         const monthStart = startOfMonth(monthDate);
         const monthEnd = endOfMonth(monthDate);
 

@@ -1,0 +1,1 @@
+CREATE POLICY "Admins can delete leads" ON public.simulator_leads FOR DELETE TO authenticated USING (is_admin());

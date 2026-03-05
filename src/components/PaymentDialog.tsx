@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CreditCard, Smartphone, Copy, Check, Loader2 } from "lucide-react";
+import { CreditCard, Smartphone, Copy, Check, Loader2, Apple, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { EmailService } from "@/lib/emailService";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +28,7 @@ interface PaymentDialogProps {
 }
 
 export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }: PaymentDialogProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"multibanco" | "mbway">("multibanco");
+  const [paymentMethod, setPaymentMethod] = useState<"multibanco" | "mbway" | "apple" | "google" | "ccard">("multibanco");
   const [phone, setPhone] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
@@ -114,9 +114,39 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
           description: "Verifique o seu telemóvel para aprovar o pagamento.",
         });
 
-        // Start polling for payment status
         setIsPolling(true);
         pollMBWayStatus(data.requestId);
+      } else if (paymentMethod === "apple" || paymentMethod === "google" || paymentMethod === "ccard") {
+        const actionMap = {
+          apple: 'create-apple-pay',
+          google: 'create-google-pay',
+          ccard: 'create-ccard',
+        };
+
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: actionMap[paymentMethod],
+            amount,
+            orderId,
+            description: `Subscrição ${plan.name}`,
+            email: userEmail,
+            returnUrl: window.location.origin + '/subscriptions',
+          },
+        });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        // Redirect to payment URL
+        if (data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+        } else {
+          toast({
+            title: "Erro",
+            description: "URL de pagamento não disponível.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error: unknown) {
       console.error("Payment error:", error);
@@ -223,7 +253,7 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
           <div className="space-y-6 py-4">
             <div className="space-y-4">
               <Label>Método de Pagamento</Label>
-              <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "multibanco" | "mbway")}>
+              <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as typeof paymentMethod)}>
                 <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
                   <RadioGroupItem value="multibanco" id="multibanco" />
                   <Label htmlFor="multibanco" className="flex items-center gap-2 cursor-pointer flex-1">
@@ -241,6 +271,36 @@ export function PaymentDialog({ open, onOpenChange, plan, userEmail, onSuccess }
                     <div className="flex-1">
                       <div className="font-semibold">MB Way</div>
                       <div className="text-sm text-muted-foreground">Pagamento instantâneo</div>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                  <RadioGroupItem value="ccard" id="ccard" />
+                  <Label htmlFor="ccard" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <div className="font-semibold">Cartão de Crédito</div>
+                      <div className="text-sm text-muted-foreground">Visa, Mastercard, etc.</div>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                  <RadioGroupItem value="apple" id="apple" />
+                  <Label htmlFor="apple" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Apple className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <div className="font-semibold">Apple Pay</div>
+                      <div className="text-sm text-muted-foreground">Pagamento com Apple</div>
+                    </div>
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:border-primary transition-colors">
+                  <RadioGroupItem value="google" id="google" />
+                  <Label htmlFor="google" className="flex items-center gap-2 cursor-pointer flex-1">
+                    <Wallet className="h-5 w-5 text-primary" />
+                    <div className="flex-1">
+                      <div className="font-semibold">Google Pay</div>
+                      <div className="text-sm text-muted-foreground">Pagamento com Google</div>
                     </div>
                   </Label>
                 </div>

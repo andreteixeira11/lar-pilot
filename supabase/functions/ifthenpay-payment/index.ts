@@ -8,6 +8,7 @@ const corsHeaders = {
 const MULTIBANCO_API_URL = 'https://api.ifthenpay.com/multibanco/reference/init';
 const MBWAY_API_URL = 'https://api.ifthenpay.com/spg/payment/mbway';
 const MBWAY_STATUS_URL = 'https://api.ifthenpay.com/spg/payment/mbway/status';
+const GATEWAY_API_URL = 'https://api.ifthenpay.com/spg/payment/init';
 
 interface MultibancoRequest {
   amount: string;
@@ -40,6 +41,9 @@ serve(async (req) => {
 
     const mbKey = Deno.env.get('IFTHENPAY_MB_KEY');
     const mbWayKey = Deno.env.get('IFTHENPAY_MBWAY_KEY');
+    const appleKey = Deno.env.get('IFTHENPAY_APPLE_KEY');
+    const googleKey = Deno.env.get('IFTHENPAY_GOOGLE_KEY');
+    const ccardKey = Deno.env.get('IFTHENPAY_CCARD_KEY');
 
     if (!mbKey || !mbWayKey) {
       console.error('Missing IfthenPay keys');
@@ -155,6 +159,63 @@ serve(async (req) => {
           isPaid: data.Status === '000' && data.Message === 'Success',
           createdAt: data.CreatedAt,
           updatedAt: data.UpdateAt,
+        };
+        break;
+      }
+
+      case 'create-apple-pay':
+      case 'create-google-pay':
+      case 'create-ccard': {
+        const { amount, orderId, description, email, returnUrl } = params;
+        
+        let gatewayKey: string | undefined;
+        let method: string;
+        
+        if (action === 'create-apple-pay') {
+          gatewayKey = appleKey;
+          method = 'apple';
+        } else if (action === 'create-google-pay') {
+          gatewayKey = googleKey;
+          method = 'google';
+        } else {
+          gatewayKey = ccardKey;
+          method = 'ccard';
+        }
+
+        if (!gatewayKey) {
+          throw new Error(`${method} payment key not configured`);
+        }
+
+        console.log(`Creating ${method} payment:`, { amount, orderId });
+
+        const response = await fetch(GATEWAY_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            gatewayKey,
+            id: orderId?.substring(0, 25) || '',
+            amount,
+            description: description?.substring(0, 200) || '',
+            lang: 'pt',
+            email: email?.substring(0, 100) || '',
+            url: returnUrl || '',
+          }),
+        });
+
+        const data = await response.json();
+        console.log(`${method} API response:`, data);
+
+        if (data.Status !== '0' && data.Status !== 0 && data.Status !== '000') {
+          throw new Error(data.Message || `Failed to create ${method} payment`);
+        }
+
+        result = {
+          success: true,
+          requestId: data.RequestId,
+          paymentUrl: data.PaymentUrl || data.RedirectUrl || data.Url,
+          orderId: data.OrderId,
         };
         break;
       }

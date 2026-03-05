@@ -369,7 +369,7 @@ const OverviewDashboard = () => {
                   </div>
 
                   <div className="hidden md:flex items-center gap-8">
-                    <Tooltip>
+                    <UITooltip>
                       <TooltipTrigger asChild>
                         <div className="text-center cursor-help">
                           <p className="text-xs text-muted-foreground">Faturação</p>
@@ -379,8 +379,8 @@ const OverviewDashboard = () => {
                       <TooltipContent>
                         <p>Receita total de reservas confirmadas no mês atual</p>
                       </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
+                    </UITooltip>
+                    <UITooltip>
                       <TooltipTrigger asChild>
                         <div className="text-center cursor-help">
                           <p className="text-xs text-muted-foreground">Ocupação</p>
@@ -390,8 +390,8 @@ const OverviewDashboard = () => {
                       <TooltipContent>
                         <p>Percentagem de noites ocupadas em relação ao total de dias do mês</p>
                       </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
+                    </UITooltip>
+                    <UITooltip>
                       <TooltipTrigger asChild>
                         <div className="text-center cursor-help">
                           <p className="text-xs text-muted-foreground">Reservas</p>
@@ -401,7 +401,7 @@ const OverviewDashboard = () => {
                       <TooltipContent>
                         <p>Número de reservas confirmadas com check-in no mês atual</p>
                       </TooltipContent>
-                    </Tooltip>
+                    </UITooltip>
                     <div className="text-center min-w-[120px]">
                       <p className="text-xs text-muted-foreground">Próx. Check-in</p>
                       {property.nextCheckIn ? (

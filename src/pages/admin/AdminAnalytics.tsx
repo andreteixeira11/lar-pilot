@@ -29,10 +29,15 @@ import {
 import { format, subDays, startOfDay, endOfDay, subHours } from "date-fns";
 import { pt } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 const COLORS = ["hsl(180, 53%, 32%)", "#FF5A5F", "#003580", "#10B981", "#F59E0B", "#8B5CF6", "#EC4899"];
 
 const AdminAnalytics = () => {
+  const [dateRange, setDateRange] = useState<string>("30");
+
   // Fetch analytics data
   const { data: analyticsData, isLoading } = useQuery({
     queryKey: ["admin-analytics"],
@@ -52,6 +57,7 @@ const AdminAnalytics = () => {
   const last24Hours = subHours(now, 24);
   const last7Days = subDays(now, 7);
   const last30Days = subDays(now, 30);
+  const rangeStart = subDays(now, parseInt(dateRange));
 
   const viewsLast24h = analyticsData?.filter(a => new Date(a.created_at) >= last24Hours).length || 0;
   const viewsLast7d = analyticsData?.filter(a => new Date(a.created_at) >= last7Days).length || 0;
@@ -65,31 +71,35 @@ const AdminAnalytics = () => {
     analyticsData?.filter(a => new Date(a.created_at) >= last7Days).map(a => a.session_id)
   ).size;
 
+  // Filter data by selected range
+  const filteredData = analyticsData?.filter(a => new Date(a.created_at) >= rangeStart) || [];
+
   // Views by page
-  const pageViews = analyticsData?.reduce((acc, item) => {
+  const pageViews = filteredData.reduce((acc, item) => {
     const page = item.page_path || "/";
     acc[page] = (acc[page] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) || {};
+  }, {} as Record<string, number>);
 
   const topPages = Object.entries(pageViews)
     .map(([page, views]) => ({ page, views }))
     .sort((a, b) => b.views - a.views)
     .slice(0, 10);
 
-  // Daily views for last 14 days
-  const dailyViews = Array.from({ length: 14 }, (_, i) => {
-    const date = subDays(now, 13 - i);
+  // Daily views for selected range (max 30 points)
+  const chartDays = Math.min(parseInt(dateRange), 30);
+  const dailyViews = Array.from({ length: chartDays }, (_, i) => {
+    const date = subDays(now, chartDays - 1 - i);
     const dayStart = startOfDay(date);
     const dayEnd = endOfDay(date);
     
-    const views = analyticsData?.filter(a => {
+    const views = filteredData.filter(a => {
       const created = new Date(a.created_at);
       return created >= dayStart && created <= dayEnd;
-    }).length || 0;
+    }).length;
 
     const uniqueVisitors = new Set(
-      analyticsData?.filter(a => {
+      filteredData.filter(a => {
         const created = new Date(a.created_at);
         return created >= dayStart && created <= dayEnd;
       }).map(a => a.session_id)
@@ -103,7 +113,7 @@ const AdminAnalytics = () => {
   });
 
   // Device breakdown (simple detection from user agent)
-  const deviceBreakdown = analyticsData?.reduce((acc, item) => {
+  const deviceBreakdown = filteredData.reduce((acc, item) => {
     const ua = (item.user_agent || "").toLowerCase();
     let device = "Desktop";
     if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
@@ -113,12 +123,12 @@ const AdminAnalytics = () => {
     }
     acc[device] = (acc[device] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) || {};
+  }, {} as Record<string, number>);
 
   const deviceData = Object.entries(deviceBreakdown).map(([name, value]) => ({ name, value }));
 
   // Referrer breakdown
-  const referrerBreakdown = analyticsData?.reduce((acc, item) => {
+  const referrerBreakdown = filteredData.reduce((acc, item) => {
     let referrer = "Direto";
     if (item.referrer) {
       try {
@@ -130,7 +140,7 @@ const AdminAnalytics = () => {
     }
     acc[referrer] = (acc[referrer] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>) || {};
+  }, {} as Record<string, number>);
 
   const referrerData = Object.entries(referrerBreakdown)
     .map(([name, value]) => ({ name, value }))
@@ -145,10 +155,10 @@ const AdminAnalytics = () => {
     const hourEnd = new Date(todayStart);
     hourEnd.setHours(hour + 1);
 
-    const views = analyticsData?.filter(a => {
+    const views = filteredData.filter(a => {
       const created = new Date(a.created_at);
       return created >= hourStart && created < hourEnd;
-    }).length || 0;
+    }).length;
 
     return {
       hour: `${hour}h`,
@@ -158,10 +168,25 @@ const AdminAnalytics = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <PageHeader
-        title="Estatísticas do Site"
-        description="Análise de visitas e comportamento dos utilizadores"
-      />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <PageHeader
+          title="Estatísticas do Site"
+          description="Análise de visitas e comportamento dos utilizadores"
+        />
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger className="w-48">
+            <CalendarIcon className="h-4 w-4 mr-2" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1">Últimas 24 horas</SelectItem>
+            <SelectItem value="7">Últimos 7 dias</SelectItem>
+            <SelectItem value="30">Últimos 30 dias</SelectItem>
+            <SelectItem value="90">Últimos 90 dias</SelectItem>
+            <SelectItem value="365">Último ano</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">

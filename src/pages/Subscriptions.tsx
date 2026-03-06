@@ -136,7 +136,7 @@ export default function Subscriptions() {
           <p>• Pode cancelar a sua subscrição a qualquer momento</p>
           <p>• Pagamentos processados de forma segura via Ifthenpay</p>
           <p>• Suporte disponível para todos os planos</p>
-          <p>• Aceitamos Multibanco e MB Way</p>
+          <p>• Aceitamos Multibanco, MB Way, Cartão de Crédito, Apple Pay e Google Pay</p>
           <p>• Planos anuais incluem 2 meses grátis (economia de 17%)</p>
         </CardContent>
       </Card>

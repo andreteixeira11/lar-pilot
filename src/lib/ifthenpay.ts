@@ -39,6 +39,21 @@ const MBWAY_CONFIG = {
   callbackUrl: 'https://financasacessiveis.pt/wc-api/WC_MBWAY_IfThen_Webdados/',
 };
 
+// Apple Pay Configuration
+const APPLE_CONFIG = {
+  entity: 'NGW-197015',
+};
+
+// Google Pay Configuration
+const GOOGLE_CONFIG = {
+  entity: 'FJZ-066072',
+};
+
+// Credit Card Configuration
+const CCARD_CONFIG = {
+  entity: 'CJQ-011549',
+};
+
 export class IfthenPayService {
   /**
    * Create Multibanco payment reference

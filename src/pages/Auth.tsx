@@ -8,7 +8,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Building2, Crown, ArrowLeft, CreditCard, Smartphone, Loader2, Mail, RefreshCw } from "lucide-react";
+import { Home, Building2, Crown, ArrowLeft, CreditCard, Smartphone, Loader2, Mail, RefreshCw, Wallet } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ForgotPasswordDialog } from "@/components/ForgotPasswordDialog";
@@ -16,7 +16,7 @@ import { PricingSection, PricingTier } from "@/components/blocks/pricing-section
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 type SubscriptionPlan = "basic" | "pro" | "premium";
-type PaymentMethod = "multibanco" | "mbway";
+type PaymentMethod = "multibanco" | "mbway" | "ccard" | "apple" | "google";
 
 const pricingTiers: PricingTier[] = [
   {
@@ -427,6 +427,38 @@ export default function Auth() {
         setIsPolling(true);
         setStep("waiting-payment");
         pollMBWayStatus(data.requestId);
+      } else if (paymentMethod === "ccard" || paymentMethod === "apple" || paymentMethod === "google") {
+        const actionMap: Record<string, string> = {
+          ccard: 'create-ccard',
+          apple: 'create-apple-pay',
+          google: 'create-google-pay',
+        };
+
+        const { data, error } = await supabase.functions.invoke('ifthenpay-payment', {
+          body: {
+            action: actionMap[paymentMethod],
+            amount,
+            orderId,
+            description: `Subscrição ${selectedPlanData?.name}`,
+            email,
+            returnUrl: window.location.origin + '/auth?showPlans=true',
+          },
+        });
+
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error);
+
+        if (data.paymentUrl) {
+          // Create the user before redirecting
+          await signup(email, password, name, phone, nif, selectedPlan || "basic");
+          window.location.href = data.paymentUrl;
+        } else {
+          toast({
+            title: "Erro",
+            description: "URL de pagamento não disponível.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error: unknown) {
       console.error("Payment error:", error);
@@ -941,7 +973,7 @@ export default function Auth() {
                   <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                     <RadioGroupItem value="multibanco" id="multibanco" />
                     <Label htmlFor="multibanco" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <CreditCard className="h-5 w-5" />
+                      <CreditCard className="h-5 w-5 text-primary" />
                       <div>
                         <div className="font-medium">Multibanco</div>
                         <div className="text-xs text-muted-foreground">Referência MB</div>
@@ -951,10 +983,40 @@ export default function Auth() {
                   <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
                     <RadioGroupItem value="mbway" id="mbway" />
                     <Label htmlFor="mbway" className="flex items-center gap-2 cursor-pointer flex-1">
-                      <Smartphone className="h-5 w-5" />
+                      <Smartphone className="h-5 w-5 text-primary" />
                       <div>
                         <div className="font-medium">MB Way</div>
                         <div className="text-xs text-muted-foreground">Pagamento instantâneo</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="ccard" id="ccard" />
+                    <Label htmlFor="ccard" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Cartão de Crédito</div>
+                        <div className="text-xs text-muted-foreground">Visa, Mastercard, etc.</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="apple" id="apple" />
+                    <Label htmlFor="apple" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                      <div>
+                        <div className="font-medium">Apple Pay</div>
+                        <div className="text-xs text-muted-foreground">Pagamento com Apple</div>
+                      </div>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover:bg-accent">
+                    <RadioGroupItem value="google" id="google" />
+                    <Label htmlFor="google" className="flex items-center gap-2 cursor-pointer flex-1">
+                      <Wallet className="h-5 w-5 text-primary" />
+                      <div>
+                        <div className="font-medium">Google Pay</div>
+                        <div className="text-xs text-muted-foreground">Pagamento com Google</div>
                       </div>
                     </Label>
                   </div>
@@ -999,8 +1061,14 @@ export default function Auth() {
                   </>
                 ) : paymentMethod === "multibanco" ? (
                   "Gerar Referência"
-                ) : (
+                ) : paymentMethod === "mbway" ? (
                   "Pagar com MB Way"
+                ) : paymentMethod === "ccard" ? (
+                  "Pagar com Cartão"
+                ) : paymentMethod === "apple" ? (
+                  "Pagar com Apple Pay"
+                ) : (
+                  "Pagar com Google Pay"
                 )}
               </Button>
             </form>

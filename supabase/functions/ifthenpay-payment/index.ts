@@ -8,7 +8,8 @@ const corsHeaders = {
 const MULTIBANCO_API_URL = 'https://api.ifthenpay.com/multibanco/reference/init';
 const MBWAY_API_URL = 'https://api.ifthenpay.com/spg/payment/mbway';
 const MBWAY_STATUS_URL = 'https://api.ifthenpay.com/spg/payment/mbway/status';
-const GATEWAY_API_URL = 'https://api.ifthenpay.com/spg/payment/init';
+const CCARD_API_URL = 'https://api.ifthenpay.com/creditcard/init';
+const GATEWAY_URL = 'https://gateway.ifthenpay.com/';
 
 interface MultibancoRequest {
   amount: string;
@@ -163,59 +164,88 @@ serve(async (req) => {
         break;
       }
 
-      case 'create-apple-pay':
-      case 'create-google-pay':
       case 'create-ccard': {
         const { amount, orderId, description, email, returnUrl } = params;
         
-        let gatewayKey: string | undefined;
-        let method: string;
-        
-        if (action === 'create-apple-pay') {
-          gatewayKey = appleKey;
-          method = 'apple';
-        } else if (action === 'create-google-pay') {
-          gatewayKey = googleKey;
-          method = 'google';
-        } else {
-          gatewayKey = ccardKey;
-          method = 'ccard';
+        if (!ccardKey) {
+          throw new Error('Credit card payment key not configured');
         }
 
-        if (!gatewayKey) {
-          throw new Error(`${method} payment key not configured`);
-        }
+        console.log('Creating ccard payment:', { amount, orderId });
 
-        console.log(`Creating ${method} payment:`, { amount, orderId });
-
-        const response = await fetch(GATEWAY_API_URL, {
+        const response = await fetch(`${CCARD_API_URL}/${ccardKey}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            gatewayKey,
-            id: orderId?.substring(0, 25) || '',
+            orderId: orderId?.substring(0, 25) || '',
             amount,
-            description: description?.substring(0, 200) || '',
-            lang: 'pt',
-            email: email?.substring(0, 100) || '',
-            url: returnUrl || '',
+            successUrl: returnUrl || '',
+            errorUrl: returnUrl || '',
+            cancelUrl: returnUrl || '',
+            language: 'pt',
           }),
         });
 
         const data = await response.json();
-        console.log(`${method} API response:`, data);
+        console.log('CCard API response:', data);
 
-        if (data.Status !== '0' && data.Status !== 0 && data.Status !== '000') {
-          throw new Error(data.Message || `Failed to create ${method} payment`);
+        if (data.Status !== '0' && data.Status !== 0) {
+          throw new Error(data.Message || 'Failed to create credit card payment');
         }
 
         result = {
           success: true,
           requestId: data.RequestId,
-          paymentUrl: data.PaymentUrl || data.RedirectUrl || data.Url,
+          paymentUrl: data.PaymentUrl || data.RedirectUrl,
           orderId: data.OrderId,
+        };
+        break;
+      }
+
+      case 'create-apple-pay':
+      case 'create-google-pay': {
+        const { amount, orderId, description, email, returnUrl } = params;
+        
+        const gatewayKey = Deno.env.get('IFTHENPAY_GATEWAY_KEY');
+        
+        if (!gatewayKey) {
+          throw new Error('Gateway key not configured');
+        }
+
+        const method = action === 'create-apple-pay' ? 'apple' : 'google';
+        const methodKey = action === 'create-apple-pay' ? appleKey : googleKey;
+        
+        if (!methodKey) {
+          throw new Error(`${method} payment key not configured`);
+        }
+
+        console.log(`Creating ${method} payment via gateway:`, { amount, orderId });
+
+        // Build the Simple Checkout gateway URL
+        const accountsParam = action === 'create-apple-pay' 
+          ? `APPLE|${methodKey}` 
+          : `GOOGLE|${methodKey}`;
+        
+        const gatewayParams = new URLSearchParams({
+          token: gatewayKey,
+          id: orderId?.substring(0, 25) || '',
+          amount,
+          description: description?.substring(0, 200) || '',
+          lang: 'PT',
+          accounts: accountsParam,
+          success_url: returnUrl || '',
+          error_url: returnUrl || '',
+          cancel_url: returnUrl || '',
+        });
+
+        const paymentUrl = `${GATEWAY_URL}?${gatewayParams.toString()}`;
+
+        result = {
+          success: true,
+          paymentUrl,
+          orderId,
         };
         break;
       }

@@ -66,7 +66,7 @@ export function AppSidebar() {
     location.pathname.startsWith(path)
   );
   
-  const isRelatoriosActive = ["/taxa-turistica", "/ine", "/proprietarios", "/reviews"].some(path => 
+  const isRelatoriosActive = ["/taxa-turistica", "/ine", "/proprietarios", "/reviews", "/analiticas"].some(path => 
     location.pathname.startsWith(path)
   );
 

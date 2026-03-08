@@ -193,6 +193,7 @@ const App = () => (
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="/reviews" element={<Reviews />} />
+                            <Route path="/analiticas" element={<Analiticas />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

@@ -147,17 +147,19 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-      // Save session to database
-      const { error: sessionError } = await supabase
-        .from("owner_sessions")
-        .insert({
-          owner_id: ownerData.owner_id,
-          token: token,
-          expires_at: expiresAt.toISOString(),
-        });
+      // Save session via edge function
+      const sessionResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'create', owner_id: ownerData.owner_id, token, expires_at: expiresAt.toISOString() }),
+        }
+      );
+      const sessionResult = await sessionResponse.json();
 
-      if (sessionError) {
-        console.error("Session error:", sessionError);
+      if (!sessionResponse.ok || sessionResult.error) {
+        console.error("Session error:", sessionResult.error);
         return { error: "Erro ao criar sessão" };
       }
 

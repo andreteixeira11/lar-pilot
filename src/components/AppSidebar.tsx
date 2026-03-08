@@ -19,6 +19,7 @@ import {
   CreditCard,
   Globe,
   Link2,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,

@@ -62,14 +62,20 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const validateSession = async (token: string): Promise<boolean> => {
-    const { data, error } = await supabase
-      .from("owner_sessions")
-      .select("*")
-      .eq("token", token)
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
-    
-    return !error && !!data;
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'validate', token }),
+        }
+      );
+      const data = await response.json();
+      return data.valid === true;
+    } catch {
+      return false;
+    }
   };
 
   const loadOwnerProperties = async (ownerId: string): Promise<OwnerProperty[]> => {
@@ -141,17 +147,19 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-      // Save session to database
-      const { error: sessionError } = await supabase
-        .from("owner_sessions")
-        .insert({
-          owner_id: ownerData.owner_id,
-          token: token,
-          expires_at: expiresAt.toISOString(),
-        });
+      // Save session via edge function
+      const sessionResponse = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'create', owner_id: ownerData.owner_id, token, expires_at: expiresAt.toISOString() }),
+        }
+      );
+      const sessionResult = await sessionResponse.json();
 
-      if (sessionError) {
-        console.error("Session error:", sessionError);
+      if (!sessionResponse.ok || sessionResult.error) {
+        console.error("Session error:", sessionResult.error);
         return { error: "Erro ao criar sessão" };
       }
 
@@ -180,12 +188,15 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     if (owner?.token) {
-      // Remove session from database
-      supabase
-        .from("owner_sessions")
-        .delete()
-        .eq("token", owner.token)
-        .then(() => {});
+      // Remove session via edge function
+      fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'delete', token: owner.token }),
+        }
+      ).catch(() => {});
     }
     localStorage.removeItem(STORAGE_KEY);
     setOwner(null);

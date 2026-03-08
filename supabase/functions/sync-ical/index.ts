@@ -13,12 +13,43 @@ interface ICalEvent {
   endDate: string;
 }
 
+const ALLOWED_DOMAINS = [
+  'airbnb.com',
+  'airbnb.co.uk',
+  'airbnb.pt',
+  'booking.com',
+  'icalendar.booking.com',
+];
+
+function isAllowedUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Block private/internal IPs
+    const hostname = parsed.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname.startsWith('127.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('169.254.') ||
+      hostname.startsWith('172.') ||
+      hostname === '0.0.0.0' ||
+      hostname === '[::]' ||
+      hostname === '[::1]'
+    ) {
+      return false;
+    }
+    // Check against allowed domains
+    return ALLOWED_DOMAINS.some(domain => hostname === domain || hostname.endsWith('.' + domain));
+  } catch {
+    return false;
+  }
+}
+
 function parseICalDate(dateStr: string): string {
-  // Handle formats like: 20241225 or 20241225T150000Z
   if (dateStr.length === 8) {
     return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
   }
-  // Handle datetime format
   const datePart = dateStr.split('T')[0];
   return `${datePart.substring(0, 4)}-${datePart.substring(4, 6)}-${datePart.substring(6, 8)}`;
 }
@@ -28,10 +59,8 @@ function parseICalFeed(icalData: string): ICalEvent[] {
   const lines = icalData.split(/\r?\n/);
   
   let currentEvent: Partial<ICalEvent> | null = null;
-  let currentKey = '';
   
   for (const line of lines) {
-    // Handle line continuations (lines starting with space or tab)
     if (line.startsWith(' ') || line.startsWith('\t')) {
       continue;
     }
@@ -54,7 +83,6 @@ function parseICalFeed(icalData: string): ICalEvent[] {
       } else if (line.startsWith('SUMMARY:')) {
         currentEvent.summary = line.substring(8).trim();
       } else if (line.startsWith('DTSTART')) {
-        // Handle DTSTART;VALUE=DATE:20241225 or DTSTART:20241225T150000Z
         const value = line.split(':')[1]?.trim();
         if (value) {
           currentEvent.startDate = parseICalDate(value);
@@ -79,6 +107,31 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userClient = createClient(supabaseUrl, supabaseAnon, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { pageId, airbnbUrl, bookingUrl } = await req.json();
@@ -90,6 +143,34 @@ serve(async (req) => {
       );
     }
 
+    // Verify user owns this page
+    const { data: pageData } = await supabase
+      .from('direct_booking_pages')
+      .select('id, property_id, properties!inner(user_id)')
+      .eq('id', pageId)
+      .single();
+
+    if (!pageData || (pageData as any).properties?.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate URLs against allowed domains
+    if (airbnbUrl && !isAllowedUrl(airbnbUrl)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Airbnb URL. Only airbnb.com domains are allowed.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (bookingUrl && !isAllowedUrl(bookingUrl)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid Booking URL. Only booking.com domains are allowed.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log(`Starting iCal sync for page ${pageId}`);
     
     const results = {
@@ -97,7 +178,6 @@ serve(async (req) => {
       booking: { success: false, count: 0, error: null as string | null },
     };
 
-    // Delete existing external events for this page
     const { error: deleteError } = await supabase
       .from('external_calendar_events')
       .delete()
@@ -185,7 +265,6 @@ serve(async (req) => {
       }
     }
 
-    // Update last sync timestamp
     await supabase
       .from('direct_booking_pages')
       .update({ ical_last_sync: new Date().toISOString() })

@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.sync-ical]
 verify_jwt = false
 
+[functions.owner-session]
+verify_jwt = false
+
 [functions.export-ical]
 verify_jwt = false
 

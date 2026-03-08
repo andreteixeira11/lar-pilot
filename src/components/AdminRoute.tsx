@@ -1,14 +1,22 @@
 import { Navigate } from "react-router-dom";
+import { useAdmin } from "@/hooks/useAdmin";
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 export const AdminRoute = ({ children }: AdminRouteProps) => {
-  // Check localStorage for admin authentication (temporary solution)
-  const isAdminAuthenticated = localStorage.getItem("adminAuthenticated") === "true";
+  const { isAdmin, loading } = useAdmin();
 
-  if (!isAdminAuthenticated) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">A verificar permissões...</div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 

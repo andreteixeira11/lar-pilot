@@ -23,35 +23,7 @@ export default function AdminAuth() {
     setIsLoading(true);
 
     try {
-      // First, check if the email is in admin_users table
-      const { data: adminUser, error: adminCheckError } = await supabase
-        .from("admin_users")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (adminCheckError) {
-        console.error("Error checking admin status:", adminCheckError);
-        toast({
-          title: "Erro",
-          description: "Erro ao verificar credenciais.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!adminUser) {
-        toast({
-          title: "Acesso negado",
-          description: "Este email não tem permissões de administrador.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      // Authenticate with Supabase Auth
+      // Authenticate with Supabase Auth FIRST (no pre-auth admin check)
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -68,8 +40,25 @@ export default function AdminAuth() {
       }
 
       if (data.user) {
-        localStorage.setItem("adminAuthenticated", "true");
-        
+        // AFTER authentication, check admin status server-side
+        const { data: adminUser, error: adminCheckError } = await supabase
+          .from("admin_users")
+          .select("id")
+          .eq("email", data.user.email!)
+          .maybeSingle();
+
+        if (adminCheckError || !adminUser) {
+          // Sign out non-admin user
+          await supabase.auth.signOut();
+          toast({
+            title: "Acesso negado",
+            description: "Credenciais incorretas.",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
         toast({
           title: "Login de administrador efetuado!",
           description: "Bem-vindo ao painel de administração.",

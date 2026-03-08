@@ -62,6 +62,7 @@ import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
 import OwnerReviews from "./pages/proprietario/OwnerReviews";
 import Proprietarios from "./pages/Proprietarios";
 import Reviews from "./pages/Reviews";
+import Analiticas from "./pages/Analiticas";
 import Contactos from "./pages/Contactos";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import TermosCondicoes from "./pages/TermosCondicoes";
@@ -192,6 +193,7 @@ const App = () => (
                             <Route path="/upsell-orders" element={<UpsellOrders />} />
                             <Route path="/proprietarios" element={<Proprietarios />} />
                             <Route path="/reviews" element={<Reviews />} />
+                            <Route path="/analiticas" element={<Analiticas />} />
                             <Route path="*" element={<NotFound />} />
                           </Routes>
                         </main>

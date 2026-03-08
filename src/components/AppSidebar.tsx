@@ -66,7 +66,7 @@ export function AppSidebar() {
     location.pathname.startsWith(path)
   );
   
-  const isRelatoriosActive = ["/taxa-turistica", "/ine", "/proprietarios", "/reviews"].some(path => 
+  const isRelatoriosActive = ["/taxa-turistica", "/ine", "/proprietarios", "/reviews", "/analiticas"].some(path => 
     location.pathname.startsWith(path)
   );
 
@@ -275,6 +275,21 @@ export function AppSidebar() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild>
+                          <NavLink
+                            to="/analiticas"
+                            end
+                            className={({ isActive }) =>
+                              isActive
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "hover:bg-primary/10 hover:text-primary transition-colors"
+                            }
+                          >
+                            Analytics
+                          </NavLink>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <NavLink

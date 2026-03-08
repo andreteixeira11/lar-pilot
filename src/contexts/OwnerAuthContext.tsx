@@ -188,12 +188,15 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     if (owner?.token) {
-      // Remove session from database
-      supabase
-        .from("owner_sessions")
-        .delete()
-        .eq("token", owner.token)
-        .then(() => {});
+      // Remove session via edge function
+      fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'delete', token: owner.token }),
+        }
+      ).catch(() => {});
     }
     localStorage.removeItem(STORAGE_KEY);
     setOwner(null);

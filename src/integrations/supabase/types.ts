@@ -514,6 +514,47 @@ export type Database = {
           },
         ]
       }
+      guest_requests: {
+        Row: {
+          created_at: string
+          id: string
+          manager_response: string | null
+          message: string
+          request_type: string
+          reservation_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manager_response?: string | null
+          message: string
+          request_type?: string
+          reservation_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manager_response?: string | null
+          message?: string
+          request_type?: string
+          reservation_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_requests_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guidebook_sections: {
         Row: {
           content: Json

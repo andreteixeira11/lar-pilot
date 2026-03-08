@@ -278,6 +278,21 @@ export function AppSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton asChild>
                           <NavLink
+                            to="/analiticas"
+                            end
+                            className={({ isActive }) =>
+                              isActive
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "hover:bg-primary/10 hover:text-primary transition-colors"
+                            }
+                          >
+                            Analytics
+                          </NavLink>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild>
+                          <NavLink
                             to="/taxa-turistica"
                             end
                             className={({ isActive }) =>

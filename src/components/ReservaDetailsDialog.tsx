@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download, Send } from "lucide-react";
+import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download, Send, Link2, Copy, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +74,30 @@ export const ReservaDetailsDialog = ({
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSendingCheckin, setIsSendingCheckin] = useState(false);
+  const [portalCopied, setPortalCopied] = useState(false);
+
+  const copyPortalLink = async () => {
+    try {
+      // Get the checkin_token for this reservation
+      const { data } = await supabase
+        .from("reservations")
+        .select("checkin_token")
+        .eq("id", reserva.id)
+        .single();
+      
+      if (data?.checkin_token) {
+        const link = `${window.location.origin}/guest/${data.checkin_token}`;
+        await navigator.clipboard.writeText(link);
+        setPortalCopied(true);
+        toast({ title: "Link do portal copiado!" });
+        setTimeout(() => setPortalCopied(false), 2000);
+      } else {
+        toast({ title: "Token não encontrado", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao copiar link", variant: "destructive" });
+    }
+  };
 
   if (!reserva) return null;
 
@@ -232,6 +256,15 @@ export const ReservaDetailsDialog = ({
             >
               <Send className="h-3 w-3 mr-1" />
               {isSendingCheckin ? "..." : "Check-in"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyPortalLink}
+              className="h-7 text-xs px-2"
+            >
+              {portalCopied ? <Check className="h-3 w-3 mr-1" /> : <Link2 className="h-3 w-3 mr-1" />}
+              {portalCopied ? "Copiado!" : "Portal"}
             </Button>
             <Button
               variant="outline"

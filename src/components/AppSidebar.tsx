@@ -19,6 +19,7 @@ import {
   CreditCard,
   Globe,
   Link2,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -58,7 +59,7 @@ export function AppSidebar() {
     refetchInterval: 30000,
   });
 
-  const isReservasActive = ["/reservas", "/checkins", "/reservas-diretas"].some(path => 
+  const isReservasActive = ["/reservas", "/checkins", "/reservas-diretas", "/pedidos-hospedes"].some(path => 
     location.pathname.startsWith(path)
   );
   
@@ -185,6 +186,22 @@ export function AppSidebar() {
                             }
                           >
                             Reservas Diretas
+                          </NavLink>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild>
+                          <NavLink
+                            to="/pedidos-hospedes"
+                            end
+                            className={({ isActive }) =>
+                              isActive
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "hover:bg-primary/10 hover:text-primary transition-colors"
+                            }
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                            Pedidos Hóspedes
                           </NavLink>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>

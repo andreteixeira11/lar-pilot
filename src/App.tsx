@@ -26,6 +26,7 @@ const Simulador = lazy(() => import("./pages/Simulador"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const GuestPortal = lazy(() => import("./pages/GuestPortal"));
 const CheckIns = lazy(() => import("./pages/CheckIns"));
+const PedidosHospedes = lazy(() => import("./pages/PedidosHospedes"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const OverviewDashboard = lazy(() => import("./pages/OverviewDashboard"));
 const Reservas = lazy(() => import("./pages/Reservas"));
@@ -194,6 +195,7 @@ const App = () => (
                               <Route path="/dashboard" element={<Dashboard />} />
                               <Route path="/reservas" element={<Reservas />} />
                               <Route path="/checkins" element={<CheckIns />} />
+                              <Route path="/pedidos-hospedes" element={<PedidosHospedes />} />
                               <Route path="/alojamento" element={<DadosAlojamento />} />
                               <Route path="/acessos" element={<Acessos />} />
                               <Route path="/calendario-fiscal" element={<CalendarioFiscal />} />

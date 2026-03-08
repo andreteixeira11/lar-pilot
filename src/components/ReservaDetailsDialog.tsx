@@ -74,6 +74,30 @@ export const ReservaDetailsDialog = ({
   const { toast } = useToast();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSendingCheckin, setIsSendingCheckin] = useState(false);
+  const [portalCopied, setPortalCopied] = useState(false);
+
+  const copyPortalLink = async () => {
+    try {
+      // Get the checkin_token for this reservation
+      const { data } = await supabase
+        .from("reservations")
+        .select("checkin_token")
+        .eq("id", reserva.id)
+        .single();
+      
+      if (data?.checkin_token) {
+        const link = `${window.location.origin}/guest/${data.checkin_token}`;
+        await navigator.clipboard.writeText(link);
+        setPortalCopied(true);
+        toast({ title: "Link do portal copiado!" });
+        setTimeout(() => setPortalCopied(false), 2000);
+      } else {
+        toast({ title: "Token não encontrado", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Erro ao copiar link", variant: "destructive" });
+    }
+  };
 
   if (!reserva) return null;
 

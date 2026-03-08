@@ -62,6 +62,7 @@ import OwnerDocumentos from "./pages/proprietario/OwnerDocumentos";
 import OwnerReviews from "./pages/proprietario/OwnerReviews";
 import Proprietarios from "./pages/Proprietarios";
 import Reviews from "./pages/Reviews";
+import Analiticas from "./pages/Analiticas";
 import Contactos from "./pages/Contactos";
 import PoliticaPrivacidade from "./pages/PoliticaPrivacidade";
 import TermosCondicoes from "./pages/TermosCondicoes";

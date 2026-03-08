@@ -62,14 +62,20 @@ export function OwnerAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const validateSession = async (token: string): Promise<boolean> => {
-    const { data, error } = await supabase
-      .from("owner_sessions")
-      .select("*")
-      .eq("token", token)
-      .gt("expires_at", new Date().toISOString())
-      .maybeSingle();
-    
-    return !error && !!data;
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/owner-session`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+          body: JSON.stringify({ action: 'validate', token }),
+        }
+      );
+      const data = await response.json();
+      return data.valid === true;
+    } catch {
+      return false;
+    }
   };
 
   const loadOwnerProperties = async (ownerId: string): Promise<OwnerProperty[]> => {

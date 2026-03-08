@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download, Send } from "lucide-react";
+import { Calendar, User, CreditCard, Users, Pencil, Trash2, Download, Send, Link2, Copy, Check } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";

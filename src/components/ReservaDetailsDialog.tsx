@@ -260,6 +260,15 @@ export const ReservaDetailsDialog = ({
             <Button
               variant="outline"
               size="sm"
+              onClick={copyPortalLink}
+              className="h-7 text-xs px-2"
+            >
+              {portalCopied ? <Check className="h-3 w-3 mr-1" /> : <Link2 className="h-3 w-3 mr-1" />}
+              {portalCopied ? "Copiado!" : "Portal"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleDownloadPDF}
               className="h-7 text-xs px-2"
             >

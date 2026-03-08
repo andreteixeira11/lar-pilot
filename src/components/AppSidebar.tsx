@@ -59,7 +59,7 @@ export function AppSidebar() {
     refetchInterval: 30000,
   });
 
-  const isReservasActive = ["/reservas", "/checkins", "/reservas-diretas"].some(path => 
+  const isReservasActive = ["/reservas", "/checkins", "/reservas-diretas", "/pedidos-hospedes"].some(path => 
     location.pathname.startsWith(path)
   );
   
